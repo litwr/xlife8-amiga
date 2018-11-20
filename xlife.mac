@@ -1,0 +1,231 @@
+t9 equ '    '
+vermax   = 24     ;192
+hormax   = 31     ;248
+total    = hormax*vermax+1
+tilesize = 62
+plainbox = hormax*vermax*tilesize+tiles
+
+left     = 8      ;all directions
+ul       = 10     ;not zero!
+up       = 12
+ur       = 14
+right    = 16
+dr       = 18
+down     = 20
+dle      = 22
+next     = 24
+count0   = 26
+count1   = 30
+count2   = 34
+count3   = 38
+count4   = 42
+count5   = 46
+count6   = 50
+count7   = 54
+video    = 58
+sum      = 60
+
+tile     macro
+l0       dc.b 0
+l1       dc.b 0
+l2       dc.b 0
+l3       dc.b 0
+l4       dc.b 0
+l5       dc.b 0
+l6       dc.b 0
+l7       dc.b 0
+left     dc.w 0	;+8
+ul       dc.w 0
+up       dc.w 0        ;+12
+ur       dc.w 0
+right    dc.w 0        ;+16
+dr       dc.w 0
+down     dc.w 0        ;+20
+dl       dc.w 0
+next     dc.w 0        ;+24
+         blk.b 32       ;+26, count0
+video    dc.w 0        ;+58
+sum      dc.b 0        ;+60
+         dc.b 0        ;free
+endm
+
+boxsz_xmin = i1
+boxsz_ymin = i1+1
+boxsz_curx = x0          ;boxsz_sizex
+boxsz_cury = y0          ;boxsz_sizey
+xcut       = temp2
+ycut       = temp2+1
+x8poscp    = temp
+y8poscp    = temp+1
+y8byte     = saved
+
+red equ 27,'[31m'
+green equ 27,'[32m'       ;purple in graph
+gpurple equ green
+blue equ 27,'[34m'        ;cyan in graph
+gcyan equ blue
+purple equ 27,'[35m'
+cyan equ 27,'[36m'
+black equ 27,'[37m'       ;white in graph
+gwhite equ black
+bold equ 27,'[1m'
+normal equ 27,'[0m'
+ansiclrscn equ 27,'[2J'
+home equ 27,'[H'
+clrtoeol equ '                                       ',0dh
+
+macro vidmacp one,two {
+          mov cx,[si+one]
+          and cx,0001100011000000b
+          shl ch,1
+          or ch,cl
+          mov cl,4
+          mov ah,al
+          shr al,cl
+          or al,ch
+          mov bx,vistabpc
+          xlatb
+          mov [es:di+two],al
+          mov dx,[si+one+2]
+          and dx,0000001100011000b
+          shr dl,1
+          or dh,dl
+          shl dh,cl
+          and ah,0fh
+          or ah,dh
+          mov al,ah
+          xlatb
+          mov [es:di+two+1],al
+}
+
+macro genmac one {
+;;         movb count'one+3(r0),r5
+         xor bx,bx
+         mov bl,[si+count#one+3]
+;;         movb gentab(r5),r1
+         mov al,[bx+gentab]
+;;         bic #^B1111111111111100,r1
+         and ax,3
+
+;;         movb count'one+2(r0),r5
+         mov bl,[si+count#one+2]
+;;         movb gentab(r5),r5
+         mov bl,[bx+gentab]
+;;         bic #^B1111111111110011,r5
+         and bl,0ch
+;;         bis r5,r1
+         or al,bl
+
+;;         movb count'one+1(r0),r5
+         mov bl,[si+count#one+1]
+;;         movb gentab(r5),r5
+         mov bl,[bx+gentab]
+;;         bic #^B1111111111001111,r5
+         and bl,30h
+;;         bis r5,r1
+         or al,bl
+
+;;         movb count'one(r0),r5
+         mov bl,[si+count#one]
+;;         movb gentab(r5),r5
+         mov bl,[bx+gentab]
+;;         bic #^B1111111100111111,r5
+         and bl,0c0h
+;;         bis r5,r1
+         or al,bl
+
+;;         movb r1,one(r0)
+         mov [si+one],al
+;;         movb tab3(r1),r2
+         mov bx,tab3
+         xlatb
+         or al,al
+         jz @f
+
+;;         movb r2,sum(r0)
+         mov [si+sum],al
+;;         cmpb #2,@#mode
+         cmp [mode],2
+         jz @f
+
+         cellsum @f
+@@:
+}
+	if 0
+macro cellsum l1 {     ;in: al
+         mov bx,cellcnt+4
+         add al,[bx]
+         aaa
+         mov [bx],al
+         jnc l1
+
+         incbcd l1
+         incbcd l1
+         incbcd l1
+         incbcd l1
+;;l1:
+}
+
+macro incbcd l1 {
+         dec bx
+         mov al,[bx]
+         adc al,0
+         aaa
+         mov [bx],al
+         jnc l1
+}
+
+macro inibcd one,two {
+        mov bx,two
+@@:     mov byte [bx+one],bh
+        dec bx
+        jns @b
+}
+	endif
+
+setcount macro
+;;         mov bx,[si+one]
+         move.w (\1,d4),d1
+
+;;         mov di,bx
+	 move.w d1,d5
+;;         and bx,cx
+	 and.w d2,d1
+;;         mov [si+count#one],bl
+	 move.b d1,(count\1,a4)
+;;         mov [si+count#one+4],bh
+         lsl.w d1,8
+         move.b d1,(count\1+4,a4)
+;;         mov bx,di
+	 move.w d5,d1
+;;         and bx,dx
+	 and.w d3,d1
+;;         shr bx,1
+         lsr.w d1,1
+;;         mov [si+count#one+1],bl
+	 move.b d1,(count\1+1,a4)
+;;         mov [si+count#one+5],bh
+         lsl.w d1,8
+         move.b d1,(count\1+5,a4)
+;;         mov bx,di
+	 move.w d5,d1
+;;         and bx,bp
+	 and.w d6,d1
+;;         shl bx,1
+         lsr.w d1,1
+;;         mov [si+count#one+2],bl
+	 move.b d1,(count\1+2,a4)
+;;         mov [si+count#one+6],bh
+         lsl.w d1,8
+         move.b d1,(count\1+6,a4)
+;;         mov bx,di
+	 move.w d5,d1
+;;         and bx,ax
+	 and.w d0,d1
+;;         mov [si+count#one+3],bl
+	 move.b d1,(count\1+2,a4)
+;;         mov [si+count#one+7],bh
+         lsl.w d1,8
+         move.b d1,(count\1+7,a4)
+endm
+

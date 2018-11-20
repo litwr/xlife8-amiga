@@ -1,0 +1,48 @@
+DMAF_SETCLR	=	$8000
+DMAF_COPPER	=	$0080
+DMAF_RASTER	=	$0100
+DMAF_MASTER	=	$0200
+
+OldOpenLibrary	= -408
+CloseLibrary	= -414
+
+Disable	=	-120 
+Enable	=	-126 
+Forbid		= -132
+Permit		= -138
+
+WaitTOF		= -270
+
+CUSTOM equ $DFF000
+CIAAPRA EQU $bfe001
+
+DMACONR equ 2
+VPOSR           EQU             4
+ADKCONR		EQU		$10
+INTENAR		EQU		$1c
+INTREQR		EQU		$1e
+COP1LCH equ $80
+COPJMP1 equ $88
+DIWSTRT equ $8e
+DIWSTOP equ $90
+DDFSTRT equ $92
+DDFSTOP equ $94
+DMACON equ $96
+ADKCON		EQU		$9e
+INTENA		EQU		$9a
+INTREQ		EQU		$9c
+BPL1PTH equ $E0
+BPL1PTL equ $E2
+BPL2PTH equ $E4
+BPL2PTL equ $E6
+BPLCON0 equ $100
+BPLCON1 equ $102
+BPLCON2 equ $104
+BPL1MOD equ $108
+BPL2MOD equ $10a
+COLOR00 equ $180
+COLOR01 equ $182
+COLOR02 equ $184
+COLOR03 equ $186
+COLOR04 equ $188
+
