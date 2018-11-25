@@ -106,10 +106,8 @@ genmac macro
          ;;mov bl,[si+count#one+3]
 	 moveq #0,d1
 	 move.b (count\1+3,a4),d1
-	basereg SOD,a3
          ;;mov al,[bx+gentab]
 	 lea (gentab,a3),a2
-	endb a3
 	 move.b (a2,d1),d0
 	 ;;and ax,3
          and.w d0,3
@@ -145,7 +143,7 @@ genmac macro
          beq .\@			;;jz @f
 
          move.b (sum,a4),d0		;;mov [si+sum],al		;;movb r2,sum(r0)
-         cmpi.b #2,mode			;;cmp [mode],2			;;cmpb #2,@#mode
+         cmpi.b #2,mode(a3)		;;cmp [mode],2			;;cmpb #2,@#mode
          beq .\@			;;jz @f
 
 ;         cellsum .\@			;;cellsum @f

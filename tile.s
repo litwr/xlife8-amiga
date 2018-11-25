@@ -1,7 +1,7 @@
 clear:    ;call zerocc
           ;call zerogc
           ;;mov si,[startp]
-          movea.l startp,a4
+          movea.l startp(a3),a4
 
 ;;.c10:     xor ax,ax
 ;;          cmp al,[si+sum]
@@ -50,13 +50,13 @@ chkadd:
 addnode:
          ;;mov ax,[startp]
          ;;mov [di+next],ax
-         move.l startp,(next,a5)
+         move.l startp(a3),(next,a5)
 
          ;;mov [startp],di
-         move.l a5,startp
+         move.l a5,startp(a3)
 
          ;;inc [tilecnt]
-         addq.w #1,tilecnt
+         addq.w #1,tilecnt(a3)
 exit2:   
 	 ;;retn
 	 rts
@@ -68,13 +68,13 @@ chkadd2: ;;cmp word [ds:bp+next],0
 addnode2:                 ;in: A6
          ;;mov ax,[startp]
          ;;mov [ds:bp+next],ax
-	 move.l startp,(next,a6)
+	 move.l startp(a3),(next,a6)
 
          ;;mov [startp],bp
-         move.l a6,startp
+         move.l a6,startp(a3)
 
          ;;inc [tilecnt]
-         addq.w #1,tilecnt
+         addq.w #1,tilecnt(a3)
 
 exit:
 	 ;;retn 

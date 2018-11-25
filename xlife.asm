@@ -12,17 +12,19 @@
 
 ;	section Code
 start:  
+	basereg SOD,a3
+
 	move.l #SOD,A3
         MOVE.L #CUSTOM,A2
 	move.w	DMACONR(A2),d0
 	or.w #$8000,d0
-	move.w d0,olddmareq
+	move.w d0,olddmareq(a3)
         move.l	4,a6
-	lea	gfxname,a1
+	lea	gfxname(a3),a1
 	jsr	OldOpenLibrary(a6)
-	move.l	d0,gfxbase
+	move.l	d0,gfxbase(a3)
 	move.l 	d0,a6
-	move.l 	38(a6),oldcopper
+	move.l 	38(a6),oldcopper(a3)
 
 	jsr WaitTOF(a6)
 	move.l	4,a6
@@ -31,7 +33,7 @@ start:
         
         MOVE.L #COPPERLIST,COP1LCH(A2)	;Write to Copper location register
 	MOVE.W COPJMP1(A2),d0		;Force copper to jump
-        MOVE.W	#$7FFF,DMACON(A2)		; Clear DMA channels
+        MOVE.W	#$7FFF,DMACON(A2)		;Clear DMA channels
 	MOVE.W #(DMAF_SETCLR!DMAF_COPPER!DMAF_RASTER!DMAF_MASTER),DMACON(A2)
                             ;Enable bit-plane and Copper DMA
 
@@ -81,7 +83,7 @@ start:
 mainloop:
          ;call crsrflash
 .e1:     ;bsr.s dispatcher
-         move.b mode,d0
+         move.b mode(a3),d0
          beq mainloop
 
          cmp.b #3,d0
@@ -95,22 +97,22 @@ mainloop:
          ;call totext.e1
 
          move.w #$7fff,DMACON(A2)
-	 move.w	olddmareq,DMACON(A2)
-	 move.l	oldcopper,COP1LCH(A2)
-	 move.l gfxbase,a6
+	 move.w	olddmareq(a3),DMACON(A2)
+	 move.l	oldcopper(a3),COP1LCH(A2)
+	 move.l gfxbase(a3),a6
  	 jsr WaitTOF(a6)
 	 move.l	4,a6
 	 jsr Permit(a6)
 	 ;jsr Enable(a6)
-         move.l gfxbase,a1
+         move.l gfxbase(a3),a1
 	 jsr	CloseLibrary(a6)
          moveq #0,d0
          rts
 
-.c3:     tst.w tilecnt
+.c3:     tst.w tilecnt(a3)
          bne .c4
 
-         clr.b mode
+         clr.b mode(a3)
          bsr incgen
          ;bsr.s tograph
          bra.s mainloop
@@ -118,20 +120,20 @@ mainloop:
 .c4:     cmp.b #2,d0
          bne .c5
 
-         bsr.s generate     ;hide
+         bsr generate     ;hide
          bsr cleanup
          bra.s .e1
 
 .c5:     ;bsr.s zerocc
-         bsr.s generate
-         ;bsr.s showscn
+         bsr generate
+         bsr.s showscn
          bsr cleanup
          bra.s mainloop
 
          ;include "io.s"
          ;include "ramdisk.s"
          ;include "video-base.s"
-         ;include "video.s"
+         include "video.s"
          ;include "utils.s"
          ;include "interface.s"
          ;include "rules.s"
@@ -237,7 +239,7 @@ crsrflash:
 	endif
 
 generate:
-         movea.l startp,a4  ;currp=a4	;;mov si,[startp]
+         movea.l startp(a3),a4 ;currp=a4;;mov si,[startp]
          move.w #$c0c0,d2		;;mov cx,0c0c0h
          move.w #$3030,d3		;;mov dx,3030h
          move.w #$c0c,d6		;;mov bp,0c0ch
@@ -251,7 +253,7 @@ generate:
          cmpa.w #1,a4			;;cmp si,1
          bne .c30
 
-         movea.l startp,a4		;;mov si,[startp]
+         movea.l startp(a3),a4		;;mov si,[startp]
 .c5:     tst.b (sum,a4)
          beq .lnext
 
@@ -263,8 +265,9 @@ generate:
          add.w d1,d1			;;shl bx,1
 
 	basereg SOD,a6
-	 lea (a3,d1),a6			;;mov cx,[bx+tab1213]
-         move.w (tab1213,a6),d2
+	 lea (a3,d1),a6
+        
+         move.w (tab1213,a6),d2		;;mov cx,[bx+tab1213]
 	 move.w (tab1011,a6),d3		;;mov dx,[bx+tab1011]
 	 add.w d2,(count7+2,a5)		;;add [di+count7+2],cx
 	 add.w d3,(count7,a5)		;;add [di+count7],dx
@@ -547,7 +550,7 @@ generate:
          add.w d2,(count2+2,a4)		;;add [si+count2],dx
 	 move.w (tab2223,a6),d0		;;mov ax,[bx+tab2223]
          add.w d0,(count3+2,a4)		;;add [si+count3+2],ax
-         move.w (tab2021,a6),d0		;;mov ax,[bx+tab2021]		;;add tab2021(r1),count3(r0) ;pdp-11
+         move.w (tab2021,a6),d0		;;mov ax,[bx+tab2021]		;;add tab2021(r1),count3(r0)
          add.w d0,(count3,a4)		;;add [si+count3],ax
 	endb a6
 
@@ -599,7 +602,7 @@ generate:
 					;;jmp .c5
 
 stage2:
-	 movea.l startp,a4		;;mov si,[startp]
+	 movea.l startp(a3),a4		;;mov si,[startp]
 
 .c1:
 	 clr.b (sum,a4)			;;mov byte [si+sum],0		;;clrb sum(r0)
@@ -617,7 +620,7 @@ stage2:
 					;;jmp .c1
 
 incgen: 
-	 move.l #gencnt+7,a1		;;mov bx,gencnt+7
+	 lea (gencnt+7,a3),a1		;;mov bx,gencnt+7
          move #4,CCR			;;stc
          incbcd rts2
          incbcd rts2
@@ -631,12 +634,12 @@ rts2:
 
 
 cleanup:
-	 addi.b #1,clncnt		;;inc [clncnt]
-	 cmpi.b #16,clncnt		;;test [clncnt],15
+	 addi.b #1,clncnt(a3)		;;inc [clncnt]
+	 cmpi.b #16,clncnt(a3)		;;test [clncnt],15
 	 bne rts2			;;jnz rts2
 
 cleanup0:
-	 movea.l startp,a1		;;mov bx,[startp]		;;mov @#startp,r0
+	 movea.l startp(a3),a1		;;mov bx,[startp]		;;mov @#startp,r0
 	 movea #0,a4  ;mark 1st		;;xor si,si			;;clr r2
 .c1:
 	 cmpi.b #$ff,(sum,a1)		;;test byte [bx+sum],0ffh	;;tstb sum(r0)
@@ -650,7 +653,7 @@ cleanup0:
 	 rts				;;retn
 
 .delel:
-	 subq.w #1,tilecnt		;;dec [tilecnt]
+	 subq.w #1,(tilecnt,a3)		;;dec [tilecnt]
 	 lea (count0,a1),a5		;;lea di,[count0+bx]		;;mov #count0,r1
 									;;add r0,r1
 	 moveq #0,d0			;;xor ax,ax
@@ -673,11 +676,12 @@ cleanup0:
 	rts				;;retn
 
 .del1st:
-	 movea.l startp,a1		;;mov [startp],bx		;;mov r1,@#startp
-	 tst.w tilecnt			;;or [tilecnt],0		;;tst @#tilecnt
+	 movea.l startp(a3),a1		;;mov [startp],bx		;;mov r1,@#startp
+	 tst.w tilecnt(a3)		;;or [tilecnt],0		;;tst @#tilecnt
 	 bne .c1			;;jnz .c1
 	 rts				;;retn
 
+	endb a3
 
 	section Data
 SOD:
@@ -686,9 +690,9 @@ gfxbase:	dc.l 0
 startp:         dc.l 1
 
 olddmareq:	dc.w 0
-oldintreq:	dc.w 0
-oldintena:	dc.w 0
-oldadkcon:	dc.w 0
+;oldintreq:	dc.w 0
+;oldintena:	dc.w 0
+;oldadkcon:	dc.w 0
 
 bittab:   dc.b 1,2,4,8,16,32,64,128
 
@@ -774,9 +778,9 @@ gencnt    dc.b 0,0,0,0,0,0,0
 ;xdir      dc.b 0      ;linear transformation, word aligned
 ;ydir      dc.b 0
 clncnt    dc.b 0
-;pseudoc   dc.b 0
+pseudoc   dc.b 0
 mode      dc.b 1      ;0-stop, 1-run, 2-hide, 3-exit
-;zoom      dc.b 0
+zoom      dc.b 0
 ;fn        dc.b 0,0,0,0,0,0,0,0,0,0,0,0
 ;density   dc.b 3
 ;czbg      dc.b 0
