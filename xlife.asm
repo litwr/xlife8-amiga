@@ -8,31 +8,31 @@
 	 include "amiga.mac"
          include "xlife.mac"
 
-; A5 = CUSTOM, A3 = DATA SECTION
+; A2 = CUSTOM, A3 = Data
 
-	section Code
+;	section Code
 start:  
-        lea Data(PC),a3
-        MOVE.L #CUSTOM,A5
-	move.w	DMACONR(A5),d0
+	move.l #SOD,A3
+        MOVE.L #CUSTOM,A2
+	move.w	DMACONR(A2),d0
 	or.w #$8000,d0
-	move.w d0,olddmareq(a3)
+	move.w d0,olddmareq
         move.l	4,a6
-	lea	gfxname(a3),a1
+	lea	gfxname,a1
 	jsr	OldOpenLibrary(a6)
-	move.l	d0,gfxbase(a3)
+	move.l	d0,gfxbase
 	move.l 	d0,a6
-	move.l 	38(a6),oldcopper(a3)
+	move.l 	38(a6),oldcopper
 
 	jsr WaitTOF(a6)
 	move.l	4,a6
 	jsr Forbid(a6)
 	;jsr Disable(a6)
         
-        MOVE.L #COPPERLIST,COP1LCH(A5)	;Write to Copper location register
-	MOVE.W COPJMP1(A5),d0		;Force copper to jump
-        MOVE.W	#$7FFF,DMACON(A5)		; Clear DMA channels
-	MOVE.W #(DMAF_SETCLR!DMAF_COPPER!DMAF_RASTER!DMAF_MASTER),DMACON(A5)
+        MOVE.L #COPPERLIST,COP1LCH(A2)	;Write to Copper location register
+	MOVE.W COPJMP1(A2),d0		;Force copper to jump
+        MOVE.W	#$7FFF,DMACON(A2)		; Clear DMA channels
+	MOVE.W #(DMAF_SETCLR!DMAF_COPPER!DMAF_RASTER!DMAF_MASTER),DMACON(A2)
                             ;Enable bit-plane and Copper DMA
 
 	if 0
@@ -74,17 +74,17 @@ start:
          mov es,ax
          call copyr
          call setcolors
-         ;;incb @#errst
+         ;incb @#errst
          call help
        endif
 
 mainloop:
          ;call crsrflash
-.e1:     bsr.s dispatcher
+.e1:     ;bsr.s dispatcher
          move.b mode,d0
          beq mainloop
 
-         cmp.b d0,3
+         cmp.b #3,d0
          bne .c3
 
          ;mov ah,3bh
@@ -94,44 +94,44 @@ mainloop:
          ;mov ax,3
          ;call totext.e1
 
-         move.w #$7fff,DMACON(A5)
-	 move.w	olddmareq,DMACON(A5)
-	 move.l	oldcopper,COP1LCH(A5)
-	 move.l 	gfxbase,a6
+         move.w #$7fff,DMACON(A2)
+	 move.w	olddmareq,DMACON(A2)
+	 move.l	oldcopper,COP1LCH(A2)
+	 move.l gfxbase,a6
  	 jsr WaitTOF(a6)
 	 move.l	4,a6
 	 jsr Permit(a6)
 	 ;jsr Enable(a6)
          move.l gfxbase,a1
 	 jsr	CloseLibrary(a6)
-         clr.l d0
+         moveq #0,d0
          rts
 
 .c3:     tst.w tilecnt
          bne .c4
 
          clr.b mode
-         bsr.s incgen
-         bsr.s tograph
+         bsr incgen
+         ;bsr.s tograph
          bra.s mainloop
 
-.c4:     cmp.b d0,2
+.c4:     cmp.b #2,d0
          bne .c5
 
          bsr.s generate     ;hide
-         bsr.s cleanup
-         bra.s mainloop.e1
+         bsr cleanup
+         bra.s .e1
 
-.c5:     bsr.s zerocc
+.c5:     ;bsr.s zerocc
          bsr.s generate
-         bsr.s showscn
-         bsr.s cleanup
+         ;bsr.s showscn
+         bsr cleanup
          bra.s mainloop
 
          ;include "io.s"
          ;include "ramdisk.s"
-         include "video-base.s"
-         include "video.s"
+         ;include "video-base.s"
+         ;include "video.s"
          ;include "utils.s"
          ;include "interface.s"
          ;include "rules.s"
@@ -237,577 +237,372 @@ crsrflash:
 	endif
 
 generate:
-	 ;;mov si,[startp]           ;currp=si
-         movea.w startp,a4           ;currp=a4
-         ;;mov cx,0c0c0h
-         move.w #$c0c0,d2
-         ;;mov dx,3030h
-         move.w #$3030,d3
-         ;;mov bp,0c0ch
-         move.w #$c0c,d6
-         ;;mov ax,303h
-         move.w #$303,d0
+         movea.l startp,a4  ;currp=a4	;;mov si,[startp]
+         move.w #$c0c0,d2		;;mov cx,0c0c0h
+         move.w #$3030,d3		;;mov dx,3030h
+         move.w #$c0c,d6		;;mov bp,0c0ch
+         move.w #$303,d0		;;mov ax,303h
 .c30:    setcount 0
          setcount 2
          setcount 4
          setcount 6
-         ;;mov si,[next+si]
-         move.w (next,a4),a4
-         ;;cmp si,1
-         cmpa.w #1,a4
+         move.l (next,a4),a4		;;mov si,[next+si]
+
+         cmpa.w #1,a4			;;cmp si,1
          bne .c30
 
-         move.w a4,startp
+         movea.l startp,a4		;;mov si,[startp]
 .c5:     tst.b (sum,a4)
          beq .lnext
 
-         ;;xor bx,bx
-         moveq #0,d1
-         ;;or bl,byte [si]            ;top row
-         move.b (a4),d1            ;top row
+         moveq #0,d1			;;xor bx,bx
+         move.b (a4),d1  ;top row	;;or bl,byte [si]
          beq .ldown
 
-         move.l d1,a1
-         ;;mov di,[si+up]    ;adjcell=di, this line replaces iniadjc call!
-	 move.w (up,a4),a5
+	 move.l (up,a4),a5		;;mov di,[si+up]
+         add.w d1,d1			;;shl bx,1
 
-         ;;shl bx,1
-         adda.w a1,a1
+	basereg SOD,a6
+	 lea (a3,d1),a6			;;mov cx,[bx+tab1213]
+         move.w (tab1213,a6),d2
+	 move.w (tab1011,a6),d3		;;mov dx,[bx+tab1011]
+	 add.w d2,(count7+2,a5)		;;add [di+count7+2],cx
+	 add.w d3,(count7,a5)		;;add [di+count7],dx
 
-         ;;mov cx,[bx+tab1213]
-         move.w (tab1213,a1),d2
-         ;;mov dx,[bx+tab1011]
-	 move.w (tab1011,a1),d3
-         ;;add [di+count7+2],cx
-	 add.w d2,(count7+2,a5)
-         ;;add [di+count7],dx
-	 add.w d3,(count7,a5)
+	 add.w d2,(count1+2,a4)		;;add [si+count1+2],cx
+	 add.w d3,(count1,a4)		;;add [si+count1],dx
 
-         ;;add [si+count1+2],cx
-	 add.w d2,(count1+2,a4)
-         ;;add [si+count1],dx
-	 add.w d3,(count1,a4)
-
-         ;;mov ax,[bx+tab2223]
-         ;;add [si+count0+2],ax
-	 add.w (tab2223,r1),(count0+2,a4)
-         ;;mov ax,[bx+tab2021]
-         ;;add [si+count0],ax
-	 add (tab2021,a1),(count0,a4)
-         bsr.s chkadd
+	 move.w (tab2223,a6),d0		;;mov ax,[bx+tab2223]
+	 add.w d0,(count0+2,a4)		;;add [si+count0+2],ax
+         move.w (tab2021,a6),d0		;;mov ax,[bx+tab2021]
+	 add.w d0,(count0,a4)		;;add [si+count0],ax
+	endb a6
+         bsr chkadd			;;call chkadd
 
 .ldown:
-         ;;xor bx,bx
-         moveq #0,d1
-         ;;or bl,[si+7]            ;bottom row
-         move.b (7+a4),d1
+         moveq #0,d1			;;xor bx,bx
+         move.b (7,a4),d1  ;bottom row	;;or bl,[si+7]
          beq .lleft
 
-;;         mov down(r0),r2          ;adjcell=r2
-         mov di,[si+down]
-	 move.w (down,a4),a5          ;adjcell=r2
+	 move.w (down,a4),a5  ;adjcell	;;mov di,[si+down]
 
-         shl bx,1
-;;         mov tab1213(r1),r3
-         mov cx,[bx+tab1213]
-;;         mov tab1011(r1),r4
-         mov dx,[bx+tab1011]
+	 add.w d1,d1			;;shl bx,1
 
-;;         add r3,count0+2(r2)
-         add [di+count0+2],cx
-;;         add r4,count0(r2)
-         add [di+count0],dx
+	basereg SOD,a6
+	 lea (a3,d1),a6
+	 move.w (tab1213,a6),d2		;;mov cx,[bx+tab1213]
+         move.w (tab1011,a6),d3		;;mov dx,[bx+tab1011]
 
-;;         add r3,count6+2(r0)
-         add [si+count6+2],cx
-;;         add r4,count6(r0)
-         add [si+count6],dx
+	 add.w d2,(count0+2,a5)		;;add [di+count0+2],cx
+         add.w d3,(count0,a5)		;;add [di+count0],dx
 
-;;         add tab2223(r1),count7+2(r0)
-         mov ax,[bx+tab2223]
-         add [si+count7+2],ax
-;;         add tab2021(r1),count7(r0)
-         mov ax,[bx+tab2021]
-         add [si+count7],ax
-         call chkadd
+         add d2,(count6+2,a4)		;;add [si+count6+2],cx
+         add d3,(count6,a4)		;;add [si+count6],dx
+
+	 move.w (tab2223,a6),d0		;;add [si+count7+2],ax
+         add.w d0,(count7+2,a4)		;;mov ax,[bx+tab2223]
+         move.w (tab2021,a6),d0		;;mov ax,[bx+tab2021]
+         add.w d0,(count7,a4)		;;add [si+count7],ax
+	endb a6
+         bsr chkadd
 
 .lleft:
-;;         mov left(r0),r2          ;adjcell=r2
-         mov di,[si+left]
+         move.l (left,a4),a5  ;adjcell	;;mov di,[si+left]
+	 move.w #1024,d3  ;item to add	;;mov dx,1024
+	 clr.w d2  ;change indicator	;;xor cx,cx
+         move.w (a4),d1  ;2 rows	;;mov bx,[si]
+					;;or bx,bx
+         bpl .c6
 
-;;         mov #1024,r4             ;item to add
-         mov dx,1024
-
-;;         clr r3     ;change indicator
-         xor cx,cx
-
-;;         mov @r0,r1               ;2 rows
-         mov bx,[si]
-         or bx,bx
-         jns .c6
-
-;;         mov r1,r3
-         mov cx,bx
-
-;;         add r4,count0+2(r2)
-         add [di+count0+2],dx
-
-;;         add r4,count1+2(r2)
-         add [di+count1+2],dx
-
-;;         add r4,count2+2(r2)
-         add [di+count2+2],dx
+	 move.w d1,d2			;;mov cx,bx
+         add.w d3,(count0+2,a5)		;;add [di+count0+2],dx
+         add.w d3,(count1+2,a5)		;;add [di+count1+2],dx
+         add.w d3,(count2+2,a5)		;;add [di+count2+2],dx
 
 .c6:
-;;         tstb r1
-         or bl,bl
-         jns .c7
+	 tst.b d1			;;or bl,bl
+	 bpl .c7
 
-;;         mov r1,r3
-         mov cx,bx
-
-;;         add r4,count0+2(r2)
-         add [di+count0+2],dx
-
-;;         add r4,count1+2(r2)
-         add [di+count1+2],dx
-
-;;         mov ul(r0),r5          ;adjcell2=r5
-         mov bp,[si+ul]
-
-;;         add r4,count7+2(r5)
-         add [ds:bp+count7+2],dx
-         call chkadd2
+	 move.w d2,d1			;;mov cx,bx
+         add.w d3,(count0+2,a5)		;;add [di+count0+2],dx
+         add.w d3,(count1+2,a5)		;;add [di+count1+2],dx
+         movea.l (ul,a4),a6  ;adjcell2	;;mov bp,[si+ul]
+         add.w d3,(count7+2,a6)		;;add [ds:bp+count7+2],dx
+         bsr chkadd2
 
 .c7:
-;;         mov 2(r0),r1               ;2 rows
-         mov bx,[si+2]
-         or bx,bx
-         jns .c8
+         move.w (2,a4),d1  ;2 rows	;;mov bx,[si+2]
+					;;or bx,bx
+	 bpl .c8
 
-;;         mov r1,r3
-         mov cx,bx
-
-;;         add r4,count2+2(r2)
-         add [di+count2+2],dx
-
-;;         add r4,count3+2(r2)
-         add [di+count3+2],dx
-
-;;         add r4,count4+2(r2)
-         add [di+count4+2],dx
+	 move.w d2,d1			;;mov cx,bx
+         add.w d3,(count2+2,a5)		;;add [di+count2+2],dx
+         add.w d3,(count3+2,a5)		;;add [di+count3+2],dx
+         add.w d3,(count4+2,a5)		;;add [di+count4+2],dx
 
 .c8:
-;;         tstb r1
-         or bl,bl
-         jns .c9
+	 tst.b d1			;;or bl,bl
+	 bpl .c9
 
-;;         mov r1,r3
-         mov cx,bx
-
-;;         add r4,count1+2(r2)
-         add [di+count1+2],dx
-
-;;         add r4,count2+2(r2)
-         add [di+count2+2],dx
-
-;;         add r4,count3+2(r2)
-         add [di+count3+2],dx
+	 move.w d2,d1			;;mov cx,bx
+         add.w d3,(count1+2,a5)		;;add [di+count1+2],dx
+         add.w d3,(count2+2,a5)		;;add [di+count2+2],dx
+         add.w d3,(count3+2,a5)		;;add [di+count3+2],dx
 
 .c9:
-;;         mov 4(r0),r1               ;2 rows
-         mov bx,[si+4]
-         or bx,bx
-         jns .c10
+         move.w (4,a4),d1  ;2 rowsx	;;mov bx,[si+4]
+					;;or bx,b
+         bpl .c10
 
-;;         mov r1,r3
-         mov cx,bx
-
-;;         add r4,count4+2(r2)
-         add [di+count4+2],dx
-
-;;         add r4,count5+2(r2)
-         add [di+count5+2],dx
-
-;;         add r4,count6+2(r2)
-         add [di+count6+2],dx
+	 move.w d2,d1			;;mov cx,bx
+         add.w d3,(count4+2,a5)		;;add [di+count4+2],dx
+         add.w d3,(count5+2,a5)		;;add [di+count5+2],dx
+         add.w d3,(count6+2,a5)		;;add [di+count6+2],dx
 
 .c10:
-;;         tstb r1
-         or bl,bl
-         jns .c11
+	 tst.b d1			;;or bl,bl
+	 bpl .c11			;;jns .c11
 
-;;         mov r1,r3
-         mov cx,bx
-
-;;         add r4,count3+2(r2)
-         add [di+count3+2],dx
-;;         add r4,count4+2(r2)
-         add [di+count4+2],dx
-;;         add r4,count5+2(r2)
-         add [di+count5+2],dx
+	 move.w d2,d1			;;mov cx,bx
+         add.w d3,(count3+2,a5)		;;add [di+count3+2],dx
+         add.w d3,(count4+2,a5)		;;add [di+count4+2],dx
+         add.w d3,(count5+2,a5)		;;add [di+count5+2],dx
 
 .c11:
-;;         mov 6(r0),r1               ;2 rows
-         mov bx,[si+6]
-         or bx,bx
-         jns .c12
+         move.w (6,a4),d1  ;2 rows	;;mov bx,[si+6]
+					;;or bx,bx
+	 bpl .c12
 
-;;         mov r1,r3
-         mov cx,bx
-;;         add r4,count6+2(r2)
-         add [di+count6+2],dx
-;;         add r4,count7+2(r2)
-         add [di+count7+2],dx
-;;         mov dl(r0),r5          ;adjcell2=r5
-         mov bp,[si+dle]
-;;         add r4,count0+2(r5)
-         add [ds:bp+count0+2],dx
-;;         call @#chkadd2
-         call chkadd2
+	 move.w d2,d1			;;mov cx,bx
+         add.w d3,(count6+2,a5)		;;add [di+count6+2],dx
+         add.w d3,(count7+2,a5)		;;add [di+count7+2],dx
+         movea.l (dl,a4),a6  ;adjcell2	;;mov bp,[si+dle]
+         add.w d3,(count0+2,a6)		;;add [ds:bp+count0+2],dx
+         bsr chkadd2
 .c12:
-;;         tstb r1
-         or bl,bl
-         jns .c14
+         move.b (6,a4),d1		;;or bl,bl
+	 bpl .c14
 
-;;         mov r1,r3
-         mov cx,bx
-;;         add r4,count5+2(r2)
-         add [di+count5+2],dx
-;;         add r4,count6+2(r2)
-         add [di+count6+2],dx
-;;         add r4,count7+2(r2)
-         add [di+count7+2],dx
-.c14:    call chkaddt
+	 move.w d2,d1			;;mov cx,bx
+         add.w d3,(count5+2,a5)		;;add [di+count5+2],dx
+         add.w d3,(count6+2,a5)		;;add [di+count6+2],dx
+         add.w d3,(count7+2,a5)		;;add [di+count7+2],dx
+.c14:    bsr chkaddt
 
-;;         mov right(r0),r2          ;adjcell=r2
-         mov di,[si+right]
-;;         mov #8,r4                ;item to add
-         mov dx,8
+         movea.l (right,a4),a5  ;adjcell;;mov di,[si+right]
+         moveq #8,d3  ;item to add	;;mov dx,8
+	 clr.w d2			;;xor cx,cx
+         move.w (a4),d1  ;2 rows	;;mov bx,[si]
+         lsr.w #1,d1			;;shr bx,1
+         bcc .c15
 
-;;         clr r3
-         xor cx,cx
+         addq #1,d2			;;inc cx
+         movea.l (ur,a4),a6  ;adjcell2	;;mov bp,[si+ur]
+         add.w d3,(count7,a6)		;;add [ds:bp+count7],dx
+         add.w d3,(count0,a5)		;;add [di+count0],dx
+         add.w d3,(count0+2,a5)		;;add [di+count1],dx
+         bsr chkadd2
 
-;;         mov @r0,r1               ;2 rows
-         mov bx,[si]
-
-;;         asr r1
-         shr bx,1
-         jnc .c15
-
-         inc cx
-;;         mov ur(r0),r5          ;adjcell2=r5
-         mov bp,[si+ur]
-
-;;         add r4,count7(r5)
-         add [ds:bp+count7],dx
-;;         add r4,count0(r2)
-         add [di+count0],dx
-;;         add r4,count1(r2)
-         add [di+count1],dx
-         call chkadd2
-
-;*lr1
 .c15:
-;;         tstb r1
-         or bl,bl
-         jns .c16
+	 tst.b d1			;;or bl,bl
+         bpl .c16
 
-;;         mov r1,r3
-         mov cx,bx
-;;         add r4,count0(r2)
-         add [di+count0],dx
-;;         add r4,count1(r2)
-         add [di+count1],dx
-;;         add r4,count2(r2)
-         add [di+count2],dx
+	 move.w d2,d1			;;mov cx,bx
+         add.w d3,(count0,a5)		;;add [di+count0],dx
+         add.w d3,(count1,a5)		;;add [di+count1],dx
+         add.w d3,(count2,a5)		;;add [di+count2],dx
 
-;*lr2
 .c16:
-;;         mov 2(r0),r1               ;2 rows
-         mov bx,[si+2]
+         move.w (2,a4),d1  ;2 rows	;;mov bx,[si+2]
+         lsr.w #1,d1			;;shr bx,1
+         bcc .c17
 
-;;         asr r1
-         shr bx,1
-         jnc .c17
+	 addq #1,d2			;;inc cx
+         add.w d3,(count1,a5)		;;add [di+count1],dx
+         add.w d3,(count2,a5)		;;add [di+count2],dx
+         add.w d3,(count3,a5)		;;add [di+count3],dx
 
-;;         adc r3
-         inc cx
-;;         add r4,count1(r2)
-         add [di+count1],dx
-;;         add r4,count2(r2)
-         add [di+count2],dx
-;;         add r4,count3(r2)
-         add [di+count3],dx
-
-;*lr3
 .c17:
-;;         tstb r1
-         or bl,bl
-         jns .c18
+	 tst.b d1			;;or bl,bl
+         bpl .c16
 
-;;         mov r1,r3
-         mov cx,bx
-;;         add r4,count2(r2)
-         add [di+count2],dx
-;;         add r4,count3(r2)
-         add [di+count3],dx
-;;         add r4,count4(r2)
-         add [di+count4],dx
+	 move.w d2,d1			;;mov cx,bx
+         add.w d3,(count2,a5)		;;add [di+count2],dx
+         add.w d3,(count3,a5)		;;add [di+count3],dx
+         add.w d3,(count4,a5)		;;add [di+count4],dx
 
-;*lr4
 .c18:
-;;         mov 4(r0),r1               ;2 rows
-         mov bx,[si+4]
+         move.w (4,a4),d1  ;2 rows	;;mov bx,[si+4]
+	 lsr.w #1,d1			;;shr bx,1
+	 bcc .c19			;;jnc .c19
 
-;;         asr r1
-         shr bx,1
-         jnc .c19
+	 addq #1,d2			;;inc cx
+         add.w d3,(count3,a5)		;;add [di+count3],dx
+         add.w d3,(count4,a5)		;;add [di+count4],dx
+         add.w d3,(count5,a5)		;;add [di+count5],dx
 
-;;         adc r3
-         inc cx
-;;         add r4,count3(r2)
-         add [di+count3],dx
-;;         add r4,count4(r2)
-         add [di+count4],dx
-;;         add r4,count5(r2)
-         add [di+count5],dx
-
-;*lr5
 .c19:
-;;         tstb r1
-         or bl,bl
-         jns .c20
+	 tst.b d1			;;or bl,bl
+         bpl .c20			;;jns .c20
 
-;;         mov r1,r3
-         mov cx,bx
-;;         add r4,count4(r2)
-         add [di+count4],dx
-;;         add r4,count5(r2)
-         add [di+count5],dx
-;;         add r4,count6(r2)
-         add [di+count6],dx
+	 move.w d2,d1			;;mov cx,bx
+         add.w d3,(count4,a5)		;;add [di+count4],dx
+         add.w d3,(count5,a5)		;;add [di+count5],dx
+         add.w d3,(count6,a5)		;;add [di+count6],dx
 
-;*lr6
 .c20:
-;;         mov 6(r0),r1               ;2 rows
-         mov bx,[si+6]
-;;         asr r1
-         shr bx,1
-         jnc .c21
+         move.w (6,a4),d1  ;2 rows	;;mov bx,[si+6]
+	 lsr.w #1,d1			;;shr bx,1
+	 bcc .c21			;;jnc .c21
+	 addq #1,d2			;;inc cx		;;adc r3
+         add.w d3,(count5,a5)		;;add [di+count5],dx
+         add.w d3,(count6,a5)		;;add [di+count6],dx
+         add.w d3,(count7,a5)		;;add [di+count7],dx
 
-;;         adc r3
-         inc cx
-;;         add r4,count5(r2)
-         add [di+count5],dx
-;;         add r4,count6(r2)
-         add [di+count6],dx
-;;         add r4,count7(r2)
-         add [di+count7],dx
-
-;*lr7
 .c21:
-;;         tstb r1
-         or bl,bl
-         jns .c22
+	 tst.b d1			;;or bl,bl
+         bpl .c22			;;jns .c22
 
-;;         mov r1,r3
-         mov cx,bx
-;;         add r4,count6(r2)
-         add [di+count6],dx
-;;         add r4,count7(r2)
-         add [di+count7],dx
-;;         mov dr(r0),r5          ;adjcell2=r5
-         mov bp,[si+dr]
-;;         add r4,count0(r5)
-         add [ds:bp+count0],dx
-         call chkadd2
+	 move.w d2,d1			;;mov cx,bx
+         add.w d3,(count6,a5)		;;add [di+count6],dx
+         add.w d3,(count7,a5)		;;add [di+count7],dx
+         movea.l (dr,a4),a6  ;adjcell2	;;mov bp,[si+dr]
+         add.w d3,(count0,a6)		;;add [ds:bp+count0],dx
+         bsr chkadd2
 
-.c22:    call chkaddt
-;;         movb 6(r0),r1
-         xor bx,bx
-         or bl,[si+6]
-         jz .c23
+.c22:    bsr chkaddt
+	 moveq #0,d1			;;xor bx,bx
+         move.b (6,a4),d1		;;or bl,[si+6]
+	 beq .c23			;;jz .c23
+	 add.w d1,d1			;;shl bx,1
 
-;;         asl r1
-         shl bx,1
-;;         mov tab1213(r1),r3
-         mov cx,[bx+tab1213]
-;;         mov tab1011(r1),r4
-         mov dx,[bx+tab1011]
-;;         add r3,count7+2(r0)
-         add [si+count7+2],cx
-;;         add r4,count7(r0)
-         add [si+count7],dx
-;;         add r3,count5+2(r0)
-         add [si+count5+2],cx
-;;         add r4,count5(r0)
-         add [si+count5],dx
-;;         add tab2223(r1),count6+2(r0)
-         mov ax,[bx+tab2223]
-         add [si+count6+2],ax
-;;         add tab2021(r1),count6(r0)
-         mov ax,[bx+tab2021]
-         add [si+count6],ax
+	basereg SOD,a6
+	 lea (a3,d1),a6
+	 move.w (tab1213,a6),d2		;;mov cx,[bx+tab1213]
+         move.w (tab1011,a6),d3		;;mov dx,[bx+tab1011]
+         add.w d2,(count7+2,a4)		;;add [si+count7+2],cx
+         add.w d3,(count7,a4)		;;add [si+count7],dx
+         add.w d2,(count5+2,a4)		;;add [si+count5+2],cx
+         add.w d3,(count5,a4)		;;add [si+count5],dx
+         move.w (tab2223,a6),d0		;;mov ax,[bx+tab2223]
+         add.w d0,(count6+2,a4)		;;add [si+count6+2],ax
+         move.w (tab2021,a6),d0		;;mov ax,[bx+tab2021]
+	endb a6
+         add.w d0,(count6,a4)		;;add [si+count6],ax		
 
-;*l2
 .c23:
-;;         movb 5(r0),r1
-         xor bx,bx
-         or bl,[si+5]
-         jz .c24
+	 moveq #0,d1			;;xor bx,bx
+         move.b (5,a4),d1		;;or bl,[si+5]
+	 beq .c24			;;jz .c24
 
-;;         asl r1
-         shl bx,1
-;;         mov tab1213(r1),r3
-         mov cx,[bx+tab1213]
-;;         mov tab1011(r1),r4
-         mov dx,[bx+tab1011]
-;;         add r3,count6+2(r0)
-         add [si+count6+2],cx
-;;         add r4,count6(r0)
-         add [si+count6],dx
-;;         add r3,count4+2(r0)
-         add [si+count4+2],cx
-;;         add r4,count4(r0)
-         add [si+count4],dx
-;;         add tab2223(r1),count5+2(r0)
-         mov ax,[bx+tab2223]
-         add [si+count5+2],ax
-;;         add tab2021(r1),count5(r0)
-         mov ax,[bx+tab2021]
-         add [si+count5],ax
+	 add d1,d1			;;shl bx,1
 
-;*l3
+	basereg SOD,a6
+	 lea (a3,d1),a6
+         move.w (tab1213,a6),d2		;;mov cx,[bx+tab1213]
+         move.w (tab1011,a6),d3		;;mov dx,[bx+tab1011]
+         add.w d2,(count6+2,a4)		;;add [si+count6+2],cx
+         add.w d3,(count6,a4)		;;add [si+count6],dx
+         add.w d2,(count4+2,a4)		;;add [si+count4+2],cx
+         add.w d3,(count4,a4)		;;add [si+count4],dx
+         move.w (tab2223,a6),d0		;;mov ax,[bx+tab2223]
+         add.w d0,(count5+2,a4)		;;add [si+count5+2],ax
+         move.w (tab2021,a6),d0		;;mov ax,[bx+tab2021]
+	endb a6
+         add.w d0,(count5,a4)		;;add [si+count5],ax
 .c24:
-;;         movb 4(r0),r1
-         xor bx,bx
-         or bl,[si+4]
-         jz .c25
+	 moveq #0,d1			;;xor bx,bx
+	 move.w (4,a4),d1		;;or bl,[si+4]
+	 beq .c25			;;jz .c25
 
-;;         asl r1
-         shl bx,1
-;;         mov tab1213(r1),r3
-         mov cx,[bx+tab1213]
-;;         mov tab1011(r1),r4
-         mov dx,[bx+tab1011]
-;;         add r3,count5+2(r0)
-         add [si+count5+2],cx
-;;         add r4,count5(r0)
-         add [si+count5],dx
-;;         add r3,count3+2(r0)
-         add [si+count3+2],cx
-;;         add r4,count3(r0)
-         add [si+count3],dx
-;;         add tab2223(r1),count4+2(r0)
-         mov ax,[bx+tab2223]
-         add [si+count4+2],ax
-;;         add tab2021(r1),count4(r0)
-         mov ax,[bx+tab2021]
-         add [si+count4],ax
+	 add.w d1,d1			;;shl bx,1
 
-;*l4
+	basereg SOD,a6
+	 lea (a3,d1),a6
+         move.w (tab1213,a6),d2		;;mov cx,[bx+tab1213]
+         move.w (tab1011,a6),d3		;;mov dx,[bx+tab1011]
+         add.w d2,(count5+2,a4)		;;add [si+count5+2],cx
+         add.w d3,(count5,a4)		;;add [si+count5],dx
+         add.w d2,(count3+2,a4)		;;add [si+count3+2],cx
+         add.w d3,(count3,a4)		;;add [si+count3],dx
+	 move.w (tab2223,a6),d0		;;mov ax,[bx+tab2223]
+         add.w d0,(count4+2,a4)		;;add [si+count4+2],ax
+         move.w (tab2021,a6),d0		;;mov ax,[bx+tab2021]
+         add.w d0,(count4,a4)		;;add [si+count4],ax
+	endb a6
 .c25:
-;;         movb 3(r0),r1
-         xor bx,bx
-         or bl,[si+3]
-         jz .c26
+	 moveq #0,d1			;;xor bx,bx
+	 move.b (3,a4),d1		;;or bl,[si+3]
+	 beq .c26			;;jz .c26
 
-;;         asl r1
-         shl bx,1
-;;         mov tab1213(r1),r3
-         mov cx,[bx+tab1213]
-;;         mov tab1011(r1),r4
-         mov dx,[bx+tab1011]
-;;         add r3,count4+2(r0)
-         add [si+count4+2],cx
-;;         add r4,count4(r0)
-         add [si+count4],dx
-;;         add r3,count2+2(r0)
-         add [si+count2+2],cx
-;;         add r4,count2(r0)
-         add [si+count2],dx
-;;         add tab2223(r1),count3+2(r0)
-         mov ax,[bx+tab2223]
-         add [si+count3+2],ax
-;;         add tab2021(r1),count3(r0)
-         mov ax,[bx+tab2021]
-         add [si+count3],ax
+	 add d1,d1			;;shl bx,1
 
-;*l5
+	basereg SOD,a6
+	 lea (a3,d1),a6
+         move.w (tab1213,a6),d2		;;mov cx,[bx+tab1213]
+         move.w (tab1011,a6),d3		;;mov dx,[bx+tab1011]
+         add.w d2,(count4+2,a4)		;;add [si+count4+2],cx
+         add.w d3,(count4,a4)		;;add [si+count4],dx
+         add.w d2,(count2+2,a4)		;;add [si+count2+2],cx
+         add.w d2,(count2+2,a4)		;;add [si+count2],dx
+	 move.w (tab2223,a6),d0		;;mov ax,[bx+tab2223]
+         add.w d0,(count3+2,a4)		;;add [si+count3+2],ax
+         move.w (tab2021,a6),d0		;;mov ax,[bx+tab2021]		;;add tab2021(r1),count3(r0) ;pdp-11
+         add.w d0,(count3,a4)		;;add [si+count3],ax
+	endb a6
+
 .c26:
-;;         movb 2(r0),r1
-         xor bx,bx
-         or bl,[si+2]
-         jz .c27
+	 moveq #0,d1			;;xor bx,bx
+	 move.b (2,a4),d1		;;or bl,[si+2]
+	 beq .c27			;;jz .c27
 
-;;         asl r1
-         shl bx,1
-;;         mov tab1213(r1),r3
-         mov cx,[bx+tab1213]
-;;         mov tab1011(r1),r4
-         mov dx,[bx+tab1011]
-;;         add r3,count3+2(r0)
-         add [si+count3+2],cx
-;;         add r4,count3(r0)
-         add [si+count3],dx
-;;         add r3,count1+2(r0)
-         add [si+count1+2],cx
-;;         add r4,count1(r0)
-         add [si+count1],dx
-;;         add tab2223(r1),count2+2(r0)
-         mov ax,[bx+tab2223]
-         add [si+count2+2],ax
-;;         add tab2021(r1),count2(r0)
-         mov ax,[bx+tab2021]
-         add [si+count2],ax
+	 add.w d1,d1			;;shl bx,1
 
-;*l6
+	basereg SOD,a6
+	 lea (a3,d1),a6
+         move.w (tab1213,a6),d2		;;mov cx,[bx+tab1213]
+         move.w (tab1011,a6),d3		;;mov dx,[bx+tab1011]
+         add.w d2,(count3+2,a4)		;;add [si+count3+2],cx
+         add.w d3,(count3,a4)		;;add [si+count3],dx
+         add.w d2,(count1+2,a4)		;;add [si+count1+2],cx
+         add.w d3,(count1,a4)		;;add [si+count1],dx
+	 move.w (tab2223,a6),d0		;;mov ax,[bx+tab2223]
+         add.w d0,(count2+2,a4)		;;add [si+count2+2],ax
+         move.w (tab2021,a6),d0		;;mov ax,[bx+tab2021]
+         add.w d0,(count2,a4)		;;add [si+count2],ax
+	endb a6
+
 .c27:
-;;         movb 1(r0),r1
-         xor bx,bx
-         or bl,[si+1]
-         jz .lnext
+         moveq #0,d1			;;xor bx,bx		;;movb 1(r0),r1
+	 move.b (1,a4),d1		;;or bl,[si+1]
+	 beq .lnext			;;jz .lnext
 
-;;         asl r1
-         shl bx,1
-;;         mov tab1213(r1),r3
-         mov cx,[bx+tab1213]
-;;         mov tab1011(r1),r4
-         mov dx,[bx+tab1011]
-;;         add r3,count2+2(r0)
-         add [si+count2+2],cx
-;;         add r4,count2(r0)
-         add [si+count2],dx
-;;         add r3,count0+2(r0)
-         add [si+count0+2],cx
-;;         add r4,count0(r0)
-         add [si+count0],dx
-;;         add tab2223(r1),count1+2(r0)
-         mov ax,[bx+tab2223]
-         add [si+count1+2],ax
-;;         add tab2021(r1),count1(r0)
-         mov ax,[bx+tab2021]
-         add [si+count1],ax
+	 add.w d1,d1			;;shl bx,1
 
+	basereg SOD,a6
+	 lea (a3,d1),a6
+         move.w (tab1213,a6),d2		;;mov cx,[bx+tab1213]
+         move.w (tab1011,a6),d3		;;mov dx,[bx+tab1011]
+         add.w d2,(count2+2,a4)		;;add [si+count2+2],cx
+         add.w d3,(count2,a4)		;;add [si+count2],dx
+         add.w d2,(count0+2,a4)		;;add [si+count0+2],cx
+         add.w d3,(count0,a4)		;;add [si+count0],dx
+	 move.w (tab2223,a6),d0		;;mov ax,[bx+tab2223]
+         add.w d0,(count1+2,a4)		;;add [si+count1+2],ax
+         move.w (tab2021,a6),d0		;;mov ax,[bx+tab2021]
+         add.w d0,(count1,a4)		;;add [si+count1],ax
+	endb a6
 .lnext:
-;;28$:
-;;         mov next(r0),r0
-         mov si,[si+next]
-
-;;         cmp #1,r0
-         cmp si,1
-         jz stage2
-         jmp .c5
+         move.l (next,a4),a4		;;mov si,[si+next]
+         cmpa.l #1,a4			;;cmp si,1
+	 bne .c5			;;jz stage2
+					;;jmp .c5
 
 stage2:
-;;         mov @#startp,r0
-         mov si,[startp]
+	 movea.l startp,a4		;;mov si,[startp]
 
-;*genloop2
 .c1:
-;;         clrb sum(r0)
-         mov byte [si+sum],0
+	 clr.b (sum,a4)			;;mov byte [si+sum],0		;;clrb sum(r0)
          genmac 0
          genmac 1
          genmac 2
@@ -816,100 +611,88 @@ stage2:
          genmac 5
          genmac 6
          genmac 7
-;;         mov next(r0),r0
-         mov si,[si+next]
-;;         cmp #1,r0
-         cmp si,1
-         jz incgen
-         jmp .c1
+	 movea.l (next,a4),a4		;;mov si,[si+next]
+	 cmpa #1,a4			;;cmp si,1
+	 bne .c1			;;jz incgen
+					;;jmp .c1
 
-incgen:   mov bx,gencnt+7
-          stc
-          incbcd rts2
-          incbcd rts2
-          incbcd rts2
-          incbcd rts2
-          incbcd rts2
-          incbcd rts2
-          incbcd rts2
-rts2:     retn
+incgen: 
+	 move.l #gencnt+7,a1		;;mov bx,gencnt+7
+         move #4,CCR			;;stc
+         incbcd rts2
+         incbcd rts2
+         incbcd rts2
+         incbcd rts2
+         incbcd rts2
+         incbcd rts2
+         incbcd rts2
+rts2:
+	 rts				;;retn
 
-cleanup:  inc [clncnt]
-          test [clncnt],15
-          jnz rts2
+
+cleanup:
+	 addi.b #1,clncnt		;;inc [clncnt]
+	 cmpi.b #16,clncnt		;;test [clncnt],15
+	 bne rts2			;;jnz rts2
 
 cleanup0:
-;;          mov @#startp,r0
-          mov bx,[startp]
-;;          clr r2        ;mark 1st
-          xor si,si
+	 movea.l startp,a1		;;mov bx,[startp]		;;mov @#startp,r0
+	 movea #0,a4  ;mark 1st		;;xor si,si			;;clr r2
 .c1:
-;;          tstb sum(r0)
-         test byte [bx+sum],0ffh
+	 cmpi.b #$ff,(sum,a1)		;;test byte [bx+sum],0ffh	;;tstb sum(r0)
+	 beq .delel			;;jz .delel			;;beq delel
 
-;*         beq delel
-         jz .delel
+		      ;save pointer to previous
+	 move.l a1,a4			;;mov si,bx			;;mov r0,r2
+	 movea.l (next,a1),a1		;;mov bx,[bx+next]		;;mov next(r0),r0
+	 cmpa.l #1,a1			;;cmp bx,1			;;cmp #1,r0
+	 bne .c1			;;jnz .c1
+	 rts				;;retn
 
-;;          mov r0,r2     ;save pointer to previous
-          mov si,bx
-;;          mov next(r0),r0
-          mov bx,[bx+next]
-;;          cmp #1,r0
-          cmp bx,1
-          jnz .c1
-
-          retn
-
-.delel:   dec [tilecnt]
-;;          mov #count0,r1
-          mov di,count0
-;;          add r0,r1
-          add di,bx
-          xor ax,ax
-          mov cx,16
+.delel:
+	 subq.w #1,tilecnt		;;dec [tilecnt]
+	 lea (count0,a1),a5		;;lea di,[count0+bx]		;;mov #count0,r1
+									;;add r0,r1
+	 moveq #0,d0			;;xor ax,ax
+	 moveq #7,d2			;;mov cx,16
 .c2c:
-          mov [di],ax
-          add di,2
-          loop .c2c
-;;          mov next(r0),r1
-;;          clr next(r0)
-;;          mov r1,r0
-          xchg ax,[bx+next]
-          mov bx,ax
-;;          tst r2
-          or si,si
-          jz .del1st
+	 move.l d0,(a5)+		;;mov [di],ax
+					;;add di,2
+	 dbra d2,.c2c			;;loop .c2c
+	 move.l (next,a1),d1		;;xchg ax,[bx+next]		;;mov next(r0),r1
+	 move.l d0,(next,a1)						;;clr next(r0)
+	 movea.l d1,a1			;;mov bx,ax			;;mov r1,r0
+	 cmpa.l #0,a4			;;or si,si			;;tst r2
+	 beq .del1st			;;jz .del1st
 
-;;         mov r1,next(r2)
-         mov [si+next],ax
-;;         dec r1
-         dec ax
-         jnz .c1
+	 move.l d1,(next,a4)		;;mov [si+next],ax		;;mov r1,next(r2)
+	 subq #1,d1			;;dec ax			;;dec r1
+	 bne .c1			;;jnz .c1
 
-.c4:     retn
+.c4:
+	rts				;;retn
 
 .del1st:
-;;         mov r1,@#startp
-         mov [startp],bx
-
-;;         tst @#tilecnt
-         or [tilecnt],0
-         jnz .c1
-         retn
+	 movea.l startp,a1		;;mov [startp],bx		;;mov r1,@#startp
+	 tst.w tilecnt			;;or [tilecnt],0		;;tst @#tilecnt
+	 bne .c1			;;jnz .c1
+	 rts				;;retn
 
 
 	section Data
+SOD:
 oldcopper:	dc.l 0
 gfxbase:	dc.l 0
+startp:         dc.l 1
 
 olddmareq:	dc.w 0
 oldintreq:	dc.w 0
 oldintena:	dc.w 0
 oldadkcon:	dc.w 0
 
-bittab    dc.b 1,2,4,8,16,32,64,128
+bittab:   dc.b 1,2,4,8,16,32,64,128
 
-ttab      dc.b 0,1,2,3,3,4,5,6,7,8,8,9,16,17,18,19,19,20
+ttab:     dc.b 0,1,2,3,3,4,5,6,7,8,8,9,16,17,18,19,19,20
           dc.b 21,22,23,24,24,25,32,33,34,35,35,36
           dc.b 37,38,39,40,40,41,48,49,50,51,51,52
           dc.b 53,54,55,56,56,57,64,65,66,67,67,68
@@ -924,22 +707,21 @@ ttab      dc.b 0,1,2,3,3,4,5,6,7,8,8,9,16,17,18,19,19,20
 ;          dc.b (zv/10)*16 + zv mod 10
 ;          end repeat
 
-digifont  dc.w 0a00ah,2828h,0a828h,282ah,2828h,2828h,0a00ah,0  ;8th columns are free
-          dc.w 8002h,8002h,800ah,8002h,8002h,8002h,0a82ah,0
-          dc.w 0a00ah,2828h,2800h,0a000h,0ah,28h,0a82ah,0
-          dc.w 0a00ah,2828h,2800h,0a000h,2800h,2828h,0a00ah,0
-          dc.w 2800h,0a000h,0a802h,280ah,0aa2ah,2800h,2800h,0
-          dc.w 0a82ah,28h,0a02ah,2800h,2800h,2828h,0a00ah,0    ;5
-          dc.w 0a00ah,2828h,28h,0a02ah,2828h,2828h,0a00ah,0
-          dc.w 0a82ah,2828h,0a000h,8002h,8002h,8002h,8002h,0
-          dc.w 0a00ah,2828h,2828h,0a00ah,2828h,2828h,0a00ah,0
-          dc.w 0a00ah,2828h,2828h,0a80ah,2800h,2828h,0a00ah,0
+digifont  dc.w $0a00a,$2828,$0a828,$282a,$2828,$2828,$0a00a,0  ;8th columns are free
+          dc.w $8002,$8002,$800a,$8002,$8002,$8002,$0a82a,0
+          dc.w $0a00a,$2828,$2800,$0a000,$0a,$28,$0a82a,0
+          dc.w $0a00a,$2828,$2800,$0a000,$2800,$2828,$0a00a,0
+          dc.w $2800,$0a000,$0a802,$280a,$0aa2a,$2800,$2800,0
+          dc.w $0a82a,$28,$0a02a,$2800,$2800,$2828,$0a00a,0    ;5
+          dc.w $0a00a,$2828,$28,$0a02a,$2828,$2828,$0a00a,0
+          dc.w $0a82a,$2828,$0a000,$8002,$8002,$8002,$8002,0
+          dc.w $0a00a,$2828,$2828,$0a00a,$2828,$2828,$0a00a,0
+          dc.w $0a00a,$2828,$2828,$0a80a,$2800,$2828,$0a00a,0
           dc.w 0,0,0,0,0,0,0                ;space
-;crsrtab   dc.w 0,2000h,80,2050h,160,20a0h,240,20f0h
-startp    dc.w 1
+;crsrtab   dc.w 0,$2000,80,$2050,160,$20a0,240,$20f0
 tilecnt   dc.w 0
-;viewport  dc.w tiles
-;crsrtile  dc.w tiles
+;viewport  dc.l tiles
+;crsrtile  dc.l tiles
 ;timercnt  dc.w 0, 0
 ;temp      dc.w 0
 ;temp2     dc.w 0
@@ -976,14 +758,11 @@ tab3      dc.b 0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4
           dc.b 3, 4, 4, 5, 4, 5, 5, 6, 4, 5, 5, 6, 5, 6, 6, 7
           dc.b 4, 5, 5, 6, 5, 6, 6, 7, 5, 6, 6, 7, 6, 7, 7, 8
 
-tiles:
-         include "initiles.s"
-
 ;crsrbyte  dc.b 0      ;y%8  word aligned
 ;crsrbit   dc.b 128    ;x bit position
 ;i1        dc.b 0,0
 ;cellcnt   dc.b 0,0,0,0,0
-;gencnt    dc.b 0,0,0,0,0,0,0
+gencnt    dc.b 0,0,0,0,0,0,0
 ;crsrx     dc.b 0      ;[x/8]*8, word aligned
 ;crsry     dc.b 0      ;[y/8]*8
 ;vptilecx  dc.b 0      ;must be word aligned
@@ -994,9 +773,9 @@ tiles:
 ;xchgdir   dc.b 0
 ;xdir      dc.b 0      ;linear transformation, word aligned
 ;ydir      dc.b 0
-;clncnt    dc.b 0
+clncnt    dc.b 0
 ;pseudoc   dc.b 0
-;mode      dc.b 0      ;0-stop, 1-run, 2-hide, 3-exit
+mode      dc.b 1      ;0-stop, 1-run, 2-hide, 3-exit
 ;zoom      dc.b 0
 ;fn        dc.b 0,0,0,0,0,0,0,0,0,0,0,0
 ;density   dc.b 3
@@ -1024,6 +803,11 @@ tiles:
 ;stringbuf rb 19     ;must be after nofnchar
 
 gfxname		DC.B	'graphics.library',0
+
+	 CNOP 0,4
+tiles:
+         include "initiles.s"
+
 	SECTION	Copper,DATA_C
 COPPERLIST:
 	DC.W BPL1PTH,2		;$21000 -> BPL1

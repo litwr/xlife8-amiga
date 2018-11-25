@@ -11,8 +11,7 @@ gcc -DAMIGA genvistab.c && ./a.out >vistab.s && \
 gcc -DAMIGA geninitiles.c && ./a.out >initiles.s #&& \
 gcc -DAMIGA gengentab.c && ./a.out >gentab.s && \
 gcc -DAMIGA gentab12.c && ./a.out >tab12.s && \
-compile xlife.asm -s xlife.fas && \
-#fasm-listing xlife.fas xlife.lst # &&\
+compile xlife.asm # && \
 #sudo mount -t msdos -o loop,fmask=111,dmask=000,rw $D $M && \
 #rm -f $M/xlife?.com $M/cr.txt $M/manpage.com && \
 #awk -bf xlife.man.awk xlife.man.txt >manpage.s && \

@@ -2,28 +2,28 @@ t9 equ '    '
 vermax   = 24     ;192
 hormax   = 31     ;248
 total    = hormax*vermax+1
-tilesize = 62
+tilesize = 82
 plainbox = hormax*vermax*tilesize+tiles
 
 left     = 8      ;all directions
-ul       = 10     ;not zero!
-up       = 12
-ur       = 14
-right    = 16
-dr       = 18
-down     = 20
-dle      = 22
-next     = 24
-count0   = 26
-count1   = 30
-count2   = 34
-count3   = 38
-count4   = 42
-count5   = 46
-count6   = 50
-count7   = 54
-video    = 58
-sum      = 60
+ul       = 12     ;not zero!
+up       = 16
+ur       = 20
+right    = 24
+dr       = 28
+down     = 32
+dl       = 36
+next     = 40
+count0   = 44
+count1   = 48
+count2   = 52
+count3   = 56
+count4   = 60
+count5   = 64
+count6   = 68
+count7   = 72
+video    = 76
+sum      = 80
 
 tile     macro
 l0       dc.b 0
@@ -34,31 +34,32 @@ l4       dc.b 0
 l5       dc.b 0
 l6       dc.b 0
 l7       dc.b 0
-left     dc.w 0	;+8
-ul       dc.w 0
-up       dc.w 0        ;+12
-ur       dc.w 0
-right    dc.w 0        ;+16
-dr       dc.w 0
-down     dc.w 0        ;+20
-dl       dc.w 0
-next     dc.w 0        ;+24
+left     dc.l 0	;+8
+ul       dc.l 0
+up       dc.l 0        ;+16
+ur       dc.l 0
+right    dc.l 0        ;+24
+dr       dc.l 0
+down     dc.l 0        ;+32
+dl       dc.l 0
+next     dc.l 0        ;+40
          blk.b 32       ;+26, count0
-video    dc.w 0        ;+58
-sum      dc.b 0        ;+60
+video    dc.l 0        ;+76
+sum      dc.b 0        ;+80
          dc.b 0        ;free
 endm
 
-boxsz_xmin = i1
-boxsz_ymin = i1+1
-boxsz_curx = x0          ;boxsz_sizex
-boxsz_cury = y0          ;boxsz_sizey
-xcut       = temp2
-ycut       = temp2+1
-x8poscp    = temp
-y8poscp    = temp+1
-y8byte     = saved
+;boxsz_xmin = i1
+;boxsz_ymin = i1+1
+;boxsz_curx = x0          ;boxsz_sizex
+;boxsz_cury = y0          ;boxsz_sizey
+;xcut       = temp2
+;ycut       = temp2+1
+;x8poscp    = temp
+;y8poscp    = temp+1
+;y8byte     = saved
 
+   if 0
 red equ 27,'[31m'
 green equ 27,'[32m'       ;purple in graph
 gpurple equ green
@@ -73,7 +74,9 @@ normal equ 27,'[0m'
 ansiclrscn equ 27,'[2J'
 home equ 27,'[H'
 clrtoeol equ '                                       ',0dh
+   endif
 
+	if 0
 macro vidmacp one,two {
           mov cx,[si+one]
           and cx,0001100011000000b
@@ -97,96 +100,113 @@ macro vidmacp one,two {
           xlatb
           mov [es:di+two+1],al
 }
+	endif
+genmac macro
+         ;;xor bx,bx
+         ;;mov bl,[si+count#one+3]
+	 moveq #0,d1
+	 move.b (count\1+3,a4),d1
+	basereg SOD,a3
+         ;;mov al,[bx+gentab]
+	 lea (gentab,a3),a2
+	endb a3
+	 move.b (a2,d1),d0
+	 ;;and ax,3
+         and.w d0,3
 
-macro genmac one {
-;;         movb count'one+3(r0),r5
-         xor bx,bx
-         mov bl,[si+count#one+3]
-;;         movb gentab(r5),r1
-         mov al,[bx+gentab]
-;;         bic #^B1111111111111100,r1
-         and ax,3
+         ;;mov bl,[si+count#one+2]
+         move.b (count\1+2,a4),d1
+         ;;mov bl,[bx+gentab]
+	 move.b (a2,d1),d0
+         ;;and bl,0ch
+	 andi.b #$c,d1
 
-;;         movb count'one+2(r0),r5
-         mov bl,[si+count#one+2]
-;;         movb gentab(r5),r5
-         mov bl,[bx+gentab]
-;;         bic #^B1111111111110011,r5
-         and bl,0ch
-;;         bis r5,r1
-         or al,bl
+         ;;or al,bl
+	 or.b d1,d0
 
-;;         movb count'one+1(r0),r5
-         mov bl,[si+count#one+1]
-;;         movb gentab(r5),r5
-         mov bl,[bx+gentab]
-;;         bic #^B1111111111001111,r5
-         and bl,30h
-;;         bis r5,r1
-         or al,bl
+         ;;mov bl,[si+count#one+1]
+         move.b (count\1+1,a4),d1
+         ;;mov bl,[bx+gentab]
+	 move.b (a2,d1),d0
+         ;;and bl,30h
+	 andi.b #$30,d1
+         ;;or al,bl
+	 or.b d1,d0
 
-;;         movb count'one(r0),r5
-         mov bl,[si+count#one]
-;;         movb gentab(r5),r5
-         mov bl,[bx+gentab]
-;;         bic #^B1111111100111111,r5
-         and bl,0c0h
-;;         bis r5,r1
-         or al,bl
+         move.b (count\1,a4),d1		;;mov bl,[si+count#one]
+         move.b (a2,d1),d0		;;mov bl,[bx+gentab]		;;movb gentab(r5),r5
+         andi.b #$c,d1			;;and bl,0c0h			;;bic #^B1111111100111111,r5
+	 or.b d1,d0			;;or al,bl			;;bis r5,r1
 
-;;         movb r1,one(r0)
-         mov [si+one],al
-;;         movb tab3(r1),r2
-         mov bx,tab3
-         xlatb
-         or al,al
-         jz @f
+         move.b (count\1,a4),d0		;;mov [si+one],al		;;movb r1,one(r0)
+         lea.l tab3,a1			;;mov bx,tab3
+         move.b (a1,d0),d0		;;xlatb				;;movb tab3(r1),r2
+         				;;or al,al
+         beq .\@			;;jz @f
 
-;;         movb r2,sum(r0)
-         mov [si+sum],al
-;;         cmpb #2,@#mode
-         cmp [mode],2
-         jz @f
+         move.b (sum,a4),d0		;;mov [si+sum],al		;;movb r2,sum(r0)
+         cmpi.b #2,mode			;;cmp [mode],2			;;cmpb #2,@#mode
+         beq .\@			;;jz @f
 
-         cellsum @f
-@@:
-}
-	if 0
-macro cellsum l1 {     ;in: al
-         mov bx,cellcnt+4
-         add al,[bx]
-         aaa
-         mov [bx],al
-         jnc l1
+;         cellsum .\@			;;cellsum @f
+.\@:					;;@@:
+endm
 
-         incbcd l1
-         incbcd l1
-         incbcd l1
-         incbcd l1
+;;macro cellsum l1 {  ;in: al
+cellsum macro  ;in: d0
+         ;;mov bx,cellcnt+4
+         move #4,CCR
+	 lea.l cellcnt+4,a1
+         ;;add al,[bx]
+         ;;aaa
+	 move.b (a1),d1
+	 abcd d0,d1
+         ;;mov [bx],al
+	 move.b d1,(a1)+
+	 moveq #0,d0
+         ;jnc l1
+	 bcc \1
+
+         ;;incbcd l1
+         incbcd \1
+         ;;incbcd l1
+         incbcd \1
+         ;;incbcd l1
+         incbcd \1
+         ;;incbcd l1
+         incbcd \1
 ;;l1:
-}
+\1:
+endm
 
-macro incbcd l1 {
-         dec bx
-         mov al,[bx]
-         adc al,0
-         aaa
-         mov [bx],al
-         jnc l1
-}
+;;macro incbcd l1 {
+incbcd macro
+         ;;dec bx
+	 suba.l #1,a1
+         ;;mov al,[bx]
+	 move.b (a1),d1
+         ;;adc al,0
+         ;;aaa
+	 abcd d0,d1
+         ;;mov [bx],al
+	 move.b d1,(a1)+
+         ;;jnc l1
+	 bcc \1
+endm
 
-macro inibcd one,two {
-        mov bx,two
-@@:     mov byte [bx+one],bh
+	if 0
+;;macro inibcd one,two {
+inibcd macro
+         ;;mov bx,two
+	 move.
+;;@@:     mov byte [bx+one],bh
         dec bx
         jns @b
-}
+endm
 	endif
-
 setcount macro
 ;;         mov bx,[si+one]
-         move.w (\1,d4),d1
-
+         move.w (\1,a4),d1
 ;;         mov di,bx
 	 move.w d1,d5
 ;;         and bx,cx
@@ -194,29 +214,29 @@ setcount macro
 ;;         mov [si+count#one],bl
 	 move.b d1,(count\1,a4)
 ;;         mov [si+count#one+4],bh
-         lsl.w d1,8
+         lsl.w #8,d1
          move.b d1,(count\1+4,a4)
 ;;         mov bx,di
 	 move.w d5,d1
 ;;         and bx,dx
 	 and.w d3,d1
 ;;         shr bx,1
-         lsr.w d1,1
+         lsr.w #1,d1
 ;;         mov [si+count#one+1],bl
 	 move.b d1,(count\1+1,a4)
 ;;         mov [si+count#one+5],bh
-         lsl.w d1,8
+         lsl.w #8,d1
          move.b d1,(count\1+5,a4)
 ;;         mov bx,di
 	 move.w d5,d1
 ;;         and bx,bp
 	 and.w d6,d1
 ;;         shl bx,1
-         lsr.w d1,1
+         lsl.w #1,d1
 ;;         mov [si+count#one+2],bl
 	 move.b d1,(count\1+2,a4)
 ;;         mov [si+count#one+6],bh
-         lsl.w d1,8
+         lsl.w #8,d1
          move.b d1,(count\1+6,a4)
 ;;         mov bx,di
 	 move.w d5,d1
@@ -225,7 +245,7 @@ setcount macro
 ;;         mov [si+count#one+3],bl
 	 move.b d1,(count\1+2,a4)
 ;;         mov [si+count#one+7],bh
-         lsl.w d1,8
+         lsl.w #8,d1
          move.b d1,(count\1+7,a4)
 endm
 
