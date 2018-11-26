@@ -215,7 +215,7 @@ setcount macro
 ;;         mov [si+count#one],bl
 	 move.b d1,(count\1,a4)
 ;;         mov [si+count#one+4],bh
-         lsl.w #8,d1
+         lsr.w #8,d1
          move.b d1,(count\1+4,a4)
 ;;         mov bx,di
 	 move.w d5,d1
@@ -226,7 +226,7 @@ setcount macro
 ;;         mov [si+count#one+1],bl
 	 move.b d1,(count\1+1,a4)
 ;;         mov [si+count#one+5],bh
-         lsl.w #8,d1
+         lsr.w #8,d1
          move.b d1,(count\1+5,a4)
 ;;         mov bx,di
 	 move.w d5,d1
@@ -237,7 +237,7 @@ setcount macro
 ;;         mov [si+count#one+2],bl
 	 move.b d1,(count\1+2,a4)
 ;;         mov [si+count#one+6],bh
-         lsl.w #8,d1
+         lsr.w #8,d1
          move.b d1,(count\1+6,a4)
 ;;         mov bx,di
 	 move.w d5,d1
@@ -246,7 +246,7 @@ setcount macro
 ;;         mov [si+count#one+3],bl
 	 move.b d1,(count\1+2,a4)
 ;;         mov [si+count#one+7],bh
-         lsl.w #8,d1
+         lsr.w #8,d1
          move.b d1,(count\1+7,a4)
 endm
 

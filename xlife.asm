@@ -79,10 +79,9 @@ start:
        endif
 
      bsr clrscn
-     move.l #$00003870,tiles(a3)
-     move.l #$00001c00,tiles+4(a3)
-     move.b #$AA,startpl1+2
-     move.b #$AA,startpl1+$100
+     move.l #$00003800,tiles(a3)
+     ;move.l #$00001c00,tiles+4(a3)
+     move.b #3,(tiles+sum,a3)
      move.l #1,(tiles+next,a3)
      bsr showscn
 
@@ -258,15 +257,16 @@ generate:
          move.l (next,a4),a4		;;mov si,[next+si]
 
          cmpa.w #1,a4			;;cmp si,1
-         bne .c30
+         bne .c30			;;jnz .c30
 
          movea.l startp(a3),a4		;;mov si,[startp]
-.c5:     tst.b (sum,a4)
-         beq .lnext
+.c5:     tst.b (sum,a4)			;;cmp byte [si+sum],0
+         beq .lnext			;;jz .$
+					;;jmp .lnext
 
          moveq #0,d1			;;xor bx,bx
          move.b (a4),d1  ;top row	;;or bl,byte [si]
-         beq .ldown
+         beq .ldown			;;jz .ldown
 
 	 move.l (up,a4),a5		;;mov di,[si+up]
          add.w d1,d1			;;shl bx,1
@@ -785,7 +785,7 @@ gencnt    dc.b 0,0,0,0,0,0,0
 ;ydir      dc.b 0
 clncnt    dc.b 0
 pseudoc   dc.b 0
-mode      dc.b 0      ;0-stop, 1-run, 2-hide, 3-exit
+mode      dc.b 1      ;0-stop, 1-run, 2-hide, 3-exit
 zoom      dc.b 0
 ;fn        dc.b 0,0,0,0,0,0,0,0,0,0,0,0
 ;density   dc.b 3
