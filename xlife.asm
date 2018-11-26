@@ -14,7 +14,7 @@
 start:  
 	basereg SOD,a3
 
-	move.l #SOD,A3
+	lea SOD,A3
         MOVE.L #CUSTOM,A2
 	move.w	DMACONR(A2),d0
 	or.w #$8000,d0
@@ -36,7 +36,6 @@ start:
         MOVE.W	#$7FFF,DMACON(A2)		;Clear DMA channels
 	MOVE.W #(DMAF_SETCLR!DMAF_COPPER!DMAF_RASTER!DMAF_MASTER),DMACON(A2)
                             ;Enable bit-plane and Copper DMA
-
 	if 0
 	 mov [iobseg],ds
          add [iobseg],1000h  ;64k/16
@@ -79,6 +78,9 @@ start:
          ;incb @#errst
          call help
        endif
+
+     move.l #$00003800,tiles(a3)
+     bsr showscn
 
 mainloop:
          ;call crsrflash
@@ -139,8 +141,6 @@ mainloop:
          ;include "rules.s"
          include "tile.s"
          ;include "ramdata.s"
-
-;TIMERV          EQU     4096       ;1193180Hz/TIMERV=FREQ OF INTR8, approx 291.304 Hz
 
 	if 0
 start_timer:    cli                 ;SAVE/SET INTR8 VECTOR
@@ -779,7 +779,7 @@ gencnt    dc.b 0,0,0,0,0,0,0
 ;ydir      dc.b 0
 clncnt    dc.b 0
 pseudoc   dc.b 0
-mode      dc.b 1      ;0-stop, 1-run, 2-hide, 3-exit
+mode      dc.b 0      ;0-stop, 1-run, 2-hide, 3-exit
 zoom      dc.b 0
 ;fn        dc.b 0,0,0,0,0,0,0,0,0,0,0,0
 ;density   dc.b 3
@@ -814,16 +814,16 @@ tiles:
 
 	SECTION	Copper,DATA_C
 COPPERLIST:
-	DC.W BPL1PTH,2		;$21000 -> BPL1
-	DC.W BPL1PTL,$1000
-        DC.W BPL2PTH,2		;$23800 -> BPL2
-	DC.W BPL2PTL,$3800
+	DC.W BPL1PTH,2		;$20000
+	DC.W BPL1PTL,$0000
+        DC.W BPL2PTH,2		;$21f00, 1f00 = 31*256
+	DC.W BPL2PTL,$1f00
 
 	DC.W	BPLCON0,$2200	; Bit-Plane control reg.
 	DC.W	BPLCON1,$0000	; Hor-Scroll
 	DC.W	BPLCON2,$0010	; Sprite/Gfx priority
 	;DC.W	BPL1MOD,$0000	; Modulo (odd)  ;256,320
-        DC.W	BPL1MOD,$0001	; Modulo (odd)  ;248
+        DC.W	BPL1MOD,$0000	; Modulo (odd)  ;248
 	DC.W	BPL2MOD,$0000	; Modulo (even)
 	;DC.W	DIWSTRT,$2C81	; Screen Size Start, 320
         ;DC.W	DIWSTRT,$2C81	; Screen Size Start, 256

@@ -4,6 +4,7 @@ hormax   = 31     ;248
 total    = hormax*vermax+1
 tilesize = 82
 plainbox = hormax*vermax*tilesize+tiles
+nextline = 31
 
 left     = 8      ;all directions
 ul       = 12     ;not zero!
