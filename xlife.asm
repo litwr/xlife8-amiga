@@ -11,10 +11,9 @@
 ; A2 = CUSTOM, A3 = Data
 
 ;	section Code
-start:  
-	basereg SOD,a3
-
+start:
 	lea SOD,A3
+	basereg SOD,a3
         MOVE.L #CUSTOM,A2
 	move.w	DMACONR(A2),d0
 	or.w #$8000,d0
@@ -79,10 +78,18 @@ start:
          call help
        endif
 
-     move.l #$00003800,tiles(a3)
+     bsr clrscn
+     move.l #$00003870,tiles(a3)
+     move.l #$00001c00,tiles+4(a3)
+     move.b #$AA,startpl1+2
+     move.b #$AA,startpl1+$100
+     move.l #1,(tiles+next,a3)
      bsr showscn
 
 mainloop:
+     btst.b #6,CIAAPRA ;if mouse button pressed then exit
+     beq .exit
+
          ;call crsrflash
 .e1:     ;bsr.s dispatcher
          move.b mode(a3),d0
@@ -97,7 +104,7 @@ mainloop:
 
          ;mov ax,3
          ;call totext.e1
-
+.exit
          move.w #$7fff,DMACON(A2)
 	 move.w	olddmareq(a3),DMACON(A2)
 	 move.l	oldcopper(a3),COP1LCH(A2)
@@ -687,7 +694,7 @@ cleanup0:
 SOD:
 oldcopper:	dc.l 0
 gfxbase:	dc.l 0
-startp:         dc.l 1
+startp:         dc.l tiles
 
 olddmareq:	dc.w 0
 ;oldintreq:	dc.w 0
@@ -723,7 +730,7 @@ digifont  dc.w $0a00a,$2828,$0a828,$282a,$2828,$2828,$0a00a,0  ;8th columns are 
           dc.w $0a00a,$2828,$2828,$0a80a,$2800,$2828,$0a00a,0
           dc.w 0,0,0,0,0,0,0                ;space
 ;crsrtab   dc.w 0,$2000,80,$2050,160,$20a0,240,$20f0
-tilecnt   dc.w 0
+tilecnt   dc.w 1
 ;viewport  dc.l tiles
 ;crsrtile  dc.l tiles
 ;timercnt  dc.w 0, 0
@@ -743,7 +750,6 @@ tilecnt   dc.w 0
          include "tab12.s"
 gentab:
          include "gentab.s"
-         include "vistab.s"
 
 tab3      dc.b 0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4
           dc.b 1, 2, 2, 3, 2, 3, 3, 4, 2, 3, 3, 4, 3, 4, 4, 5
@@ -814,10 +820,10 @@ tiles:
 
 	SECTION	Copper,DATA_C
 COPPERLIST:
-	DC.W BPL1PTH,2		;$20000
-	DC.W BPL1PTL,$0000
-        DC.W BPL2PTH,2		;$21f00, 1f00 = 31*256
-	DC.W BPL2PTL,$1f00
+	DC.W BPL1PTH,startpl1>>16
+	DC.W BPL1PTL,startpl1&$ffff
+        DC.W BPL2PTH,startpl2>>16
+	DC.W BPL2PTL,startpl1&$ffff
 
 	DC.W	BPLCON0,$2200	; Bit-Plane control reg.
 	DC.W	BPLCON1,$0000	; Hor-Scroll

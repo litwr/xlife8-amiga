@@ -7,7 +7,6 @@
 #fasm-listing manpage.fas manpage.lst && \
 #cat manpage.com manpage.txt >m.com && \
 #mv m.com manpage.com
-gcc -DAMIGA genvistab.c && ./a.out >vistab.s && \
 gcc -DAMIGA geninitiles.c && ./a.out >initiles.s #&& \
 gcc -DAMIGA gengentab.c && ./a.out >gentab.s && \
 gcc -DAMIGA gentab12.c && ./a.out >tab12.s && \
