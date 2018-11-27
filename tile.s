@@ -37,7 +37,7 @@ clear:    ;call zerocc
 
 chkaddt:
 	 ;;or cx,cx
-         tst.w d3
+         tst.w d2
          ;;jz exit2
          beq exit2
 

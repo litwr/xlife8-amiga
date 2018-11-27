@@ -314,7 +314,7 @@ generate:
          move.w (tab2021,a6),d0		;;mov ax,[bx+tab2021]
          add.w d0,(count7,a4)		;;add [si+count7],ax
 	endb a6
-         bsr chkadd
+         bsr chkadd			;;call chkadd
 
 .lleft:
          move.l (left,a4),a5  ;adjcell	;;mov di,[si+left]
@@ -322,7 +322,7 @@ generate:
 	 clr.w d2  ;change indicator	;;xor cx,cx
          move.w (a4),d1  ;2 rows	;;mov bx,[si]
 					;;or bx,bx
-         bpl .c6
+         bpl .c6			;;jns .c6
 
 	 move.w d1,d2			;;mov cx,bx
          add.w d3,(count0+2,a5)		;;add [di+count0+2],dx
@@ -331,19 +331,19 @@ generate:
 
 .c6:
 	 tst.b d1			;;or bl,bl
-	 bpl .c7
+	 bpl .c7			;;jns .c7
 
 	 move.w d2,d1			;;mov cx,bx
          add.w d3,(count0+2,a5)		;;add [di+count0+2],dx
          add.w d3,(count1+2,a5)		;;add [di+count1+2],dx
          movea.l (ul,a4),a6  ;adjcell2	;;mov bp,[si+ul]
          add.w d3,(count7+2,a6)		;;add [ds:bp+count7+2],dx
-         bsr chkadd2
+         bsr chkadd2			;;call chkadd2
 
 .c7:
          move.w (2,a4),d1  ;2 rows	;;mov bx,[si+2]
 					;;or bx,bx
-	 bpl .c8
+	 bpl .c8			;;jns .c8
 
 	 move.w d2,d1			;;mov cx,bx
          add.w d3,(count2+2,a5)		;;add [di+count2+2],dx
