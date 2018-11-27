@@ -12,8 +12,8 @@
 
 ;	section Code
 start:
+      basereg SOD,a3
 	lea SOD,A3
-	basereg SOD,a3
         MOVE.L #CUSTOM,A2
 	move.w	DMACONR(A2),d0
 	or.w #$8000,d0
@@ -482,9 +482,8 @@ generate:
          move.b (5,a4),d1		;;or bl,[si+5]
 	 beq .c24			;;jz .c24
 
-	 add d1,d1			;;shl bx,1
-
 	basereg SOD,a6
+	 add d1,d1			;;shl bx,1
 	 lea (a3,d1),a6
          move.w (tab1213,a6),d2		;;mov cx,[bx+tab1213]
          move.w (tab1011,a6),d3		;;mov dx,[bx+tab1011]
@@ -521,9 +520,8 @@ generate:
 	 move.b (3,a4),d1		;;or bl,[si+3]
 	 beq .c26			;;jz .c26
 
-	 add d1,d1			;;shl bx,1
-
 	basereg SOD,a6
+	 add d1,d1			;;shl bx,1
 	 lea (a3,d1),a6
          move.w (tab1213,a6),d2		;;mov cx,[bx+tab1213]
          move.w (tab1011,a6),d3		;;mov dx,[bx+tab1011]
@@ -541,9 +539,8 @@ generate:
 	 move.b (2,a4),d1		;;or bl,[si+2]
 	 beq .c27			;;jz .c27
 
-	 add.w d1,d1			;;shl bx,1
-
 	basereg SOD,a6
+	 add.w d1,d1			;;shl bx,1
 	 lea (a3,d1),a6
          move.w (tab1213,a6),d2		;;mov cx,[bx+tab1213]
          move.w (tab1011,a6),d3		;;mov dx,[bx+tab1011]
@@ -561,9 +558,8 @@ generate:
 	 move.b (1,a4),d1		;;or bl,[si+1]
 	 beq .lnext			;;jz .lnext
 
-	 add.w d1,d1			;;shl bx,1
-
 	basereg SOD,a6
+	 add.w d1,d1			;;shl bx,1
 	 lea (a3,d1),a6
          move.w (tab1213,a6),d2		;;mov cx,[bx+tab1213]
          move.w (tab1011,a6),d3		;;mov dx,[bx+tab1011]
@@ -584,6 +580,8 @@ generate:
 
 stage2:  movea.l startp(a3),a4		;;mov si,[startp]
 .c1:	 clr.b (sum,a4)			;;mov byte [si+sum],0		;;clrb sum(r0)
+	 lea.l gentab(a3),a2
+	 lea.l tab3(a3),a0
          genmac 0
          genmac 1
          genmac 2
@@ -597,7 +595,7 @@ stage2:  movea.l startp(a3),a4		;;mov si,[startp]
 	 bne .c1			;;jz incgen
 					;;jmp .c1
 incgen:  lea (gencnt+7,a3),a1		;;mov bx,gencnt+7
-         move #8,CCR			;;stc
+         move #16,CCR			;;stc
          incbcd rts2
          incbcd rts2
          incbcd rts2
@@ -613,6 +611,7 @@ cleanup: addi.b #1,clncnt(a3)		;;inc [clncnt]
 	 bne rts2			;;jnz rts2
 
 cleanup0:
+         move.b #0,clncnt(a3)   ;;!!
 	 movea.l startp(a3),a1		;;mov bx,[startp]		;;mov @#startp,r0
 	 movea #0,a4  ;mark 1st		;;xor si,si			;;clr r2
 .c1:	 cmpi.b #$ff,(sum,a1)		;;test byte [bx+sum],0ffh	;;tstb sum(r0)
