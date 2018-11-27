@@ -289,8 +289,7 @@ generate:
 	endb a6
          bsr chkadd			;;call chkadd
 
-.ldown:
-         moveq #0,d1			;;xor bx,bx
+.ldown:  moveq #0,d1			;;xor bx,bx
          move.b (7,a4),d1  ;bottom row	;;or bl,[si+7]
          beq .lleft
 
@@ -316,8 +315,7 @@ generate:
 	endb a6
          bsr chkadd			;;call chkadd
 
-.lleft:
-         move.l (left,a4),a5  ;adjcell	;;mov di,[si+left]
+.lleft:  move.l (left,a4),a5  ;adjcell	;;mov di,[si+left]
 	 move.w #1024,d3  ;item to add	;;mov dx,1024
 	 clr.w d2  ;change indicator	;;xor cx,cx
          move.w (a4),d1  ;2 rows	;;mov bx,[si]
@@ -329,8 +327,7 @@ generate:
          add.w d3,(count1+2,a5)		;;add [di+count1+2],dx
          add.w d3,(count2+2,a5)		;;add [di+count2+2],dx
 
-.c6:
-	 tst.b d1			;;or bl,bl
+.c6:	 tst.b d1			;;or bl,bl
 	 bpl .c7			;;jns .c7
 
 	 move.w d2,d1			;;mov cx,bx
@@ -340,8 +337,7 @@ generate:
          add.w d3,(count7+2,a6)		;;add [ds:bp+count7+2],dx
          bsr chkadd2			;;call chkadd2
 
-.c7:
-         move.w (2,a4),d1  ;2 rows	;;mov bx,[si+2]
+.c7:     move.w (2,a4),d1  ;2 rows	;;mov bx,[si+2]
 					;;or bx,bx
 	 bpl .c8			;;jns .c8
 
@@ -350,8 +346,7 @@ generate:
          add.w d3,(count3+2,a5)		;;add [di+count3+2],dx
          add.w d3,(count4+2,a5)		;;add [di+count4+2],dx
 
-.c8:
-	 tst.b d1			;;or bl,bl
+.c8:     tst.b d1			;;or bl,bl
 	 bpl .c9
 
 	 move.w d2,d1			;;mov cx,bx
@@ -359,8 +354,7 @@ generate:
          add.w d3,(count2+2,a5)		;;add [di+count2+2],dx
          add.w d3,(count3+2,a5)		;;add [di+count3+2],dx
 
-.c9:
-         move.w (4,a4),d1  ;2 rowsx	;;mov bx,[si+4]
+.c9:     move.w (4,a4),d1  ;2 rowsx	;;mov bx,[si+4]
 					;;or bx,b
          bpl .c10
 
@@ -369,8 +363,7 @@ generate:
          add.w d3,(count5+2,a5)		;;add [di+count5+2],dx
          add.w d3,(count6+2,a5)		;;add [di+count6+2],dx
 
-.c10:
-	 tst.b d1			;;or bl,bl
+.c10:    tst.b d1			;;or bl,bl
 	 bpl .c11			;;jns .c11
 
 	 move.w d2,d1			;;mov cx,bx
@@ -378,8 +371,7 @@ generate:
          add.w d3,(count4+2,a5)		;;add [di+count4+2],dx
          add.w d3,(count5+2,a5)		;;add [di+count5+2],dx
 
-.c11:
-         move.w (6,a4),d1  ;2 rows	;;mov bx,[si+6]
+.c11:    move.w (6,a4),d1  ;2 rows	;;mov bx,[si+6]
 					;;or bx,bx
 	 bpl .c12
 
@@ -389,8 +381,7 @@ generate:
          movea.l (dl,a4),a6  ;adjcell2	;;mov bp,[si+dle]
          add.w d3,(count0+2,a6)		;;add [ds:bp+count0+2],dx
          bsr chkadd2
-.c12:
-         move.b (6,a4),d1		;;or bl,bl
+.c12:    move.b (6,a4),d1		;;or bl,bl
 	 bpl .c14
 
 	 move.w d2,d1			;;mov cx,bx
@@ -404,26 +395,23 @@ generate:
 	 clr.w d2			;;xor cx,cx
          move.w (a4),d1  ;2 rows	;;mov bx,[si]
          lsr.w #1,d1			;;shr bx,1
-         bcc .c15
+         bcc .c15			;jnc .c15
 
          addq #1,d2			;;inc cx
          movea.l (ur,a4),a6  ;adjcell2	;;mov bp,[si+ur]
          add.w d3,(count7,a6)		;;add [ds:bp+count7],dx
          add.w d3,(count0,a5)		;;add [di+count0],dx
          add.w d3,(count0+2,a5)		;;add [di+count1],dx
-         bsr chkadd2
+         bsr chkadd2			;;call chkadd2
 
-.c15:
-	 tst.b d1			;;or bl,bl
-         bpl .c16
+.c15:	 tst.b d1			;;or bl,bl
+         bpl .c16			;;jns .c16
 
 	 move.w d2,d1			;;mov cx,bx
          add.w d3,(count0,a5)		;;add [di+count0],dx
          add.w d3,(count1,a5)		;;add [di+count1],dx
          add.w d3,(count2,a5)		;;add [di+count2],dx
-
-.c16:
-         move.w (2,a4),d1  ;2 rows	;;mov bx,[si+2]
+.c16:    move.w (2,a4),d1  ;2 rows	;;mov bx,[si+2]
          lsr.w #1,d1			;;shr bx,1
          bcc .c17
 
@@ -431,18 +419,15 @@ generate:
          add.w d3,(count1,a5)		;;add [di+count1],dx
          add.w d3,(count2,a5)		;;add [di+count2],dx
          add.w d3,(count3,a5)		;;add [di+count3],dx
-
-.c17:
-	 tst.b d1			;;or bl,bl
-         bpl .c16
+.c17:	 tst.b d1			;;or bl,bl
+         bpl .c18			;;jns .c18
 
 	 move.w d2,d1			;;mov cx,bx
          add.w d3,(count2,a5)		;;add [di+count2],dx
          add.w d3,(count3,a5)		;;add [di+count3],dx
          add.w d3,(count4,a5)		;;add [di+count4],dx
 
-.c18:
-         move.w (4,a4),d1  ;2 rows	;;mov bx,[si+4]
+.c18:    move.w (4,a4),d1  ;2 rows	;;mov bx,[si+4]
 	 lsr.w #1,d1			;;shr bx,1
 	 bcc .c19			;;jnc .c19
 
@@ -450,27 +435,21 @@ generate:
          add.w d3,(count3,a5)		;;add [di+count3],dx
          add.w d3,(count4,a5)		;;add [di+count4],dx
          add.w d3,(count5,a5)		;;add [di+count5],dx
-
-.c19:
-	 tst.b d1			;;or bl,bl
+.c19:	 tst.b d1			;;or bl,bl
          bpl .c20			;;jns .c20
 
 	 move.w d2,d1			;;mov cx,bx
          add.w d3,(count4,a5)		;;add [di+count4],dx
          add.w d3,(count5,a5)		;;add [di+count5],dx
          add.w d3,(count6,a5)		;;add [di+count6],dx
-
-.c20:
-         move.w (6,a4),d1  ;2 rows	;;mov bx,[si+6]
+.c20:    move.w (6,a4),d1  ;2 rows	;;mov bx,[si+6]
 	 lsr.w #1,d1			;;shr bx,1
 	 bcc .c21			;;jnc .c21
 	 addq #1,d2			;;inc cx		;;adc r3
          add.w d3,(count5,a5)		;;add [di+count5],dx
          add.w d3,(count6,a5)		;;add [di+count6],dx
          add.w d3,(count7,a5)		;;add [di+count7],dx
-
-.c21:
-	 tst.b d1			;;or bl,bl
+.c21:	 tst.b d1			;;or bl,bl
          bpl .c22			;;jns .c22
 
 	 move.w d2,d1			;;mov cx,bx
@@ -499,9 +478,7 @@ generate:
          move.w (tab2021,a6),d0		;;mov ax,[bx+tab2021]
 	endb a6
          add.w d0,(count6,a4)		;;add [si+count6],ax		
-
-.c23:
-	 moveq #0,d1			;;xor bx,bx
+.c23:	 moveq #0,d1			;;xor bx,bx
          move.b (5,a4),d1		;;or bl,[si+5]
 	 beq .c24			;;jz .c24
 
@@ -520,8 +497,7 @@ generate:
          move.w (tab2021,a6),d0		;;mov ax,[bx+tab2021]
 	endb a6
          add.w d0,(count5,a4)		;;add [si+count5],ax
-.c24:
-	 moveq #0,d1			;;xor bx,bx
+.c24:	 moveq #0,d1			;;xor bx,bx
 	 move.w (4,a4),d1		;;or bl,[si+4]
 	 beq .c25			;;jz .c25
 
@@ -540,8 +516,8 @@ generate:
          move.w (tab2021,a6),d0		;;mov ax,[bx+tab2021]
          add.w d0,(count4,a4)		;;add [si+count4],ax
 	endb a6
-.c25:
-	 moveq #0,d1			;;xor bx,bx
+
+.c25:	 moveq #0,d1			;;xor bx,bx
 	 move.b (3,a4),d1		;;or bl,[si+3]
 	 beq .c26			;;jz .c26
 
@@ -561,8 +537,7 @@ generate:
          add.w d0,(count3,a4)		;;add [si+count3],ax
 	endb a6
 
-.c26:
-	 moveq #0,d1			;;xor bx,bx
+.c26:	 moveq #0,d1			;;xor bx,bx
 	 move.b (2,a4),d1		;;or bl,[si+2]
 	 beq .c27			;;jz .c27
 
@@ -582,8 +557,7 @@ generate:
          add.w d0,(count2,a4)		;;add [si+count2],ax
 	endb a6
 
-.c27:
-         moveq #0,d1			;;xor bx,bx		;;movb 1(r0),r1
+.c27:    moveq #0,d1			;;xor bx,bx		;;movb 1(r0),r1
 	 move.b (1,a4),d1		;;or bl,[si+1]
 	 beq .lnext			;;jz .lnext
 
@@ -608,11 +582,8 @@ generate:
 	 bne .c5			;;jz stage2
 					;;jmp .c5
 
-stage2:
-	 movea.l startp(a3),a4		;;mov si,[startp]
-
-.c1:
-	 clr.b (sum,a4)			;;mov byte [si+sum],0		;;clrb sum(r0)
+stage2:  movea.l startp(a3),a4		;;mov si,[startp]
+.c1:	 clr.b (sum,a4)			;;mov byte [si+sum],0		;;clrb sum(r0)
          genmac 0
          genmac 1
          genmac 2
@@ -625,10 +596,8 @@ stage2:
 	 cmpa #1,a4			;;cmp si,1
 	 bne .c1			;;jz incgen
 					;;jmp .c1
-
-incgen: 
-	 lea (gencnt+7,a3),a1		;;mov bx,gencnt+7
-         move #4,CCR			;;stc
+incgen:  lea (gencnt+7,a3),a1		;;mov bx,gencnt+7
+         move #8,CCR			;;stc
          incbcd rts2
          incbcd rts2
          incbcd rts2
@@ -636,20 +605,17 @@ incgen:
          incbcd rts2
          incbcd rts2
          incbcd rts2
-rts2:
-	 rts				;;retn
+rts2:	 rts				;;retn
 
 
-cleanup:
-	 addi.b #1,clncnt(a3)		;;inc [clncnt]
+cleanup: addi.b #1,clncnt(a3)		;;inc [clncnt]
 	 cmpi.b #16,clncnt(a3)		;;test [clncnt],15
 	 bne rts2			;;jnz rts2
 
 cleanup0:
 	 movea.l startp(a3),a1		;;mov bx,[startp]		;;mov @#startp,r0
 	 movea #0,a4  ;mark 1st		;;xor si,si			;;clr r2
-.c1:
-	 cmpi.b #$ff,(sum,a1)		;;test byte [bx+sum],0ffh	;;tstb sum(r0)
+.c1:	 cmpi.b #$ff,(sum,a1)		;;test byte [bx+sum],0ffh	;;tstb sum(r0)
 	 beq .delel			;;jz .delel			;;beq delel
 
 		      ;save pointer to previous
@@ -659,14 +625,12 @@ cleanup0:
 	 bne .c1			;;jnz .c1
 	 rts				;;retn
 
-.delel:
-	 subq.w #1,(tilecnt,a3)		;;dec [tilecnt]
+.delel:	 subq.w #1,(tilecnt,a3)		;;dec [tilecnt]
 	 lea (count0,a1),a5		;;lea di,[count0+bx]		;;mov #count0,r1
 									;;add r0,r1
 	 moveq #0,d0			;;xor ax,ax
 	 moveq #7,d2			;;mov cx,16
-.c2c:
-	 move.l d0,(a5)+		;;mov [di],ax
+.c2c:	 move.l d0,(a5)+		;;mov [di],ax
 					;;add di,2
 	 dbra d2,.c2c			;;loop .c2c
 	 move.l (next,a1),d1		;;xchg ax,[bx+next]		;;mov next(r0),r1
@@ -679,8 +643,7 @@ cleanup0:
 	 subq #1,d1			;;dec ax			;;dec r1
 	 bne .c1			;;jnz .c1
 
-.c4:
-	rts				;;retn
+.c4:	rts				;;retn
 
 .del1st:
 	 movea.l startp(a3),a1		;;mov [startp],bx		;;mov r1,@#startp
