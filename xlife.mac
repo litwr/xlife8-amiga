@@ -177,25 +177,25 @@ setcount macro
          move.w (\1,a4),d1		;;mov bx,[si+one]
 	 move.w d1,d5			;;mov di,bx
 	 and.w d2,d1			;;and bx,cx
-	 move.b d1,(count\1,a4)		;;mov [si+count#one],bl
+	 move.b d1,(count\1+4,a4)	;;mov [si+count#one],bl
          lsr.w #8,d1
-         move.b d1,(count\1+4,a4)	;;mov [si+count#one+4],bh
+         move.b d1,(count\1,a4)		;;mov [si+count#one+4],bh
 	 move.w d5,d1			;;mov bx,di
 	 and.w d3,d1			;;and bx,dx
          lsr.w #1,d1			;;shr bx,1
-	 move.b d1,(count\1+1,a4)	;;mov [si+count#one+1],bl
+	 move.b d1,(count\1+5,a4)	;;mov [si+count#one+1],bl
          lsr.w #8,d1
-         move.b d1,(count\1+5,a4)	;;mov [si+count#one+5],bh
+         move.b d1,(count\1+1,a4)	;;mov [si+count#one+5],bh
 	 move.w d5,d1			;;mov bx,di
 	 and.w d6,d1			;;and bx,bp
-         lsl.w #1,d1			;;shl bx,1
-	 move.b d1,(count\1+2,a4)	;;mov [si+count#one+2],bl
+         add.w d1,d1			;;shl bx,1
+	 move.b d1,(count\1+6,a4)	;;mov [si+count#one+2],bl
          lsr.w #8,d1
-         move.b d1,(count\1+6,a4)	;;mov [si+count#one+6],bh
+         move.b d1,(count\1+2,a4)	;;mov [si+count#one+6],bh
 	 move.w d5,d1			;;mov bx,di
 	 and.w d0,d1			;;and bx,ax
-	 move.b d1,(count\1+2,a4)	;;mov [si+count#one+3],bl
+	 move.b d1,(count\1+7,a4)	;;mov [si+count#one+3],bl
          lsr.w #8,d1
-         move.b d1,(count\1+7,a4)	;;mov [si+count#one+7],bh
+         move.b d1,(count\1+3,a4)	;;mov [si+count#one+7],bh
 endm
 

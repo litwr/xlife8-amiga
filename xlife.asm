@@ -294,7 +294,6 @@ generate:
          beq .lleft
 
 	 move.w (down,a4),a5  ;adjcell	;;mov di,[si+down]
-
 	 add.w d1,d1			;;shl bx,1
 
 	basereg SOD,a6
@@ -498,7 +497,7 @@ generate:
 	endb a6
          add.w d0,(count5,a4)		;;add [si+count5],ax
 .c24:	 moveq #0,d1			;;xor bx,bx
-	 move.w (4,a4),d1		;;or bl,[si+4]
+	 move.b (4,a4),d1		;;or bl,[si+4]
 	 beq .c25			;;jz .c25
 
 	basereg SOD,a6
@@ -528,7 +527,7 @@ generate:
          add.w d2,(count4+2,a4)		;;add [si+count4+2],cx
          add.w d3,(count4,a4)		;;add [si+count4],dx
          add.w d2,(count2+2,a4)		;;add [si+count2+2],cx
-         add.w d2,(count2+2,a4)		;;add [si+count2],dx
+         add.w d3,(count2,a4)		;;add [si+count2],dx
 	 move.w (tab2223,a6),d0		;;mov ax,[bx+tab2223]
          add.w d0,(count3+2,a4)		;;add [si+count3+2],ax
          move.w (tab2021,a6),d0		;;mov ax,[bx+tab2021]		;;add tab2021(r1),count3(r0)
