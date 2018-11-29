@@ -80,8 +80,8 @@ start:
 
      bsr clrscn
      ;move.l #$00003800,tiles+4(a3)
-     move.l #$00007000,tiles(a3)
-     move.l #$000e0000,tiles+4(a3)
+     ;move.l #$00007000,tiles(a3)
+     move.l #$00000070,tiles+4(a3)
      move.w #1,tilecnt(a3)
      move.b #1,mode(a3)
      move.b #6,(tiles+sum,a3)
@@ -271,7 +271,7 @@ generate:
          move.b (a4),d1  ;top row	;;or bl,byte [si]
          beq .ldown			;;jz .ldown
 
-	 move.l (up,a4),a5		;;mov di,[si+up]
+	 movea.l (up,a4),a5		;;mov di,[si+up]
          add.w d1,d1			;;shl bx,1
 
 	basereg SOD,a6
@@ -291,10 +291,10 @@ generate:
          bsr chkadd			;;call chkadd
 
 .ldown:  moveq #0,d1			;;xor bx,bx
-         move.b (7,a4),d1  ;bottom row	;;or bl,[si+7]
+         move.b (7,a4),d1 ;bottom row	;;or bl,[si+7]
          beq .lleft
 
-	 move.w (down,a4),a5  ;adjcell	;;mov di,[si+down]
+	 movea.l (down,a4),a5 ;adjcell	;;mov di,[si+down]
 	 add.w d1,d1			;;shl bx,1
 
 	basereg SOD,a6
@@ -305,17 +305,17 @@ generate:
 	 add.w d2,(count0+2,a5)		;;add [di+count0+2],cx
          add.w d3,(count0,a5)		;;add [di+count0],dx
 
-         add d2,(count6+2,a4)		;;add [si+count6+2],cx
-         add d3,(count6,a4)		;;add [si+count6],dx
+         add.w d2,(count6+2,a4)		;;add [si+count6+2],cx
+         add.w d3,(count6,a4)		;;add [si+count6],dx
 
-	 move.w (tab2223,a6),d0		;;add [si+count7+2],ax
-         add.w d0,(count7+2,a4)		;;mov ax,[bx+tab2223]
+	 move.w (tab2223,a6),d0		;;mov ax,[bx+tab2223]
+         add.w d0,(count7+2,a4)		;;add [si+count7+2],ax
          move.w (tab2021,a6),d0		;;mov ax,[bx+tab2021]
          add.w d0,(count7,a4)		;;add [si+count7],ax
 	endb a6
          bsr chkadd			;;call chkadd
 
-.lleft:  move.l (left,a4),a5  ;adjcell	;;mov di,[si+left]
+.lleft:  movea.l (left,a4),a5 ;adjcell	;;mov di,[si+left]
 	 move.w #1024,d3  ;item to add	;;mov dx,1024
 	 clr.w d2  ;change indicator	;;xor cx,cx
          move.w (a4),d1  ;2 rows	;;mov bx,[si]
