@@ -79,7 +79,7 @@ start:
        endif
 
      bsr clrscn
-     move.l #$8060c000,tiles(a3)
+     move.l #$60c02000,tiles(a3) ;a glider
      ;move.l #$e7000018,tiles(a3)
      ;move.l #$18818181,tiles+4(a3)
      move.w #1,tilecnt(a3)
@@ -139,7 +139,7 @@ mainloop:
 .c5:     ;bsr.s zerocc
          bsr generate
          bsr.s showscn
-         ;bsr cleanup
+         bsr cleanup
          bra.s mainloop
 
          ;include "io.s"
@@ -599,15 +599,15 @@ incgen:  lea (gencnt+7,a3),a1		;;mov bx,gencnt+7
 rts2:	 rts				;;retn
 
 
-cleanup: addi.b #1,clncnt(a3)		;;inc [clncnt]
-	 cmpi.b #16,clncnt(a3)		;;test [clncnt],15
-	 bne rts2			;;jnz rts2
+cleanup: addi.b #8,clncnt(a3)		;;inc [clncnt]
+	 				;;test [clncnt],15
+	 bpl rts2			;;jnz rts2
 
 cleanup0:
-         move.b #0,clncnt(a3)   ;;!!
+         move.b #0,clncnt(a3)
 	 movea.l startp(a3),a1		;;mov bx,[startp]		;;mov @#startp,r0
 	 movea #0,a4  ;mark 1st		;;xor si,si			;;clr r2
-.c1:	 cmpi.b #$ff,(sum,a1)		;;test byte [bx+sum],0ffh	;;tstb sum(r0)
+.c1:	 tst.b (sum,a1)			;;test byte [bx+sum],0ffh	;;tstb sum(r0)
 	 beq .delel			;;jz .delel			;;beq delel
 
 		      ;save pointer to previous
@@ -628,18 +628,18 @@ cleanup0:
 	 move.l (next,a1),d1		;;xchg ax,[bx+next]		;;mov next(r0),r1
 	 move.l d0,(next,a1)						;;clr next(r0)
 	 movea.l d1,a1			;;mov bx,ax			;;mov r1,r0
-	 cmpa.l #0,a4			;;or si,si			;;tst r2
+	 cmpa.l d0,a4			;;or si,si			;;tst r2
 	 beq .del1st			;;jz .del1st
 
 	 move.l d1,(next,a4)		;;mov [si+next],ax		;;mov r1,next(r2)
 	 subq #1,d1			;;dec ax			;;dec r1
 	 bne .c1			;;jnz .c1
 
-.c4:	rts				;;retn
+.c4:	 rts				;;retn
 
 .del1st:
-	 movea.l startp(a3),a1		;;mov [startp],bx		;;mov r1,@#startp
-	 tst.w tilecnt(a3)		;;or [tilecnt],0		;;tst @#tilecnt
+	 move.l d1,startp(a3)		;;mov [startp],bx		;;mov r1,@#startp
+	 tst.w tilecnt(a3)		;;cmp [tilecnt],0		;;tst @#tilecnt
 	 bne .c1			;;jnz .c1
 	 rts				;;retn
 
