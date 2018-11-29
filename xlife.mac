@@ -122,7 +122,7 @@ genmac macro
 
          move.b (count\1,a4),d1		;;mov bl,[si+count#one]
          move.b (a2,d1),d1		;;mov bl,[bx+gentab]		;;movb gentab(r5),r5
-         andi.b #$c,d1			;;and bl,0c0h			;;bic #^B1111111100111111,r5
+         andi.b #$c0,d1			;;and bl,0c0h			;;bic #^B1111111100111111,r5
 	 or.b d1,d0			;;or al,bl			;;bis r5,r1
 
          move.b d0,(\1,a4)		;;mov [si+one],al		;;movb r1,one(r0)

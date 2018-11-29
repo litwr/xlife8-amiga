@@ -79,11 +79,12 @@ start:
        endif
 
      bsr clrscn
-     move.l #$00003800,tiles(a3)
-     ;move.l #$00001c00,tiles+4(a3)
+     ;move.l #$00003800,tiles+4(a3)
+     move.l #$00007000,tiles(a3)
+     move.l #$000e0000,tiles+4(a3)
      move.w #1,tilecnt(a3)
      move.b #1,mode(a3)
-     move.b #3,(tiles+sum,a3)
+     move.b #6,(tiles+sum,a3)
      move.l #1,(tiles+next,a3)
      ;bsr showscn
 
