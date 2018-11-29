@@ -62,7 +62,7 @@ exit2:
 	 rts
 
 chkadd2: ;;cmp word [ds:bp+next],0
-	 tst.w (next,a6)
+	 tst.l (next,a6)
          bne exit2
 
 addnode2:                 ;in: A6

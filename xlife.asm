@@ -79,10 +79,9 @@ start:
        endif
 
      bsr clrscn
-     ;move.l #$80808000,tiles+4(a3)
-     ;move.l #$01010100,tiles+4(a3)
-     move.l #$07000000,tiles(a3)
-     ;move.l #$00000070,tiles+4(a3)
+     move.l #$8060c000,tiles(a3)
+     ;move.l #$e7000018,tiles(a3)
+     ;move.l #$18818181,tiles+4(a3)
      move.w #1,tilecnt(a3)
      move.b #1,mode(a3)
      move.b #6,(tiles+sum,a3)
@@ -471,8 +470,8 @@ generate:
          move.w (tab2223,a6),d0		;;mov ax,[bx+tab2223]
          add.w d0,(count6+2,a4)		;;add [si+count6+2],ax
          move.w (tab2021,a6),d0		;;mov ax,[bx+tab2021]
+         add.w d0,(count6,a4)		;;add [si+count6],ax
 	endb a6
-         add.w d0,(count6,a4)		;;add [si+count6],ax		
 .c23:	 moveq #0,d1			;;xor bx,bx
          move.b (5,a4),d1		;;or bl,[si+5]
 	 beq .c24			;;jz .c24
@@ -489,8 +488,8 @@ generate:
          move.w (tab2223,a6),d0		;;mov ax,[bx+tab2223]
          add.w d0,(count5+2,a4)		;;add [si+count5+2],ax
          move.w (tab2021,a6),d0		;;mov ax,[bx+tab2021]
-	endb a6
          add.w d0,(count5,a4)		;;add [si+count5],ax
+	endb a6
 .c24:	 moveq #0,d1			;;xor bx,bx
 	 move.b (4,a4),d1		;;or bl,[si+4]
 	 beq .c25			;;jz .c25
