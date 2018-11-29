@@ -30,6 +30,12 @@ start:
 	jsr Forbid(a6)
 	;jsr Disable(a6)
 
+	MOVE.W #$0F00,(COLOR00,A2)	;red
+        MOVE.W #$0FF0,(COLOR01,A2)	;yellow
+	MOVE.W #$0000,(COLOR02,A2)	;black
+	MOVE.W #$0FFF,(COLOR03,A2)	;white
+	MOVE.W #0,(BPLCON1,A2)		;Hor-Scroll
+	MOVE.W #$10,(BPLCON2,A2)	;Sprite/Gfx priority
         MOVE.L #COPPERLIST,COP1LCH(A2)	;Write to Copper location register
 	MOVE.W COPJMP1(A2),d0		;Force copper to jump
         MOVE.W	#$7FFF,DMACON(A2)		;Clear DMA channels
@@ -587,7 +593,9 @@ stage2:  movea.l startp(a3),a4		;;mov si,[startp]
 	 cmpa.l #1,a4			;;cmp si,1
 	 bne .c1			;;jz incgen
 					;;jmp .c1
+
 incgen:  lea (gencnt+7,a3),a1		;;mov bx,gencnt+7
+	 moveq #0,d0
          move #16,CCR			;;stc
          incbcd rts2
          incbcd rts2
@@ -595,8 +603,10 @@ incgen:  lea (gencnt+7,a3),a1		;;mov bx,gencnt+7
          incbcd rts2
          incbcd rts2
          incbcd rts2
-         incbcd rts2
-rts2:	 rts				;;retn
+         move.b -(a1),d1
+	 abcd d0,d1
+rts2:	 move.b d1,(a1)
+	 rts				;;retn
 
 
 cleanup: addi.b #8,clncnt(a3)		;;inc [clncnt]
@@ -726,7 +736,7 @@ tab3      dc.b 0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4
 ;crsrbyte  dc.b 0      ;y%8  word aligned
 ;crsrbit   dc.b 128    ;x bit position
 ;i1        dc.b 0,0
-;cellcnt   dc.b 0,0,0,0,0
+cellcnt   dc.b 0,0,0,0,0
 gencnt    dc.b 0,0,0,0,0,0,0
 ;crsrx     dc.b 0      ;[x/8]*8, word aligned
 ;crsry     dc.b 0      ;[y/8]*8
@@ -779,13 +789,11 @@ COPPERLIST:
 	DC.W BPL1PTL,startpl1&$ffff
         DC.W BPL2PTH,startpl2>>16
 	DC.W BPL2PTL,startpl1&$ffff
-
 	DC.W	BPLCON0,$2200	; Bit-Plane control reg.
-	DC.W	BPLCON1,$0000	; Hor-Scroll
-	DC.W	BPLCON2,$0010	; Sprite/Gfx priority
 	;DC.W	BPL1MOD,$0000	; Modulo (odd)  ;256,320
         DC.W	BPL1MOD,$0000	; Modulo (odd)  ;248
 	DC.W	BPL2MOD,$0000	; Modulo (even)
+
 	;DC.W	DIWSTRT,$2C81	; Screen Size Start, 320
         ;DC.W	DIWSTRT,$2C81	; Screen Size Start, 256
         DC.W	DIWSTRT,$2C81	; Screen Size Start, 248
@@ -798,10 +806,5 @@ COPPERLIST:
 	;DC.W	DDFSTOP,$00D0	; H-stop, 320
         ;DC.W	DDFSTOP,$00B0	; H-stop, 256
 	DC.W	DDFSTOP,$00ac	; H-stop, 248
-
-	DC.W	COLOR00,$0F00	; Color #0 = red
-	DC.W	COLOR01,$0FF0	; Color #1 = yellow
-	DC.W	COLOR02,$0000	; Color #2 = black
-	DC.W	COLOR03,$0FFF	; Color #3 = white
 	DC.L	$FFFFFFFE	;End of Copper list
 

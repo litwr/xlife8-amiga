@@ -127,34 +127,35 @@ genmac macro
 
          move.b d0,(\1,a4)		;;mov [si+one],al		;;movb r1,one(r0)
          				;;mov bx,tab3
-         move.b (a0,d0),d0		;;xlatb				;;movb tab3(r1),r2
+         				;;xlatb				;;movb tab3(r1),r2
          beq .\@			;;or al,al
 					;;jz @f
 
+	 move.b (a0,d0),d0
          move.b d0,(sum,a4)		;;mov [si+sum],al		;;movb r2,sum(r0)
          cmpi.b #2,mode(a3)		;;cmp [mode],2			;;cmpb #2,@#mode
          beq .\@			;;jz @f
 
-;         cellsum .\@			;;cellsum @f
+         cellsum .x\@			;;cellsum @f
 .\@:					;;@@:
 endm
 
 cellsum macro  ;in: d0		;;macro cellsum l1 {  ;in: al
-	 lea.l cellcnt+4(a3),a1		;;mov bx,cellcnt+4
-	 move.b (a1),d1
+	 lea cellcnt+5(a3),a1		;;mov bx,cellcnt+4
+	 move.b -(a1),d1
          move #0,CCR
 	 abcd d0,d1			;;add al,[bx]
-	 ;move sr,d2			;;aaa
-	 move.b d1,(a1)+		;;mov [bx],al
-	 moveq #0,d0
-	 ;move d2,ccr
+	            			;;aaa
 	 bcc \1				;;jnc l1
 
+	 move.b d1,(a1)	
+	 moveq #0,d0
          incbcd \1			;;incbcd l1
          incbcd \1			;;incbcd l1
          incbcd \1			;;incbcd l1
-         incbcd \1			;;incbcd l1
-\1:				;;l1:
+	 move.b -(a1),d1
+	 abcd d0,d1
+\1:	 move.b d1,(a1)		
 endm
 
 incbcd macro				;;macro incbcd l1 {
@@ -162,8 +163,9 @@ incbcd macro				;;macro incbcd l1 {
 	 move.b -(a1),d1		;;mov al,[bx]
 	 abcd d0,d1			;;adc al,0
 					;;aaa
-	 move.b d1,(a1)        		;;mov [bx],al
+	 	        		;;mov [bx],al
 	 bcc \1				;;jnc l1
+	 move.b d1,(a1)
 endm
 
 	if 0

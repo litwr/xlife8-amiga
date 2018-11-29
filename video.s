@@ -298,9 +298,9 @@ xyout:   cmp [zoom],0
          mov di,192*40+74
          ;mov bx,ycrsr
          jmp digiout
-
+   endif
 infoout: ;must be before showtinfo
-
+   if 0
          cmp [zoom],0
          jnz infoout2
 
@@ -316,7 +316,9 @@ infoout: ;must be before showtinfo
 ;;         mov #<statusline*64+16384+18>,r2
          mov di,192*40+18
          call digiout
-
+   endif
+	 rts
+   if 0
 showtinfo:  ;;mov #tinfo,r0  ;must be after infoout
 ;;            mov @#tilecnt,r3
 ;;            asr r3
@@ -584,7 +586,8 @@ showscnzp:
 gexit:    ;;jmp crsrset
 
 showscn:
-	 ;**call infoout
+	 ;;call infoout
+	 bsr infoout
          ;;or [zoom],0
 	 tst.b zoom(a3)
          ;;jz .l1
@@ -593,7 +596,7 @@ showscn:
 
 .l1:
 ;;         tst @#tilecnt
-         ;;or [tilecnt],0
+         ;;cmp [tilecnt],0
 	 tst.w tilecnt(a3)
 ;;         beq gexit
          ;;jz gexit
