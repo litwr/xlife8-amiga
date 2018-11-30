@@ -141,7 +141,7 @@ genmac macro
 endm
 
 cellsum macro  ;in: d0		;;macro cellsum l1 {  ;in: al
-	 lea cellcnt+5(a3),a1		;;mov bx,cellcnt+4
+	 lea cellcnt+3(a3),a1		;;mov bx,cellcnt+4
 	 move.b -(a1),d1
          move #0,CCR
 	 abcd d0,d1			;;add al,[bx]
@@ -150,8 +150,6 @@ cellsum macro  ;in: d0		;;macro cellsum l1 {  ;in: al
 
 	 move.b d1,(a1)	
 	 moveq #0,d0
-         incbcd \1			;;incbcd l1
-         incbcd \1			;;incbcd l1
          incbcd \1			;;incbcd l1
 	 move.b -(a1),d1
 	 abcd d0,d1
@@ -168,13 +166,13 @@ incbcd macro				;;macro incbcd l1 {
 	 move.b d1,(a1)
 endm
 
-	if 0
-inibcd macro			;;macro inibcd one,two {
-	 move.				;;mov bx,two
-        dec bx			;;@@:     mov byte [bx+one],bh
-        jns @b
+inibcd macro
+	 lea \1(a3),a1
+         moveq #\2-1,d0
+.\@:	 move.b #0,(a1)+
+         dbra d0,.\@
 endm
-	endif
+
 setcount macro
          move.w (\1,a4),d1		;;mov bx,[si+one]
 	 move.w d1,d5			;;mov di,bx

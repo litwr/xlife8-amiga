@@ -30,10 +30,10 @@ start:
 	jsr Forbid(a6)
 	;jsr Disable(a6)
 
-	MOVE.W #$0F00,(COLOR00,A2)	;red
-        MOVE.W #$0FF0,(COLOR01,A2)	;yellow
-	MOVE.W #$0000,(COLOR02,A2)	;black
-	MOVE.W #$0FFF,(COLOR03,A2)	;white
+	MOVE.W #$F00,(COLOR00,A2)	;red
+        MOVE.W #$FF0,(COLOR01,A2)	;yellow
+	MOVE.W #$0,(COLOR02,A2)		;black
+	MOVE.W #$FFF,(COLOR03,A2)	;white
 	MOVE.W #0,(BPLCON1,A2)		;Hor-Scroll
 	MOVE.W #$10,(BPLCON2,A2)	;Sprite/Gfx priority
         MOVE.L #COPPERLIST,COP1LCH(A2)	;Write to Copper location register
@@ -142,7 +142,7 @@ mainloop:
          bsr cleanup
          bra.s .e1
 
-.c5:     ;bsr.s zerocc
+.c5:     bsr zerocc
          bsr generate
          bsr.s showscn
          bsr cleanup
@@ -150,9 +150,9 @@ mainloop:
 
          ;include "io.s"
          ;include "ramdisk.s"
-         ;include "video-base.s"
+         include "video-base.s"
          include "video.s"
-         ;include "utils.s"
+         include "utils.s"
          ;include "interface.s"
          ;include "rules.s"
          include "tile.s"
@@ -594,12 +594,9 @@ stage2:  movea.l startp(a3),a4		;;mov si,[startp]
 	 bne .c1			;;jz incgen
 					;;jmp .c1
 
-incgen:  lea (gencnt+7,a3),a1		;;mov bx,gencnt+7
+incgen:  lea (gencnt+4,a3),a1		;;mov bx,gencnt+7
 	 moveq #0,d0
          move #16,CCR			;;stc
-         incbcd rts2
-         incbcd rts2
-         incbcd rts2
          incbcd rts2
          incbcd rts2
          incbcd rts2
@@ -683,17 +680,6 @@ ttab:     dc.b 0,1,2,3,3,4,5,6,7,8,8,9,16,17,18,19,19,20
 ;          dc.b (zv/10)*16 + zv mod 10
 ;          end repeat
 
-digifont  dc.w $0a00a,$2828,$0a828,$282a,$2828,$2828,$0a00a,0  ;8th columns are free
-          dc.w $8002,$8002,$800a,$8002,$8002,$8002,$0a82a,0
-          dc.w $0a00a,$2828,$2800,$0a000,$0a,$28,$0a82a,0
-          dc.w $0a00a,$2828,$2800,$0a000,$2800,$2828,$0a00a,0
-          dc.w $2800,$0a000,$0a802,$280a,$0aa2a,$2800,$2800,0
-          dc.w $0a82a,$28,$0a02a,$2800,$2800,$2828,$0a00a,0    ;5
-          dc.w $0a00a,$2828,$28,$0a02a,$2828,$2828,$0a00a,0
-          dc.w $0a82a,$2828,$0a000,$8002,$8002,$8002,$8002,0
-          dc.w $0a00a,$2828,$2828,$0a00a,$2828,$2828,$0a00a,0
-          dc.w $0a00a,$2828,$2828,$0a80a,$2800,$2828,$0a00a,0
-          dc.w 0,0,0,0,0,0,0                ;space
 ;crsrtab   dc.w 0,$2000,80,$2050,160,$20a0,240,$20f0
 tilecnt   dc.w 0
 ;viewport  dc.l tiles
@@ -733,11 +719,23 @@ tab3      dc.b 0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4
           dc.b 3, 4, 4, 5, 4, 5, 5, 6, 4, 5, 5, 6, 5, 6, 6, 7
           dc.b 4, 5, 5, 6, 5, 6, 6, 7, 5, 6, 6, 7, 6, 7, 7, 8
 
+digifont dc.b	$3c,$66,$6e,$76,$66,$66,$3c,0   ;8th columns are free
+	 dc.b	$18,$18,$38,$18,$18,$18,$7e,0
+	 dc.b	$3c,$66,$6,$c,$30,$60,$7e,0
+	 dc.b	$3c,$66,$6,$c,$6,$66,$3c,0
+	 dc.b	$6,$c,$1e,$36,$7f,$6,$6,0
+	 dc.b	$7e,$60,$7c,$6,$6,$66,$3c,0    ;5
+	 dc.b	$3c,$66,$60,$7c,$66,$66,$3c,0
+	 dc.b	$7e,$66,$c,$18,$18,$18,$18,0
+	 dc.b	$3c,$66,$66,$3c,$66,$66,$3c,0
+	 dc.b	$3c,$66,$66,$3e,$6,$66,$3c,0
+         dc.w   0,0,0,0,0,0,0                ;space
+
 ;crsrbyte  dc.b 0      ;y%8  word aligned
 ;crsrbit   dc.b 128    ;x bit position
 ;i1        dc.b 0,0
-cellcnt   dc.b 0,0,0,0,0
-gencnt    dc.b 0,0,0,0,0,0,0
+cellcnt   dc.b 0,0,0
+gencnt    dc.b 0,0,0,0
 ;crsrx     dc.b 0      ;[x/8]*8, word aligned
 ;crsry     dc.b 0      ;[y/8]*8
 ;vptilecx  dc.b 0      ;must be word aligned
@@ -788,11 +786,11 @@ COPPERLIST:
 	DC.W BPL1PTH,startpl1>>16
 	DC.W BPL1PTL,startpl1&$ffff
         DC.W BPL2PTH,startpl2>>16
-	DC.W BPL2PTL,startpl1&$ffff
+	DC.W BPL2PTL,startpl2&$ffff
 	DC.W	BPLCON0,$2200	; Bit-Plane control reg.
-	;DC.W	BPL1MOD,$0000	; Modulo (odd)  ;256,320
-        DC.W	BPL1MOD,$0000	; Modulo (odd)  ;248
-	DC.W	BPL2MOD,$0000	; Modulo (even)
+	;DC.W	BPL1MOD,0	; Modulo (odd)  ;256,320
+        DC.W	BPL1MOD,0	; Modulo (odd)  ;248
+	DC.W	BPL2MOD,0	; Modulo (even)
 
 	;DC.W	DIWSTRT,$2C81	; Screen Size Start, 320
         ;DC.W	DIWSTRT,$2C81	; Screen Size Start, 256
@@ -800,11 +798,11 @@ COPPERLIST:
 	;DC.W	DIWSTOP,$2CC1	; Screen Size Stop, 320
         ;DC.W	DIWSTOP,$2C81	; Screen Size Stop, 256
 	DC.W	DIWSTOP,$2C79	; Screen Size Stop, 248
-	;DC.W	DDFSTRT,$0038	; H-start, 320
-        ;DC.W	DDFSTRT,$0038	; H-start, 256
-	DC.W	DDFSTRT,$0038	; H-start, 248
-	;DC.W	DDFSTOP,$00D0	; H-stop, 320
-        ;DC.W	DDFSTOP,$00B0	; H-stop, 256
-	DC.W	DDFSTOP,$00ac	; H-stop, 248
+	;DC.W	DDFSTRT,$38	; H-start, 320
+        ;DC.W	DDFSTRT,$38	; H-start, 256
+	DC.W	DDFSTRT,$38	; H-start, 248
+	;DC.W	DDFSTOP,$D0	; H-stop, 320
+        ;DC.W	DDFSTOP,$B0	; H-stop, 256
+	DC.W	DDFSTOP,$ac	; H-stop, 248
 	DC.L	$FFFFFFFE	;End of Copper list
 

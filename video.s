@@ -300,23 +300,33 @@ xyout:   cmp [zoom],0
          jmp digiout
    endif
 infoout: ;must be before showtinfo
-   if 0
-         cmp [zoom],0
-         jnz infoout2
 
-         mov bx,gencnt
-         mov dx,7
+         ;;cmp [zoom],0
+	 tst.b zoom(a3)
+         ;;jnz infoout2
+	 ;**bne infoout2
+
+         ;;mov bx,gencnt
+	 lea gencnt+4(a3),a1
+         ;;mov dx,7
+	 moveq #6,d0
 
 ;;         mov #<statusline*64+16384+2>,r2
-         mov di,192*40+2
-         call digiout
-         mov bx,cellcnt
-         mov dx,5
+         ;;mov di,192*40+2
+	 movea.l #startpl2+192*32+1+6,a0
+         ;;call digiout
+	 bsr digiout
+         ;;mov bx,cellcnt
+	 lea cellcnt+3(a3),a1
+         ;;mov dx,5
+	 moveq #4,d0
 
 ;;         mov #<statusline*64+16384+18>,r2
-         mov di,192*40+18
-         call digiout
-   endif
+         ;;mov di,192*40+18
+         movea.l #startpl2+192*32+9+4,a0
+         ;;call digiout
+	 bsr digiout
+
 	 rts
    if 0
 showtinfo:  ;;mov #tinfo,r0  ;must be after infoout
