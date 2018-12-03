@@ -10,37 +10,23 @@
 
 ; A2 = CUSTOM, A3 = Data
 
-;	section Code
-start:
+	section Code
+
       basereg SOD,a3
-	lea SOD,A3
-        MOVE.L #CUSTOM,A2
-	move.w	DMACONR(A2),d0
-	or.w #$8000,d0
-	move.w d0,olddmareq(a3)
-        move.l	4,a6
-	lea	gfxname(a3),a1
-	jsr	OldOpenLibrary(a6)
-	move.l	d0,gfxbase(a3)
-	move.l 	d0,a6
-	move.l 	38(a6),oldcopper(a3)
+	 lea SOD,A3
 
-	jsr WaitTOF(a6)
-	move.l	4,a6
-	jsr Forbid(a6)
-	;jsr Disable(a6)
+         include "system1.s"
+start:
+         movea.l 4,a6
+	 lea	dosname(a3),a1
+	 jsr	OldOpenLibrary(a6)
+	 ;move.l  d0,a6
+         move.l d0,doslib(a3)
+         ;jsr     Output(a6)          ;get stdout
+         ;move.l  d0,cout(a3)
+         ;jsr     Input(a6)          ;get stdin
+         ;move.l  d0,cin(a3)
 
-	MOVE.W #$F00,(COLOR00,A2)	;red
-        MOVE.W #$FF0,(COLOR01,A2)	;yellow
-	MOVE.W #$0,(COLOR02,A2)		;black
-	MOVE.W #$FFF,(COLOR03,A2)	;white
-	MOVE.W #0,(BPLCON1,A2)		;Hor-Scroll
-	MOVE.W #$10,(BPLCON2,A2)	;Sprite/Gfx priority
-        MOVE.L #COPPERLIST,COP1LCH(A2)	;Write to Copper location register
-	MOVE.W COPJMP1(A2),d0		;Force copper to jump
-        MOVE.W	#$7FFF,DMACON(A2)		;Clear DMA channels
-	MOVE.W #(DMAF_SETCLR!DMAF_COPPER!DMAF_RASTER!DMAF_MASTER),DMACON(A2)
-                            ;Enable bit-plane and Copper DMA
 	if 0
 	 mov [iobseg],ds
          add [iobseg],1000h  ;64k/16
@@ -84,18 +70,22 @@ start:
          call help
        endif
 
-     bsr clrscn
+     ;bsr clrscn
      move.l #$60c02000,tiles(a3) ;a glider
+     ;move.l #$60c04000,tiles(a3) ;a r-pentamino
      ;move.l #$e7000018,tiles(a3)
      ;move.l #$18818181,tiles+4(a3)
      move.w #1,tilecnt(a3)
      move.b #1,mode(a3)
      move.b #6,(tiles+sum,a3)
      move.l #1,(tiles+next,a3)
-     ;bsr showscn
 
 mainloop:
-     btst.b #6,CIAAPRA ;if mouse button pressed then exit
+     ;btst.b #6,CIAAPRA ;if mouse button pressed then exit
+     ;beq .exit
+     ;bra .exit
+     bsr dispatcher
+     cmp.b #32,d0
      beq .exit
 
          ;call crsrflash
@@ -113,17 +103,9 @@ mainloop:
          ;mov ax,3
          ;call totext.e1
 .exit:
-         MOVE.L #CUSTOM,A2
-         move.w #$7fff,DMACON(A2)
-	 move.w	olddmareq(a3),DMACON(A2)
-	 move.l	oldcopper(a3),COP1LCH(A2)
-	 move.l gfxbase(a3),a6
- 	 jsr WaitTOF(a6)
-	 move.l	4,a6
-	 jsr Permit(a6)
-	 ;jsr Enable(a6)
-         move.l gfxbase(a3),a1
-	 jsr	CloseLibrary(a6)
+         move.l doslib(a3),a1
+         movea.l 4,a6
+	 jsr CloseLibrary(a6)
          moveq #0,d0
          rts
 
@@ -132,31 +114,37 @@ mainloop:
 
          clr.b mode(a3)
          bsr incgen
-         ;bsr.s tograph
-         bra.s mainloop
+         ;bsr tograph
+         bra mainloop
 
 .c4:     cmp.b #2,d0
          bne .c5
 
          bsr generate     ;hide
          bsr cleanup
-         bra.s .e1
+         bra .e1
 
 .c5:     bsr zerocc
          bsr generate
-         bsr.s showscn
+         bsr showscn
          bsr cleanup
-         bra.s mainloop
+         bra mainloop
 
          ;include "io.s"
          ;include "ramdisk.s"
          include "video-base.s"
          include "video.s"
          include "utils.s"
-         ;include "interface.s"
+         include "interface.s"
          ;include "rules.s"
          include "tile.s"
          ;include "ramdata.s"
+
+level2i:     ;btst #3,$bfed01   ;kbd
+             ;beq level2ie
+
+             move.b #1,key_ready
+level2ie:    jmp $ffff00
 
 	if 0
 start_timer:    cli                 ;SAVE/SET INTR8 VECTOR
@@ -655,7 +643,9 @@ cleanup0:
 	section Data
 SOD:
 oldcopper:	dc.l 0
-gfxbase:	dc.l 0
+cout:		dc.l 0
+cin:		dc.l 0
+doslib:		dc.l 0
 startp:         dc.l tiles
 
 olddmareq:	dc.w 0
@@ -731,6 +721,7 @@ digifont dc.b	$3c,$66,$6e,$76,$66,$66,$3c,0   ;8th columns are free
 	 dc.b	$3c,$66,$66,$3e,$6,$66,$3c,0
          dc.w   0,0,0,0,0,0,0                ;space
 
+key_ready dc.b 0
 ;crsrbyte  dc.b 0      ;y%8  word aligned
 ;crsrbit   dc.b 128    ;x bit position
 ;i1        dc.b 0,0
@@ -773,9 +764,96 @@ zoom      dc.b 0
 ;cf        dc.b "\COLORS.CFG",0
 ;copyleft  dc.b "\CR.TXT",0
 ;nofnchar  dc.b "?,./:;<=>[\]|"
-;stringbuf rb 19     ;must be after nofnchar
+;stringbuf blk.b 19     ;must be after nofnchar
+kbdbuf	   blk.b 19
 
-gfxname		DC.B	'graphics.library',0
+dosname  dc.b "dos.library",0
+
+	CNOP 0,4
+SCREEN_DEFS:
+	DC.W	0,0		; X-Y position
+	DC.W	320		; Width
+	DC.W	ScreenHeight		; Hight
+	DC.W	2		; Depth
+	DC.B	0,1		; Pen colors
+	DC.W	0		; V_HIRES
+	DC.W	SCREENQUIET	;CUSTOMSCREEN
+	DC.L	FONT_ATTR	; use Topaz 8 as standard font
+	DC.L	0 ;SCREEN_NAME
+	DC.L	0
+	DC.L	0
+
+;***  Window structure  ***
+
+WINDOW_DEFS:
+	dc.w	0,0		; X-Y position
+	dc.w	320		; Current width
+	dc.w	ScreenHeight		; Current higth
+	dc.b	0,1
+	dc.l	RAWKEY		; Report only raw keys
+	dc.l	BACKDROP+BORDERLESS+ACTIVATE+RMBTRAP
+	dc.l	0	;Intuition Direct Communications Message Port
+	dc.l	0
+	DC.L	REQUESTER_NAME	; Window name
+SCREEN_HANDLE:
+	dc.l	0	;custom screen pointer
+	dc.l	0
+	dc.w	320		; Min width 
+	dc.w	ScreenHeight		; Min higth
+	dc.w	320		; Max width
+	dc.w	ScreenHeight		; Max higth
+	dc.w	CUSTOMSCREEN	; A normal window
+	EVEN
+
+;---  Topaz font  ---
+
+FONT_ATTR:
+	DC.L	FONT_NAME	; Name
+	DC.W	8		; Size
+	DC.B	0
+	DC.B	0
+	DC.W	8		; Size
+
+COLORS:
+	DC.W	$0000,$0FF0,$0F00,$0FFF
+	DC.W	$000C,$000B,$000A,$0009
+
+FONT_NAME:		DC.B	'topaz.font',0
+CONSOLE_NAME:		DC.B	'console.device',0,0
+REQUESTER_NAME:		DC.B	'My Requester',0
+SCREEN_NAME:		DC.B	'Xlife-8 for Commodore Amiga',0
+INTUITION_NAME:		DC.B	'intuition.library',0
+GRAPHICS_NAME:		DC.B	'graphics.library',0
+	even
+CONSOLE_DEVICE:		DC.L	0
+INTUITION_BASE:		DC.L	0
+GRAPHICS_BASE:		DC.L	0
+TASK_OLDWINDOW:		DC.L	0
+
+BITPLANE1_PTR:		DC.L	0
+BITPLANE2_PTR:		DC.L	0
+TASK_PTR:		DC.L	0
+
+KEYB_BUFFER:		DCB.B	64,0
+KEYB_OUTBUFFER:		DC.W	0
+KEYB_INBUFFER:		DC.W	0
+
+ERROR_STACK:		DC.W	0
+
+IO_REQUEST:		DCB.B	32,0
+KEY_BUFFER:		DCB.B	80,0
+KEY_PORT:		DC.L	0
+KEY_MSG:		DC.L	0
+
+MY_EVENT:	DC.L	0	; Insert after each event
+EVENT_IECLASS:	DC.B	IECLASS_RAWKEY
+		DC.B	0	; SUBCLASS - A Joke
+IECODE:		DC.W	0	; RAWKEY - Inserted
+IEQUAL:		DC.W	0	; QUALIFIER - SHIFT, CTRL, ETC.
+IEADDR:		DC.L	0	; IAddress
+		DC.L	0
+		DC.L	0	; TimeStamp
+WINDOW_HANDLE:	DC.L	0
 
 	 CNOP 0,4
 tiles:
@@ -783,11 +861,11 @@ tiles:
 
 	SECTION	Copper,DATA_C
 COPPERLIST:
-	DC.W BPL1PTH,startpl1>>16
-	DC.W BPL1PTL,startpl1&$ffff
-        DC.W BPL2PTH,startpl2>>16
-	DC.W BPL2PTL,startpl2&$ffff
-	DC.W	BPLCON0,$2200	; Bit-Plane control reg.
+	;DC.W BPL1PTH,startpl1>>16
+	;DC.W BPL1PTL,startpl1&$ffff
+        ;DC.W BPL2PTH,startpl2>>16
+	;DC.W BPL2PTL,startpl2&$ffff
+	;DC.W	BPLCON0,$2200	; Bit-Plane control reg.
 	;DC.W	BPL1MOD,0	; Modulo (odd)  ;256,320
         DC.W	BPL1MOD,0	; Modulo (odd)  ;248
 	DC.W	BPL2MOD,0	; Modulo (even)

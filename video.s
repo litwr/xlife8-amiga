@@ -313,7 +313,8 @@ infoout: ;must be before showtinfo
 
 ;;         mov #<statusline*64+16384+2>,r2
          ;;mov di,192*40+2
-	 movea.l #startpl2+192*32+1+6,a0
+         movea.l BITPLANE2_PTR(a3),a0
+         adda.l #192*40+1+6,a0
          ;;call digiout
 	 bsr digiout
          ;;mov bx,cellcnt
@@ -323,7 +324,8 @@ infoout: ;must be before showtinfo
 
 ;;         mov #<statusline*64+16384+18>,r2
          ;;mov di,192*40+18
-         movea.l #startpl2+192*32+9+4,a0
+         movea.l BITPLANE2_PTR(a3),a0
+         adda.l #192*40+9+4,a0
          ;;call digiout
 	 bsr digiout
 
@@ -630,6 +632,7 @@ showscn2:
 ;;       mov video(r0),r5
 	 ;;mov di,[video+si]
 	 movea.l (video,a4),a5
+	 adda.l BITPLANE1_PTR(A3),A5
 
          ;;lodsw
 	 move.l (a4),d0
@@ -2360,8 +2363,9 @@ printfloat: mov si,stringbuf
         retn
  endif
 
-clrscn:  movea.l #startpl1,a0
-	 movea.l #startpl2,a1
+clrscn:  
+     ;movea.l #startpl1,a0
+	 ;movea.l #startpl2,a1
 	 moveq #0,d0
 	 move.w #nextline*64-1,d1
 .l1:	 move.l d0,(a0)+

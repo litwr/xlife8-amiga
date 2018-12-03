@@ -154,22 +154,22 @@ digiout:	;in: d0 - length, a0 - scrpos, a1 - data
          lsl.b #3,d1
          
 .c1:     move.b (a2,d1),(a0)
-	 adda.w #32,a0
+	 adda.l #40,a0
 	 addq #1,d1
 	 dbra d2,.c1
 
 	 subi #1,d0
 	 bmi .ce
 
-         suba.w #32*7+1,a0
+         suba.w #40*7+1,a0
 	 moveq #6,d2
 	 andi.b #$f0,d3
          lsr.b #1,d3
 .c2:     move.b (a2,d3),(a0)
-	 adda.w #32,a0
+	 adda.l #40,a0
 	 addq #1,d3
 	 dbra d2,.c2
-         suba.w #32*7+1,a0
+         suba.w #40*7+1,a0
 
 	 dbra d0,.c0
 .ce:	 rts
