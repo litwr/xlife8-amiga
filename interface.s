@@ -18,48 +18,80 @@ getkey2:  ;******* KEY POLLING *******
 	 rts
 
 dispatcher: 
-	;;call getkey2
-        bsr getkey2
-        rts
+	 ;;call getkey2
+         bsr getkey2
+         ;tst.b d0
+         bne .e0
+         rts
+.e0:
+         ;;cmpb #'g,r0
+         ;;cmp al,'g'
+         cmp.b #"g",d0
+
+         ;;bne 3$
+         ;;jnz .c3
+         bne .c3
+
+         ;;cmp [mode],0
+         tst.b mode(a3)
+         ;;jz .c2
+         beq .c2
+
+.c53:    
+         ;;dec [mode]
+         subi.b #1,mode(a3)
+         ;;jmp .c40
+         bra .c40
+
+.c2:     
+         ;;inc [mode]
+         addi.b #1,mode(a3)
+.c40:    
+         ;;jmp tograph
+         rts
+
+.c3:     
+         ;;cmp al,'Q'
+         cmpi.b #"Q",d0
+         ;;jnz .c5
+         bne .c5
+
+         ;;mov [mode],3
+         move.b #3,mode(a3)
+.c101:   
+         ;;retn
+         rts
+
+.c5:     
+         ;;cmp al,'h'
+         cmpi.b #"h",d0
+         ;;jnz .c4
+         bne .c4
+
+         ;;cmp [mode],2
+         cmpi.b #2,mode(a3)
+         ;;jz .c53
+         beq .c53
+
+         ;;mov [mode],2
+         move.b #2,mode(a3)
+         ;;mov ax,4
+         ;;cmp [zoom],ah
+         ;;jz .l1
+
+         ;;mov al,1
+.l1:     ;;int 10h
+         ;;retn
+         rts
+
+.c4:     
+         ;;cmp [mode],2
+         cmpi.b #2,mode(a3)
+         ;;je .c101
+         beq .c101
+       
+       rts
    if 0
-;;dispat0: cmpb #'g,r0
-;;         bne 3$
-.e0:     cmp al,'g'
-         jnz .c3
-
-         cmp [mode],0
-         jz .c2
-
-.c53:    dec [mode]
-         jmp .c40
-
-.c2:     inc [mode]
-.c40:    jmp tograph
-
-.c3:     cmp al,'Q'
-         jnz .c5
-
-         mov [mode],3
-.c101:   retn
-
-.c5:     cmp al,'h'
-         jnz .c4
-
-         cmp [mode],2
-         jz .c53
-
-         mov [mode],2
-         mov ax,4
-         cmp [zoom],ah
-         jz .l1
-
-         mov al,1
-.l1:     int 10h
-         retn
-
-.c4:     cmp [mode],2
-         je .c101
-
          cmp al,'T'
          jnz .c6
 

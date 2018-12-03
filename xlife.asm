@@ -81,15 +81,8 @@ start:
      move.l #1,(tiles+next,a3)
 
 mainloop:
-     ;btst.b #6,CIAAPRA ;if mouse button pressed then exit
-     ;beq .exit
-     ;bra .exit
-     bsr dispatcher
-     cmp.b #32,d0
-     beq .exit
-
          ;call crsrflash
-.e1:     ;bsr.s dispatcher
+.e1:     bsr dispatcher
          move.b mode(a3),d0
          beq mainloop
 
