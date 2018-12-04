@@ -80,135 +80,191 @@ exit:
 	 ;;retn 
 	 rts
 
- if 0
 torus:
 ;;         mov #tiles,r0
+        ;;mov si,tiles       ;top border
+        lea tiles(a3),a0
 ;;         mov #hormax,r1
-        mov si,tiles       ;top border
-        mov cx,hormax
+        ;;mov cx,hormax
+        move.w #hormax-1,d0
 
+.c5:
 ;;5$:      mov r0,r2
 ;;         add #<hormax*<vermax-1>-1>*tilesize,r2
+;;         lea ax,[si+(hormax*(vermax-1)-1)*tilesize]
+         move.l a0,a1
+         adda.l #(hormax*(vermax-1)-1)*tilesize,a1
 ;;         mov r2,ul(r0)
-.c5:     lea ax,[si+(hormax*(vermax-1)-1)*tilesize]
-         mov [si+ul],ax
+         ;;mov [si+ul],ax
+         move.l a1,(ul,a0)
 
 ;;         mov r0,r2
 ;;         add #hormax*<vermax-1>*tilesize,r2
+         ;;lea ax,[si+hormax*(vermax-1)*tilesize]
+         move.l a0,a1
+         adda.l #hormax*(vermax-1)*tilesize,a1
 ;;         mov r2,up(r0)
-         lea ax,[si+hormax*(vermax-1)*tilesize]
-         mov [si+up],ax
+         ;;mov [si+up],ax
+         move.l a1,(up,a0)
 
 ;;         mov r0,r2
 ;;         add #<hormax*<vermax-1>+1>*tilesize,r2
+         ;;lea ax,[si+(hormax*(vermax-1)+1)*tilesize]
+         move.l a0,a1
+         adda.l #(hormax*(vermax-1)+1)*tilesize,a1
 ;;         mov r2,ur(r0)
-         lea ax,[si+(hormax*(vermax-1)+1)*tilesize]
-         mov [si+ur],ax
+         ;;mov [si+ur],ax
+	 move.l a1,(ur,a0)
 
 ;;         add #tilesize,r0
+         ;;add si,tilesize
+         adda.l #tilesize,a0
 ;;         sob r1,5$
-         add si,tilesize
-         loop .c5
+         ;;loop .c5
+         dbra d0,.c5
 
 ;;         mov #tiles+<<vermax-1>*hormax*tilesize>,r0
+         ;;mov si,tiles+(vermax-1)*hormax*tilesize
+         movea.l #tiles+(vermax-1)*hormax*tilesize,a0
 ;;         mov #hormax,r1
-         mov si,tiles+(vermax-1)*hormax*tilesize
-         mov cx,hormax
+         ;;mov cx,hormax
+         move.w #hormax-1,d0
 
+.c4:
 ;;4$:      mov r0,r2
+         ;;mov ax,si
+         movea.l a0,a1
 ;;         sub #<<vermax-1>*hormax-1>*tilesize,r2
+         ;;sub ax,((vermax-1)*hormax-1)*tilesize
+         suba.l #((vermax-1)*hormax-1)*tilesize,a1
 ;;         mov r2,dr(r0)
-.c4:     mov ax,si
-         sub ax,((vermax-1)*hormax-1)*tilesize
-         mov [si+dr],ax
+         ;;mov [si+dr],ax
+         move.l a1,(dr,a0)
 
 ;;         mov r0,r2
+         ;;mov ax,si
+         movea.l a0,a1
 ;;         sub #<vermax-1>*hormax*tilesize,r2
+         ;;sub ax,(vermax-1)*hormax*tilesize
+         suba.l #(vermax-1)*hormax*tilesize,a1
 ;;         mov r2,down(r0)
-         mov ax,si
-         sub ax,(vermax-1)*hormax*tilesize
-         mov [si+down],ax
+         ;;mov [si+down],ax
+         move.l a1,(down,a0)
 
 ;;         mov r0,r2
+         ;;mov ax,si
+         movea.l a0,a1
 ;;         sub #<<vermax-1>*hormax+1>*tilesize,r2
+         ;;sub ax,((vermax-1)*hormax+1)*tilesize
+         suba.l #((vermax-1)*hormax+1)*tilesize,a1
 ;;         mov r2,dl(r0)
-         mov ax,si
-         sub ax,((vermax-1)*hormax+1)*tilesize
-         mov [si+dle],ax
+         ;;mov [si+dle],ax
+         move.l a1,(dl,a0)
 
 ;;         add #tilesize,r0
+         ;;add si,tilesize
+	 adda.l #tilesize,a0
 ;;         sob r1,4$
-         add si,tilesize
-         loop .c4
+         ;;loop .c4
+         dbra d0,.c4
 
 ;;         mov #tiles,r0
+        ;;mov si,tiles
+        movea.l #tiles,a0
 ;;         mov #vermax,r1
-        mov si,tiles
-        mov cx,vermax
+        ;;mov cx,vermax
+        move.w #vermax-1,d0
 
+.c3:
 ;;3$:      mov r0,r2
 ;;         add #<hormax-1>*tilesize,r2
+         ;;lea ax,[si+(hormax-1)*tilesize]
+         lea ((hormax-1)*tilesize,a0),a1
 ;;         mov r2,left(r0)
-.c3:     lea ax,[si+(hormax-1)*tilesize]
-         mov [si+left],ax
+         ;;mov [si+left],ax
+	 move.l a1,(left,a0)
 
 ;;         mov r0,r2
 ;;         sub #tilesize,r2
+         ;;lea ax,[si-tilesize]
+         lea (-tilesize,a0),a1
 ;;         mov r2,ul(r0)
-         lea ax,[si-tilesize]
-         mov [si+ul],ax
+         ;;mov [si+ul],ax
+         move.l a1,(ul,a0)
 
 ;;         mov r0,r2
 ;;         add #<2*hormax-1>*tilesize,r2
+         ;;lea ax,[si+(2*hormax-1)*tilesize]
+         lea ((2*hormax-1)*tilesize,a0),a1
 ;;         mov r2,dl(r0)
-         lea ax,[si+(2*hormax-1)*tilesize]
-         mov [si+dle],ax
+         ;;mov [si+dle],ax
+         move.l a1,(dl,a0)
 
 ;;         add #hormax*tilesize,r0
+         ;;add si,hormax*tilesize
+         adda.l #hormax*tilesize,a0
 ;;         sob r1,3$
-         add si,hormax*tilesize
-         loop .c3
+         ;;loop .c3
+         dbra d0,.c3
 
 ;;         mov #tiles+<<hormax-1>*tilesize>,r0
+         ;;mov si,tiles+(hormax-1)*tilesize
+         movea.l #tiles+(hormax-1)*tilesize,a0
 ;;         mov #vermax,r1
-         mov si,tiles+(hormax-1)*tilesize
-         mov cx,vermax
+         ;;mov cx,vermax
+         move.w #vermax-1,d0
 
+.c2:
 ;;2$:      mov r0,r2
 ;;         sub #<2*hormax-1>*tilesize,r2
+         ;;lea ax,[si-(2*hormax-1)*tilesize]
+         lea (-(2*hormax-1)*tilesize,a0),a1
 ;;         mov r2,ur(r0)
-.c2:     lea ax,[si-(2*hormax-1)*tilesize]
-         mov [si+ur],ax
+         ;;mov [si+ur],ax
+         move.l a1,(ur,a0)
 
 ;;         mov r0,r2
 ;;         sub #<hormax-1>*tilesize,r2
+         ;;lea ax,[si-(hormax-1)*tilesize]
+         lea.l (-(hormax-1)*tilesize,a0),a1
 ;;         mov r2,right(r0)
-         lea ax,[si-(hormax-1)*tilesize]
-         mov [si+right],ax
+         ;;mov [si+right],ax
+         move.l a1,(right,a0)
 
 ;;         mov r0,r2
 ;;         add #tilesize,r2
+         ;;lea ax,[si+tilesize]
+         lea (tilesize,a0),a1
 ;;         mov r2,dr(r0)
-         lea ax,[si+tilesize]
-         mov [si+dr],ax
+         ;;mov [si+dr],ax
+         move.l a1,(dr,a0)
 
 ;;         add #hormax*tilesize,r0
+         ;;add si,hormax*tilesize
+         adda.l #hormax*tilesize,a0
 ;;         sob r1,2$
-         add si,hormax*tilesize
-         loop .c2
+         ;;loop .c2
+         dbra d0,.c2
 
 ;;         mov #tiles + <<hormax*vermax-1>*tilesize>,@#tiles+ul
+         ;;mov word [tiles+ul],tiles + (hormax*vermax-1)*tilesize
+         move.l #tiles+(hormax*vermax-1)*tilesize,tiles+ul(a3)
 ;;         mov #tiles + <<hormax*<vermax-1>>*tilesize>,@#tiles+ur+<<hormax-1>*tilesize>
+         ;;mov word [tiles+ur+(hormax-1)*tilesize],tiles + hormax*(vermax-1)*tilesize
+         move.l #tiles+hormax*(vermax-1)*tilesize,tiles+ur+(hormax-1)*tilesize(a3)
 ;;         mov #tiles+<<hormax-1>*tilesize>,@#tiles+dl+<hormax*<vermax-1>*tilesize>
+	 ;;mov word [tiles+dle+hormax*(vermax-1)*tilesize],tiles+(hormax-1)*tilesize
+	 move.l #tiles+(hormax-1)*tilesize,tiles+dl+hormax*(vermax-1)*tilesize
 ;;         mov #tiles,@#tiles+dr+<<vermax*hormax-1>*tilesize>
+         ;;mov word [tiles+dr+(vermax*hormax-1)*tilesize],tiles
+	 move.l #tiles,tiles+dr+(vermax*hormax-1)*tilesize
 ;;         return
-         mov word [tiles+ul],tiles + (hormax*vermax-1)*tilesize
-         mov word [tiles+ur+(hormax-1)*tilesize],tiles + hormax*(vermax-1)*tilesize
-         mov word [tiles+dle+hormax*(vermax-1)*tilesize],tiles+(hormax-1)*tilesize
-         mov word [tiles+dr+(vermax*hormax-1)*tilesize],tiles
-         retn
+         ;;retn
+         rts
 
 plain:
+        rts
+	if 0
 ;;         mov #tiles,r0
 ;;         mov #hormax,r1
 ;;         mov #plainbox,r2

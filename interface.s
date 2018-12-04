@@ -90,55 +90,56 @@ dispatcher:
          ;;je .c101
          beq .c101
        
-       rts
-   if 0
-         cmp al,'T'
-         jnz .c6
+         cmpi.b #"T",d0
+         bne .c6
 
-         cmp [topology],0
-         jz .c84
+         tst.b topology(A3)
+         beq .c84
 
-         call torus
-         mov [topology],0
-         jmp .c86
+         bsr torus
+         move.b #0,topology(a3)
+         bra .c86
 
-.c84:    call plain
-         inc [topology]
-.c86:    jmp tograph
+.c84:    bsr plain
+         addq.b #1,topology(A3)
+.c86:    ;;jmp tograph
+         rts
 
-.c6:     cmp al,'o'
-         jnz .c7
+.c6:     cmpi.b #'o',d0
+         bne .c7
 
-         cmp [mode],0
-         jnz .c101
+         tst.b mode(a3)
+         bne .c101
 
-         cmp [tilecnt],0
-         jnz .c108
+         tst.w tilecnt(a3)
+         bne .c108
 
-         call incgen
-         jmp .c202
+         bsr incgen
+         bra .c202
 
-.c108:   call zerocc
-         call generate
-         call showscn
-         jmp cleanup
+.c108:   bsr zerocc
+         bsr generate
+         bsr showscn
+         bra cleanup
 
-.c7:     cmp al,'?'
-         jnz .c8
+.c7:     cmpi.b #'?',d0
+         bne .c8
 
-         jmp help
+         ;bra help
 
-.c8:     cmp al,'C'
-         jnz .c10
+.c8:     cmpi.b #'C',d0
+         bne .c10
 
-         cmp [tilecnt],0
-         jnz .c201
+         tst.w tilecnt(a3)
+         bne .c201
 
-         call zerogc
-.c202:   jmp infoout
-.c201:   jmp clear
+         ;bsr zerogc
+.c202:   bra infoout
+.c201:   ;jmp clear
 
-.c10:    cmp al,'E'
+.c10:    cmpi.b #'E',d0
+	rts
+	if 0
          jnz .c11
 
          dec [pseudoc]

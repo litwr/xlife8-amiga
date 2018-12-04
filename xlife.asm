@@ -133,12 +133,6 @@ mainloop:
          include "tile.s"
          ;include "ramdata.s"
 
-level2i:     ;btst #3,$bfed01   ;kbd
-             ;beq level2ie
-
-             move.b #1,key_ready
-level2ie:    jmp $ffff00
-
 	if 0
 start_timer:    cli                 ;SAVE/SET INTR8 VECTOR
                 xor ax,ax
@@ -744,7 +738,7 @@ zoom      dc.b 0
 ;zbgs      dc.b 0
 ;zfg       dc.b 3
 ;zfgnc     dc.b 5
-;topology  dc.b 0      ;0 - torus
+topology  dc.b 0      ;0 - torus
 ;crsrticks dc.b 1
 ;;errst:     dc.b 0   ;0 - do not print i/o-errors message, 1 - print
 ;ppmode    dc.b 1    ;putpixel mode: 0 - tentative, 1 - active
@@ -827,7 +821,7 @@ BITPLANE1_PTR:		DC.L	0
 BITPLANE2_PTR:		DC.L	0
 TASK_PTR:		DC.L	0
 
-KEYB_BUFFER:		DCB.B	64,0
+KEYB_BUFFER:		DCB.B	KB2_SIZE,0
 KEYB_OUTBUFFER:		DC.W	0
 KEYB_INBUFFER:		DC.W	0
 

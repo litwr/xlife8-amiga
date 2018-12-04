@@ -1,4 +1,12 @@
+;*******************************************************
+;*             This code is based on the               *
+;*                                                     *
+;*      AsmOne example coded by Rune Gram-Madsen       *
+;*                                                     *
+;*******************************************************
+
 ScreenHeight = 256	;200 for NTSC
+KB2_SIZE = 128
 
 J	BSR.S	STARTUP
 	BEQ.S	.ERROR		; An error ?
@@ -34,13 +42,13 @@ CLOSEDOWN:
 
 TASK_FIND:
 	SUB.L	A1,A1		; a1 = 0 Our task
-	MOVE.L	4.W,A6		; Exec pointer	
-	JSR	FINDTASK(A6)	; Call Findtask
+	MOVE.L	4.W,A6
+	JSR	FINDTASK(A6)
 	MOVE.L	D0,TASK_PTR(A3)	; Store the pointer for our task
 	RTS
 
 COLORS_SET:
-	MOVE.L	SCREEN_HANDLE(A3),A0	; Get screen handle
+	MOVE.L	SCREEN_HANDLE(A3),A0
 	LEA.L	44(A0),A0		; Get the screens viewport
 
 	MOVE.L	GRAPHICS_BASE(A3),A6
@@ -56,10 +64,10 @@ KEYB_INIT:
 	MOVEQ	#0,D1			; Unit
 	JSR	OPENDEVICE(A6)		
 	TST.L	D0			; An error
-	BNE.S	STARTUP_ERROR		; Error quit !!
+	BNE.S	STARTUP_ERROR
 
 	MOVE.L	IO_REQUEST+20,CONSOLE_DEVICE(A3)	; Get console device
-	MOVE.L	WINDOW_HANDLE(A3),A0	; Window Handle
+	MOVE.L	WINDOW_HANDLE(A3),A0
 	MOVE.L	$56(A0),KEY_PORT(A3)	; Get this windows keyport
 	RTS
 
@@ -85,8 +93,8 @@ GRAPHLIB_OPEN:
 	MOVE.L	4.W,A6
 	LEA	GRAPHICS_NAME(A3),A1	; Pointer to "graphics.library"
 	JSR	OldOpenLibrary(A6)
-	MOVE.L	D0,GRAPHICS_BASE(A3)	; Store pointer
-	BEQ	STARTUP_ERROR		; If error jump
+	MOVE.L	D0,GRAPHICS_BASE(A3)
+	BEQ	STARTUP_ERROR
 	RTS
 
 GRAPHLIB_CLOSE:
@@ -95,11 +103,11 @@ GRAPHLIB_CLOSE:
 	JMP	CloseLibrary(A6)
 
 SCREEN_OPEN:
-	LEA.L	SCREEN_DEFS(A3),A0	; Pointer to screen definitions
-	MOVE.L	INTUITION_BASE(A3),A6	; Get intuition base
-	JSR	OPENSCREEN(A6)		; Open the screen
+	LEA.L	SCREEN_DEFS(A3),A0
+	MOVE.L	INTUITION_BASE(A3),A6
+	JSR	OPENSCREEN(A6)
 	MOVE.L	D0,SCREEN_HANDLE(A3)
-	BEQ	STARTUP_ERROR		; If not opened => error
+	BEQ	STARTUP_ERROR
 
 	MOVE.L	D0,A0
 	;MOVEQ #0,D0
@@ -137,14 +145,20 @@ WINDOW_CLOSE:
 	JMP	CLOSEWINDOW(A6)
 
 KEYB_STILLKEYSINBUFFER:
-	ADDQ.B	#1,KEYB_OUTBUFFER+1(A3)	; Increase out pointer
-	LEA	KEYB_BUFFER(A3),A0	; Pointer to buffer
+        move.w KEYB_OUTBUFFER(A3),d1  ; Increase out pointer
+        addq.w #1,d1
+        cmpi.w #KB2_SIZE,d1
+        bne .l1
+
+        moveq #0,d1
+.l1:	move.w d1,KEYB_OUTBUFFER(A3)
+        LEA	KEYB_BUFFER(A3),A0
 	MOVE.B	(A0,D0.W),D0		; Get the oldest key
 	RTS
 
 KEYB_GETKEYS:
 	MOVE.L	KEY_PORT(A3),A0	; Our key port
-	MOVE.L	$4.W,A6
+	MOVE.L	4.W,A6
 	JSR	GETMSG(A6)	; Get the message
 	MOVE.L	D0,KEY_MSG(A3)
 	BEQ.S	KEYB_GETKEYS	; No message, jump again
@@ -184,14 +198,18 @@ KEYB_GETKEYS0:
 	MOVE.W	KEYB_INBUFFER(A3),D1
 .LOOP:	MOVE.B	(A1)+,(A0,D1.W)		; Copy the keys to the normal
 	ADDQ.B	#1,D1			;  buffer.
-	DBF	D0,.LOOP
+        cmpi.w #KB2_SIZE,D1
+        bne .l1
+
+        moveq #0,d1
+.l1:	DBF	D0,.LOOP
 	MOVE.W	D1,KEYB_INBUFFER(A3)
 
 ;******* ANSWER KEYPRESS *******
 KEYB_ANSWER:
 	MOVE.L	KEY_MSG(A3),A1
-	MOVE.L	$4.W,A6
-	JSR	REPLYMSG(A6)		; Reply the message
+	MOVE.L	4.W,A6
+	JSR	REPLYMSG(A6)
         moveq #0,d0
         rts
 
