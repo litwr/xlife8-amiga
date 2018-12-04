@@ -169,7 +169,7 @@ KEYB_GETKEYS0:
 
 	MOVE.L	D3,D1
 	AND.L	#RAWKEY,D1	; Was it a raw key ??
-	;BEQ	KEYB_ANSWER	; If no just answer
+	BEQ	KEYB_ANSWER	; If no just answer
 
 	MOVE.W	24(A4),D4	; Key code
 	BTST	#7,D4		; Bit 7 - Key release
@@ -193,6 +193,7 @@ KEYB_GETKEYS0:
 ; d0 = number of chars in the convert buffer
 	SUBQ.W	#1,D0
 	BMI.S	KEYB_ANSWER		; No chars ??
+
 	LEA	KEY_BUFFER(A3),A1
 	LEA	KEYB_BUFFER(A3),A0
 	MOVE.W	KEYB_INBUFFER(A3),D1
@@ -204,6 +205,8 @@ KEYB_GETKEYS0:
         moveq #0,d1
 .l1:	DBF	D0,.LOOP
 	MOVE.W	D1,KEYB_INBUFFER(A3)
+        ;;bsr KEYB_ANSWER
+        ;;bra KEYB_STILLKEYSINBUFFER
 
 ;******* ANSWER KEYPRESS *******
 KEYB_ANSWER:

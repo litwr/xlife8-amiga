@@ -1,12 +1,12 @@
 getkey:
-	MOVE.W	KEYB_OUTBUFFER(A3),D0	; Buffer output pointer
+	MOVE.W	KEYB_OUTBUFFER(A3),D0
 	CMP.W	KEYB_INBUFFER(A3),D0	; Is buffer empty
 	BNE	KEYB_STILLKEYSINBUFFER	; No ??
 	BSR	KEYB_GETKEYS		; Empty, Wait on a key from
 	BRA.S	getkey
 
 getkey2:  ;******* KEY POLLING *******
-	 MOVE.W	KEYB_OUTBUFFER(A3),D0	; Buffer output pointer
+	 MOVE.W	KEYB_OUTBUFFER(A3),D0
 	 CMP.W	KEYB_INBUFFER(A3),D0	; Is buffer empty
 	 BNE	KEYB_STILLKEYSINBUFFER	; No ??
 
@@ -72,7 +72,7 @@ dispatcher:
          ;;retn
          rts
 
-.c5:     
+.c5:
          ;;cmp al,'h'
          cmpi.b #"h",d0
          ;;jnz .c4
@@ -136,625 +136,373 @@ dispatcher:
          tst.w tilecnt(a3)
          bne .c201
 
-         ;bsr zerogc
+         bsr zerogc
 .c202:   bra infoout
-.c201:   ;jmp clear
+.c201:   jmp clear
 
 .c10:    cmpi.b #'E',d0
-	rts
-	if 0
-         jnz .c11
-
-         dec [pseudoc]
-         jz .c111
-
-         mov [pseudoc],1
-.c111:   jmp showscn
-
-.c11:    cmp al,'!'
-         jnz .c12
-
-         call random
-         jmp showscn
-
-.c12:    cmp al,'%'
-         jnz .c14
-
-         jmp indens
-
-;;14$:     cmpb #'B,r0
-;;         beq 159$
-;;         jmp @#15$
-.c14:    cmp al,'B'
-         jnz .c15
-
-.c159:   call insteps
-         mov ax,[temp2]
-         or ax,ax
-         jz .c142
-
-         mov word [x0],ax
-         call inmode
-         js .c402
-         jnz .c400
-         jmp .c500
-
-.c402:   call start_timer
-.c146:   cmp [tilecnt],0
-         jnz .c147
-
-         call incgen
-         jmp .c148
-
-.c147:   call generate
-         call cleanup
-.c148:   dec word [x0]
-         jnz .c146
-
-.c401:   call benchcalc
-.c142:   call tograph
-         jmp calccells
-
-.c400:   call tograph
-         call start_timer
-
-.c5146:  cmp [tilecnt],0
-         jnz .c5147
-
-         call incgen
-         jmp .c5148
-
-.c5147:  call zerocc
-         call generate
-         call showscn
-         call cleanup
-.c5148:  dec word [x0]
-         jnz .c5146
-         jmp .c401
-
-.c500:   call tograph
-         call start_timer
-.c4147:  call showscn
-         dec word [x0]
-         jnz .c4147
-         jmp .c401
-
-.c15:    cmp al,'R'
-         jnz .c16
-
-         call totext
-         call inborn
-         cmp al,27         ;esc
-         jz .c200
-
-         mov bx,born
-         call setrconst
-         call instay
-         mov bx,live
-         call setrconst
-         call fillrt
-;;200$:    call @#tograph
-;;;*         jsr calccells    ;for load sequence
-;;;*         jsr crsrset      ;showscn also calls crsrset! but crsrset is fast now...
-;;;*         jmp crsrcalc
-;;         return
-.c200:   jmp tograph
-
-.c16:    cmp ah,4dh   ;cursor right
-         jnz .c160
-
-;;         call @#crsrclr
-;;         mov #crsrbit,r4
-;;         mov #right,r1
-         call crsrclr
-         mov bx,crsrbit
-         mov di,right
-
-;;;*         jsr shift
-;;;*         bcc cright
-;;         call @#shift
-;;         beq 80$
-         call shift
-         jz .cright
-
-;;;*         lda vptilecx
-;;;*         adc #7
-;;;*         jmp qleft
-;;         add #8,@#vptilecx
-;;         br 273$
-         add [vptilecx],8
-         jmp .c270
-
-;;;*cright   inc vptilecx
-;;;*         lda crsrbit
-;;;*         cmp #1
-;;;*         beq cxright
-
-;;;*         lsr crsrbit
-;;;*         jmp cont17u
-;;80$:     incb @#vptilecx
-;;         movb @r4,r0
-;;         cmpb r0,#1
-;;         beq 71$
-.cright:
-         inc [vptilecx]
-         mov cl,[bx]
-         cmp cl,1
-         jz .c71
-
-;;         rorb @#crsrbit    ;CY=0 by CMPB
-;;         br 273$
-         shr [crsrbit],1
-         jmp .c270
-
-;;;*cxright  lda #$80
-;;;*         bne cm6
-;;71$:    mov #128,r0
-;;        br 72$
-.c71:   mov cl,80h
-        jmp .c72
-
-.c160:  cmp ah,4bh ;cursor left
-        jnz .c161
-
-;;         call @#crsrclr
-;;         mov #crsrbit,r4
-;;         mov #left,r1
-        call crsrclr
-        mov bx,crsrbit
-        mov di,left
-
-;;;*         jsr shift
-;;;*         bcc cleft
-         call shift
-         jz .cleft
-
-;;;*         lda vptilecx
-;;;*         sbc #8
-;;;*qleft    sta vptilecx
-;;;*         jmp cont17u
-;;         movb @#vptilecx,r0
-;;         sub #8,r0
-;;         movb r0,@#vptilecx
-;;273$:    br 270$
-         sub [vptilecx],8
-         jmp .c270
-
-;;;*cleft    dec vptilecx
-;;;*         lda crsrbit
-;;;*         cmp #$80
-;;;*         beq cxleft
-;;;*         asl crsrbit
-;;;*         jmp cont17u
-;;81$:     decb @#vptilecx
-;;         movb @r4,r0
-;;         cmpb #128,r0
-;;         beq 76$
-.cleft:
-         dec [vptilecx]
-         mov cl,[bx]
-         cmp cl,80h
-         jz .c76
-
-;;         aslb @#crsrbit
-;;         br 270$
-         shl [crsrbit],1
-         jmp .c270
-
-;;;*cxleft   lda #1
-;;76$:     mov #1,r0
-.c76:    mov cl,1
-
-;;;*cm6      ldx #0
-;;;*cm1      sta t1
-;;;*         stx i2
-;;;*         lda (crsrtile),y
-;;;*         tax
-;;;*         iny
-;;;*         lda (crsrtile),y
-;;;*         cmp #>plainbox
-;;;*         bne cm4
-;;;*
-;;;*         cpx #<plainbox
-;;;*         bne cm4
-;;72$:     mov @#crsrtile,r2
-;;         add r1,r2
-;;         cmp @r2,#plainbox
-;;         bne 73$
-.c72:    mov si,[crsrtile]
-         add si,di
-         cmp word [si],plainbox
-         jnz .c73
-         jmp .c270     ;optimize 8088!
-
-.c73:    lodsw
-         mov [crsrtile],ax
-.c74:    mov [bx],cl
-         jmp .c270
-
-.c161:   cmp ah,48h  ;cursor up
-         jnz .c162
-
-;;         call @#crsrclr
-;;         mov #crsrbyte,r4
-;;         mov #up,r1
-        call crsrclr
-        mov bx,crsrbyte
-        mov di,up
-
-;;;*         jsr shift
-;;;*         bcc cup
-         call shift
-         jz .cup
-
-;;;*         lda vptilecy
-;;;*         sbc #8
-;;;*qup      sta vptilecy
-;;;*         jmp cont17u
-;;         sub #8*256,@#vptilecx
-;;         br 270$
-         sub [vptilecy],8
-         jmp .c270
-
-;;;*cup      dec vptilecy
-;;;*         lda crsrbyte
-;;;*         beq cxup
-;;82$:     decb @#vptilecy
-;;         tstb @r4
-;;         beq 77$
-.cup:    dec [vptilecy]
-         cmp byte [bx],0
-         jz .c77
-
-;;;*         dec crsrbyte
-;;;*         jmp cont17u
-;;         decb @r4
-;;         br 270$
-         dec byte [bx]
-         jmp .c270
-
-;;;*cxup     lda #7
-;;;*cm3      ldx #1
-;;;*         bpl cm1
-;;77$:     mov #7,r0
-;;         br 72$
-.c77:    mov cl,7
-         jmp .c72
-
-.c162:   cmp ah,50h  ;cursor down
-         jnz .c17
-
-;;         call @#crsrclr
-;;         mov #crsrbyte,r4
-;;         mov #down,r1
-        call crsrclr
-        mov bx,crsrbyte
-        mov di,down
-
-;;;*         jsr shift
-;;;*         bcc cdown
-;;         call @#shift
-;;         beq 83$
-         call shift
-         jz .cdown
-
-;;;*         lda vptilecy
-;;;*         adc #7
-;;;*         bcc qup
-;;         add #8*256,@#vptilecx
-;;         br 270$
-         add [vptilecy],8
-         jmp .c270
-
-;;;*cdown    inc vptilecy
-;;;*         lda crsrbyte
-;;;*         cmp #7
-;;;*         beq cxdown
-;;83$:     incb @#vptilecy
-;;         cmpb #7,@r4
-;;         beq 78$
-.cdown:
-         inc [vptilecy]
-         cmp byte [bx],7
-         jz .c78
-
-;;         incb @r4
-;;         br 270$
-         inc byte [bx]
-         jmp .c270
-
-;;;*cxdown   lda #0
-;;;*         beq cm3
-;;78$:     clr r0
-;;         br 72$
-.c78:    xor cx,cx
-         jmp .c72
-
-.c17:    cmp al,' '    ;space
-         jnz .c170
-
-;;;*         #assign16 adjcell,crsrtile
-;;         mov @#crsrtile,r2
-;;         movb r0,sum(r2)        ;always writes no-zero value
-         mov di,[crsrtile]
-         mov [di+sum],al        ;always writes no-zero value
-
-;;;*         jsr chkadd
-;;         call @#chkadd
-         call chkadd
-
-;;;*         ldy crsrbyte
-;;         movb @#crsrbyte,r0
-         xor bx,bx
-         mov bl,[crsrbyte]
-
-;;;*         lda (crsrtile),y
-;;         add r2,r0
-           add bx,di
-
-;;;*         eor crsrbit
-;;;*         sta (crsrtile),y
-;;         movb @#crsrbit,r1
-;;         movb @r0,r2
-;;         xor r1,r2
-;;         movb r2,@r0
-         mov al,[crsrbit]
-         mov ah,al
-         xor al,[bx]
-         mov [bx],al
-
-;;;*         ldy #sum
-;;;*         and crsrbit
-;;;*         beq lsp1
-;;         bitb r1,r2
-;;         beq 79$
-         test al,ah
-         jz .c79
-
-;;;*         jsr inctsum
-;;;*lsp2     sta (crsrtile),y  ;always writes no-zero value, so must be AC != 0
-;;         mov #1,r2
-;;         call @#inctsum
-          mov al,1
-          call inctsum
-
-;;;*         lda zoom
-;;;*         beq lsp3
-;;;*
-;;;*         jsr showscnz
-;;;*lsp3     jsr infoout
-;;;*         jmp cont17u
-;;         call @#infoout
-;;         br 270$
-         call infoout
-         jmp .c270
-
-;;;*lsp1     jsr dectsum
-;;;*         bne lsp2
-;;79$:     call @#calccells
-;;         br 270$
-.c79:    call calccells
-         jmp .c270
-
-.c170:   cmp al,'.'
-         jnz .c171
-
-         call crsrclr
-
-;;;*         lda #<tiles+(tilesize*249)
-;;;*         sta crsrtile
-;;;*         lda #>tiles+(tilesize*249)
-;;;*         sta crsrtile+1
-;;         mov #tiles+<tilesize*249>,@#crsrtile
-           mov [crsrtile],tiles+tilesize*(hormax*vermax/2+hormax/2-1)
-
-;;;*         lda #1
-;;;*         sta crsrbyte
-;;         mov #1,r1
-;;         movb r1,@#crsrbyte
-           mov al,1
-           mov [crsrbyte],al
-
-;;;*cont17t  sta crsrbit
-;;;*         jsr cont17u
-;;272$:    movb r1,@#crsrbit
-;;         call @#270$
-.c272:   mov [crsrbit],al
-         call .c270
-
-;;;*         lda zoom
-;;;*         beq exit0
-;;         tstb @#zoom
-;;         beq 100$
-         cmp [zoom],0
-         jz .c100
-
-;;;*         jsr setviewport
-;;;*         jsr showscnz
-         call setviewport
-         call showscnz
-
-
-;;;*cont17u  jsr crsrset
-;;;*         jmp crsrcalc
-;;270$:    call @#crsrset
-;;         jmp @#crsrcalc
-.c270:   call crsrset
-         jmp crsrcalc
-
-.c171:   cmp ah,47h    ;home
-         jnz .c172
-
-         call crsrclr
-
-;;;*         lda #<tiles
-;;;*         sta crsrtile
-;;;*         lda #>tiles
-;;;*         sta crsrtile+1
-;;         mov #tiles,@#crsrtile
-         mov [crsrtile],tiles
-
-;;;*         lda #0
-;;;*         sta crsrbyte
-;;         clrb @#crsrbyte
-         mov [crsrbyte],0
-
-;;;*         lda #$80
-;;;*         bne cont17t
-;;         mov #128,r1
-;;         br 272$
-         mov al,80h
-         jmp .c272
-
-.c172:   cmp al,'l'
-         jnz .c173
-
-         mov al,[zoom]
-         push ax
-         mov [zoom],0
-         call loadmenu
-         jnz .c302
-
-.c303:   call tograph
-         call loadpat
-.c302:   pop ax
-         mov [zoom],al
-         call calccells
-         jmp tograph
-
-.c173:   cmp al,'L'
-         jnz .c174
-
-         cmp [fn],0
-         jne .c317
-.c100:   retn
-
-.c317:   mov al,[zoom]
-         push ax
-         mov [zoom],0
-         jmp .c303
-
-.c174:   cmp al,'+'
-         jnz .c175
-
-;;;*zoomin   jsr crsrclr
-;;;*         jsr savebl     ;sets YR to 255
-;;;*         sty zoom
-;;;*         jsr xclrscn
-;;;*         jsr setviewport
-;;;*         jmp finish
-;;         tstb @#zoom
-;;         bne 100$
-         cmp [zoom],0
-         jnz .c100
-
-;;         call @#clrscn
-;;         incb @#zoom
-;;         call @#setviewport
-;;271$:    jmp @#tograph0
-         inc [zoom]
-         call tograph
-         jmp .c270
-
-.c175:   cmp al,'-'
-         jnz .c176
-
-;;         tstb @#zoom
-;;         beq 100$
-         cmp [zoom],0
-         jz .c100
-
-;;319$:    clrb @#zoom
-;;         br 271$
-         mov [zoom],0
-         jmp tograph
-
-.c176:   cmp al,'V'
-         jnz .c177
-
-         jmp showcomm
-
-.c177:   cmp al,'v'
-         jnz .c178
-         jmp infov
-
-.c178:   cmp al,'Z'
-         jnz .c179
-
-         call totext
-         call chgcolors
-.c220:   jmp tograph
-
-.c179:   cmp al,'X'
-         jnz .c18
-
-         call totext
-         call setcolors
-         jmp .c220
-
-.c18:    cmp al,'S'
-         jnz .c20
-
-         call boxsz
-         je .c20
-
-         call getsvfn
-         jnz .c220
-
-         call savepat
-         jmp .c220
-
-;;;*cont20   clc
-;;;*         rts
-.c20:      retn
-
-;;;*shift    lda $543   ;shift st
-;;;*         beq cont20
-;;;*
-;;;*         lda (crsrtile),y
-;;;*         tax
-;;;*         iny
-;;;*         lda (crsrtile),y
-;;;*         dey
-;;;*         cmp #>plainbox
-;;;*         bne cm4x
-;;;*
-;;;*         cpx #<plainbox
-;;;*         beq cont20
-;;;*
-;;;*cm4x     sta crsrtile+1
-;;;*         stx crsrtile
-;;;*         sec
-;;;*         rts
-;;;*         .bend
-;;shift:   tstb @#kbdbuf+1
-;;         beq 20$
-
-;;         mov @#crsrtile,r0
-;;         add r1,r0
-;;         cmp #plainbox,@r0
-;;         beq 20$
-
-;;         mov @r0,@#crsrtile
-;;20$:     return
-shift:   ;push ds
-         ;xor ax,ax
-         ;mov ds,ax
-         ;mov al,[417h]
-         ;pop ds
-         mov ah,2
-         int 16h
-         test al,43h
-         jz .l1
-
-         mov bp,[crsrtile]
-         mov ax,[ds:bp+di]
-         cmp ax,plainbox   ;sets NZ
-         jz .l1
-
-         mov [crsrtile],ax
-.l1:     retn
+	 bne .c11
+
+         subq.b #1,pseudoc(a3)
+         beq .c111
+
+         move.b #1,pseudoc(a3)
+.c111:   bsr clrscn
+         bra showscn
+
+.c11:    cmpi.b #'!',d0
+         bne .c12
+
+         ;;call random
+         bra showscn
+
+.c12:    cmpi.b #'%',d0
+         bne .c14
+
+         ;jmp indens
+
+.c14:    cmpi.b #'B',d0
+         bne .c15
+
+;;.c159:   call insteps
+         ;;mov ax,[temp2]
+         ;;or ax,ax
+         ;;jz .c142
+
+         ;;mov word [x0],ax
+         ;;call inmode
+         ;;js .c402
+         ;;jnz .c400
+         ;;jmp .c500
+
+;;.c402:   call start_timer
+;;.c146:   cmp [tilecnt],0
+         ;;jnz .c147
+
+         ;;call incgen
+         ;;jmp .c148
+
+;;.c147:   call generate
+;;         call cleanup
+;;.c148:   dec word [x0]
+;;         jnz .c146
+
+;;.c401:   call benchcalc
+;;.c142:   call tograph
+         ;;jmp calccells
+
+;;.c400:   call tograph
+         ;;call start_timer
+
+;;.c5146:  cmp [tilecnt],0
+         ;;jnz .c5147
+
+         ;;call incgen
+         ;;jmp .c5148
+
+;;.c5147:  call zerocc
+;;         call generate
+         ;;call showscn
+         ;;call cleanup
+;;.c5148:  dec word [x0]
+         ;;jnz .c5146
+         ;;jmp .c401
+
+;;.c500:   call tograph
+         ;;call start_timer
+;;.c4147:  call showscn
+         ;;dec word [x0]
+         ;;jnz .c4147
+         ;;jmp .c401
+
+.c15:    cmpi.b #'R',d0
+         bne .c16
+
+         ;;call totext
+         ;;call inborn
+         ;;cmp al,27         ;esc
+         ;;jz .c200
+
+         ;;mov bx,born
+         ;;call setrconst
+         ;;call instay
+         ;;mov bx,live
+         ;;call setrconst
+         ;;call fillrt
+;;.c200:   jmp tograph
+
+.c16:    cmpi.b #' ',d0    ;space
+         bne .c170
+
+         ;;mov di,[crsrtile]
+         ;;mov [di+sum],al        ;always writes no-zero value
+         ;;call chkadd
+         ;;xor bx,bx
+         ;;mov bl,[crsrbyte]
+          ;;add bx,di
+         ;;mov al,[crsrbit]
+         ;;mov ah,al
+         ;;xor al,[bx]
+         ;;mov [bx],al
+         ;;test al,ah
+         ;;jz .c79
+
+          ;;mov al,1
+          ;;call inctsum
 
+         ;;call infoout
+         ;;jmp .c270
+
+;;.c79:    call calccells
+         ;;jmp .c270
+
+.c170:   cmpi.b #'.',d0
+         bne .c171
+
+         ;;call crsrclr
+           ;;mov [crsrtile],tiles+tilesize*(hormax*vermax/2+hormax/2-1)
+           ;;mov al,1
+           ;;mov [crsrbyte],al
+
+.c272:   move.b d0,crsrbit(a3)
+         bsr .c270
+         tst.b zoom(a3)
+         beq .c100
+
+         ;;call setviewport
+         ;;call showscnz
+.c270:   bsr crsrset
+         ;;jmp crsrcalc
+         rts
+
+.c171:   cmpi.b #"H",d0    ;home
+         bne .c172
+
+         bsr crsrclr
+         move.l #tiles,crsrtile(a3)
+         move.b #0,crsrbyte(a3)
+         move.b #$80,d0
+         bra .c272
+
+.c172:   cmpi.b #'l',d0
+         bne .c173
+
+         ;;mov al,[zoom]
+         ;;push ax
+         ;;mov [zoom],0
+         ;;call loadmenu
+         ;;jnz .c302
+
+;;.c303:   call tograph
+         ;;call loadpat
+;;.c302:   pop ax
+         ;;mov [zoom],al
+         ;;call calccells
+         ;;jmp tograph
+
+.c173:   cmpi.b #'L',d0
+         bne .c174
+
+         ;;cmp [fn],0
+         ;;jne .c317
+.c100:   rts
+
+;;.c317:   mov al,[zoom]
+         ;;push ax
+         ;;mov [zoom],0
+         ;;jmp .c303
+
+.c174:   cmpi.b #'+',d0
+         bne .c175
+
+         ;;cmp [zoom],0
+         ;;jnz .c100
+
+         ;;inc [zoom]
+         ;;call tograph
+         ;;jmp .c270
+
+.c175:   cmpi.b #'-',d0
+         bne .c176
+
+         ;;cmp [zoom],0
+         ;;jz .c100
+
+         ;;mov [zoom],0
+         ;;jmp tograph
+
+.c176:   cmpi.b #'V',d0
+         bne .c177
+
+         ;;jmp showcomm
+
+.c177:   cmpi.b #'v',d0
+         bne .c178
+         ;;jmp infov
+
+.c178:   cmpi.b #'Z',d0
+         bne .c179
+
+         ;;call totext
+         ;;call chgcolors
+;;.c220:   jmp tograph
+
+.c179:   cmpi.b #'X',d0
+         bne .c18
+
+         ;;call totext
+         ;;call setcolors
+         ;;jmp .c220
+
+.c18:    cmpi.b #'S',d0
+         bne .c20
+
+         ;;call boxsz
+         ;;je .c20
+
+         ;;call getsvfn
+         ;;jnz .c220
+
+         ;;call savepat
+         ;;jmp .c220
+
+.c20:    cmpi.b #$9b,d0   ;extended keys
+         bne .c100
+
+         bsr getkey2
+         cmpi.b #$43,d0   ;cursor right
+         beq .c20cr
+
+         cmpi.b #$20,d0
+         bne .c160
+
+         bsr getkey2
+         cmpi.b #$40,d0
+         bne .c160x
+
+         ;;add [vptilecx],8
+	 bsr crsrclr
+         movea.l crsrtile(a3),a0
+         movea.l (right,a0),a1
+         cmpa.l #plainbox,a1
+         beq .c270
+
+         move.l a1,crsrtile(a3)
+         bra .c270
+
+.c20cr:  ;;inc [vptilecx]
+         move.b crsrbit(a3),d0
+         cmpi.b #1,d0
+         beq .c71
+
+         lsr.b d0
+         move.b d0,(crsrbit,a3)
+         bra .c270
+
+.c71:	 bsr crsrclr
+         movea.l crsrtile(a3),a0
+         movea.l (right,a0),a1
+         cmpa.l #plainbox,a1
+         beq .c270
+
+         move.b #$80,crsrbit(a3)
+         move.l a1,crsrtile(a3)
+         bra .c270
+
+.c160:   cmpi.b #$44,d0   ;cursor left
+         beq .c160cl
+
+         cmpi.b #$20,d0
+         bne .c161
+
+         bsr getkey2
+.c160x:  cmpi.b #$41,d0
+         bne .c101
+
+         ;;sub [vptilecx],8
+	 bsr crsrclr
+         movea.l crsrtile(a3),a0
+         movea.l (left,a0),a1
+         cmpa.l #plainbox,a1
+         beq .c270
+
+         move.l a1,crsrtile(a3)
+         bra .c270
+
+.c160cl:  ;;inc [vptilecx]
+         move.b crsrbit(a3),d0
+         cmpi.b #$80,d0
+         beq .c71x
+
+         lsl.b d0
+         move.b d0,crsrbit(a3)
+         bra .c270
+
+.c71x:	 bsr crsrclr
+         movea.l crsrtile(a3),a0
+         movea.l (left,a0),a1
+         cmpa.l #plainbox,a1
+         beq .c270
+
+         move.b #1,crsrbit(a3)
+         move.l a1,crsrtile(a3)
+         bra .c270
+
+.c161:   cmpi.b #$41,d0  ;cursor up
+         bne .c162
+
+        ;;call crsrclr
+        ;;mov bx,crsrbyte
+        ;;mov di,up
+         ;;call shift
+         ;;jz .cup
+
+         ;;sub [vptilecy],8
+         ;;jmp .c270
+
+;;.cup:    dec [vptilecy]
+         ;;cmp byte [bx],0
+         ;;jz .c77
+
+         ;;dec byte [bx]
+         ;;jmp .c270
+
+;;.c77:    mov cl,7
+         ;;jmp .c72
+
+.c162:   cmpi.b #$42,d0  ;cursor down
+         bne .c101
+
+        ;;call crsrclr
+        ;;mov bx,crsrbyte
+        ;;mov di,down
+         ;;call shift
+         ;;jz .cdown
+
+         ;;add [vptilecy],8
+         ;;jmp .c270
+
+;;.cdown:
+         ;;inc [vptilecy]
+         ;;cmp byte [bx],7
+         ;;jz .c78
+
+         ;;inc byte [bx]
+         bra .c270
+
+;;shift:   mov ah,2
+         ;;int 16h
+         ;;test al,43h
+         ;;jz .l1
+
+        ;;mov bp,[crsrtile]
+         ;;mov ax,[ds:bp+di]
+         ;;cmp ax,plainbox   ;sets NZ
+         ;;jz .l1
+
+         ;;mov [crsrtile],ax
+;;.l1:     retn
+   if 0
 benchcalc: call stop_timer
          mov ax,20480    ;=4096*5=TIMERV*5
          mul [timercnt]

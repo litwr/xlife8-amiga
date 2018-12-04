@@ -1,11 +1,8 @@
-clear:    ;call zerocc
-          ;call zerogc
+clear:    bsr zerocc
+          bsr zerogc
           ;;mov si,[startp]
           movea.l startp(a3),a4
 
-;;.c10:     xor ax,ax
-;;          cmp al,[si+sum]
-;;          jz .c11
 .c10:	 tst.b (sum,a4)
 	 beq .c11
 
@@ -13,15 +10,15 @@ clear:    ;call zerocc
           clr.b (sum,a4)
           ;;mov [si],ax
           ;;mov [si+2],ax
-          clr.l (a4)    ;(a4)+
+          clr.l (a4)+
           ;;mov [si+4],ax
           ;;mov [si+6],ax
-          clr.l (4,a4)
+          clr.l (a4)
 
 .c11:
 ;;         mov next(r0),r0
 	 ;;mov si,[si+next]
-	 movea.l (next,a4),a4
+	 movea.l (next-4,a4),a4
 ;;          cmp r0,#1
          ;;cmp si,1
 	 cmpa.l #1,a4
@@ -29,11 +26,12 @@ clear:    ;call zerocc
          ;;jnz .c10
          bne .c10
 
-         ;call showscn
+         ;;call showscn
+         bsr showscn
          ;;call cleanup0
          bsr cleanup0
 	 ;;jmp infoout
-         ;**bra infoout
+         bra infoout
 
 chkaddt:
 	 ;;or cx,cx

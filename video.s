@@ -617,11 +617,7 @@ showscn:
 ;;         tstb @#pseudoc
          ;;or [pseudoc],0
 	 tst.b pseudoc(a3)
-;;         beq showscn2
-         ;;jz showscn2
-;;          br  showscnp
-         ;;jmp showscnp
-	 ;**bne showscnp
+         bne showscnp
 
 showscn2:
 	 ;;mov @#startp,r0
@@ -666,108 +662,58 @@ showscn2:
 ;;         cmp #1,r0
          ;;cmp si,1
 	 cmpa.w #1,a4
-
-;;          bne 1$
-          ;;jz .lz
-          ;;jmp .l1
 	 bne .l1
 
-.lz:
-	 ;;jmp crsrset
-	 rts
+	 jmp crsrset
 
- if 0
-showscnp: ;;mov @#startp,r0
-;;1$:       call @#showscnp1
-;;          mov next(r0),r0
-;;          cmp #1,r0
-;;          bne 1$
-;;          jmp @#crsrset
-          mov si,[startp]
-.c1:      call showscnp1
-          mov si,[si+next-8]
-          cmp si,1
-          jnz .c1
-          jmp crsrset
+showscnp:
+	 ;;mov @#startp,r0
+         ;;mov si,[startp]
+	 movea.l startp(a3),a4
 
-showscnp1: ;;mov video(r0),r5
-;;          mov @r0,r1
-;;          bne 3$
-          mov di,[si+video]
-          lodsb
-          or al,al
-          jnz .c3
+.l1:
+;;       mov video(r0),r5
+	 ;;mov di,[video+si]
+	 movea.l (video,a4),a5
+	 adda.l BITPLANE2_PTR(A3),A5
 
-;;          mov #tovideo,@#pageport
-;;          clr @r5
-;;          clr 64(r5)
-;;          mov #todata,@#pageport
-;;          br 4$
-          mov word [es:di],0
-          jmp .c4
+         ;;lodsw
+	 move.l (a4),d0
 
-;;3$:       vidmacp count0,0
-;;          swab r1
-;;          bne 5$
-.c3:      vidmacp count0-1,0
-.c4:      lodsb
-          or al,al
-          jnz .c5
+	 move.b d0,(nextline*3,a5)
+	 lsr.w #8,d0
+	 move.b d0,(nextline*2,a5)
 
-          mov word [es:di+2000h],0
-          jmp .c6
+	 swap d0
+	 move.b d0,(nextline,a5)
 
-.c5:      vidmacp count1-2,2000h
-.c6:      lodsb
-          or al,al
-          jnz .c7
+	 lsr.w #8,d0
+	 move.b d0,(a5)
 
-          mov word [es:di+80],0
-          jmp .c8
+         move.l (4,a4),d0
 
-.c7:      vidmacp count2-3,80
-.c8:      lodsb
-          or al,al
-          jnz .c9
+	 move.b d0,(nextline*7,a5)
+	 lsr.w #8,d0
+	 move.b d0,(nextline*6,a5)
 
-          mov word [es:di+2050h],0
-          jmp .c10
+	 swap d0
+	 move.b d0,(nextline*5,a5)
 
-.c9:      vidmacp count3-4,2050h
-.c10:     lodsb
-          or al,al
-          jnz .c12
+	 lsr.w #8,d0
+	 move.b d0,(nextline*4,a5)
 
-          mov word [es:di+160],0
-          jmp .c14
+;;         mov next(r0),r0
+         ;;mov si,[next-8+si]
+	 movea.l (next,a4),a4
 
-.c12:     vidmacp count4-5,160
-.c14:     lodsb
-          or al,al
-          jnz .c15
+;;         cmp #1,r0
+         ;;cmp si,1
+	 cmpa.w #1,a4
+	 bne .l1
 
-          mov word [es:di+20a0h],0
-          jmp .c16
+	 jmp crsrset
 
-.c15:     vidmacp count5-6,20a0h
-.c16:     lodsb
-          or al,al
-          jnz .c17
-
-          mov word [es:di+240],0
-          jmp .c18
-
-.c17:     vidmacp count6-7,240
-.c18:     lodsb
-          or al,al
-          jnz .c19
-
-          mov word [es:di+20f0h],0
-          retn
-
-.c19:     vidmacp count7-8,20f0h
-          retn
-
+   if 0
 chgdrv:  mov al,[curdrv]
          mov bx,drives
 .l2:     inc ax
@@ -1420,26 +1366,25 @@ clrect1pc: push si
          pop dx
          pop si
          retn
+  endif
 
 crsrset1:
-;;         mov @#crsrtile,r0     ;sets r0,r1
-;;         movb @#crsrbyte,r1
-;;         swab r1
-;;         asr r1
-;;         asr r1
-;;         add video(r0),r1
-;;         movb @#crsrbit,r0
-;;         return
-         mov si,[crsrtile]
-         xor bx,bx
-         mov bl,[crsrbyte]
-         shl bx,1
-         mov di,[crsrtab+bx]
-         add di,[si+video]
-         xor bx,bx
-         mov bl,[crsrbit]
-         retn
+;;         mov @#crsrtile,r0
+         ;;mov si,[crsrtile]
+	 movea.l crsrtile(a3),a0
+	 moveq #0,d0
+         move.b crsrbyte(a3),d0
+         mulu #nextline,d0
+         add.l (video,a0),d0
 
+         ;;xor bx,bx
+         moveq #0,d1
+
+         ;;mov bl,[crsrbit]
+         move.b crsrbit(a3),d1
+         rts
+
+    if 0
 setdirmsk:
          call printstr
          db ansiclrscn,green,'SET DIRECTORY MASK ('
@@ -1724,171 +1669,51 @@ setviewport:
         mov ah,[crsrbyte]
         add [si],ax
         retn
+   endif
 
-crsrset: call crsrset1
-         cmp [zoom],0
-         jnz gexit2
+crsrset: bsr crsrset1
+         tst.b zoom(a3)
+         bne gexit2
 
-pixel11:
-;;         asl r0
-;;         mov vistab(r0),r2
-;;         mov r2,r0
-;;         asl r2
-;;         bis r0,r2
-;;         bis r2,@r1
-         shl bx,1    ;it should be after crsrset, IN: bx - crsrbit, di - addr of video tile line
-         mov si,[bx+vistab]
-         mov ax,si
-         shl ax,1
-         or ax,si
-         or [es:di],ax
-gexit2:  retn         ;this is also gexit3
+pixel11: movea.l BITPLANE1_PTR(a3),a0   ;it should be after crsrset, IN: d1 - crsrbit, d0 - addr of video tile line
+         or.b d1,(a0,d0)
+         movea.l BITPLANE2_PTR(a3),a0
+         or.b d1,(a0,d0)
+gexit2:  rts         ;this is also gexit3
 
+   if 0
 pixel11p:push si
          push bx
          call pixel11
          pop bx
          pop si
          retn
+    endif
 
-crsrclr: ;;tstb @#zoom
-;;         bne 1$
-         cmp [zoom],0
-         jnz gexit2
+crsrclr: tst.b zoom(a3)
+         bne gexit2
 
-;;         mov @#crsrtile,r0
-;;         movb @#crsrbyte,r1
-         mov si,[crsrtile]
-         xor bx,bx
-         mov bl,[crsrbyte]
+         movea.l crsrtile(a3),a0
+         moveq #0,d0
+         move.b crsrbyte(a3),d0
+         move.b (a0,d0.w),d1
+         mulu #nextline,d0
+         add.l (video,a0),d0
+         movea.l BITPLANE1_PTR(a3),a0
+         movea.l BITPLANE2_PTR(a3),a1
 
-;;         mov r1,r2
-;;         add r0,r2
-;;         movb @r2,r2
-         mov al,[si+bx]
+         tst.b pseudoc(a3)
+         bne .c2
 
-;;         swab r1
-;;         asr r1
-;;         asr r1
-;;         add video(r0),r1
-         shl bx,1
-         mov bp,bx
-         mov di,[crsrtab+bx]
-         add di,[si+video]
+         move.b #0,(a1,d0)
+         move.b d1,(a0,d0)
+         rts
 
-;;         tstb @#pseudoc
-;;         bne 2$
-         cmp [pseudoc],0
-         jnz .c2
+.c2:     move.b #0,(a0,d0)
+         move.b d1,(a1,d0)
+         rts
 
-;;         mov #tovideo,@#pageport
-;;         asl r2
-;;         mov vistab(r2),r2
-         xor bx,bx
-         mov bl,al
-         shl bx,1
-         mov ax,[bx+vistab]
-
-         xor bx,bx        ;for crsrflash
-         mov bl,[crsrbit]
-         shl bx,1
-         mov bx,[bx+vistab]
-         mov bp,bx
-         shl bp,1
-         or bp,bx
-         and ax,bp
-         not bp
-         mov bx,[es:di]
-         and bx,bp
-         or ax,bx
-
-         stosw
-         retn
-
-;;2$:      movb @#crsrbyte,r3
-;;         asl r3
-;;         asl r3
-;;         add r0,r3
-;;         bitb #15,@#crsrbit
-;;         bne 3$
-.c2:     shl bp,1
-         add bp,si
-         mov cl,4
-         mov ch,[crsrbit]
-         test ch,0fh
-         jnz .c3
-
-;;         mov count0(r3),r3
-;;         bic #^B1110011100111111,r3
-;;         mov r3,r4
-;;         swab r4
-;;         aslb r4   ;sets CY=0
-;;         bis r3,r4
-;;         rorb r2    ;uses CY=0
-;;         asrb r2
-;;         asrb r2
-;;         asrb r2
-;;         call @#8$
-;;         br 5$
-         mov dx,[ds:bp+count0]
-         and dx,1100011000000b
-         shl dh,1
-         or dh,dl
-         shr al,cl
-         shr ch,cl   ;crsrflash
-.c4:     or al,dh
-         mov bx,vistabpc
-         xlatb
-
-         xchg al,ch        ;for crsrflash
-         xlatb
-         mov cl,al
-         shr cl,1
-         or al,cl
-         and ch,al
-         not al
-         and al,[es:di]
-         or al,ch
-
-         stosb
-         retn
-
-;;3$:      inc r1
-;;         mov count0+2(r3),r3
-;;         bic #^B1111110011100111,r3
-;;         asl r3
-;;         asl r3
-;;         asl r3
-;;         mov r3,r4
-;;        swab r4
-;;         asl r4
-;;         bis r3,r4
-;;         bic #^B1111111111110000,r2
-;;         call @#8$
-;;         swab r2
-;;         br 5$
-.c3:     mov dx,[ds:bp+count0+2]
-         and dx,1100011000b
-         shr dl,1
-         or dh,dl
-         mov cl,4
-         shl dh,cl
-         and al,0fh
-         inc di
-         jmp .c4
-
-;;1$:      clrb @#crsrpgmk
-;;         call @#showscnz
-;;         incb @#crsrpgmk
-;;         ;mov @#crsrtile,r0   ;do not remove! ???
-;;         return
-
-;;8$:      bisb r4,r2
-;;         bic #^B1111111100000000,r2
-;;         mov #tovideo,@#pageport
-;;         movb vistabpc(r2),r2
-;;         return
-
+   if 0
 crsrcalc:
 ;;        mov @#crsrtile,r0
 ;;        mov video(r0),r0     ;start of coorditates calculation

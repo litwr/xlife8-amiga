@@ -81,6 +81,8 @@ start:
 
 mainloop:
          ;call crsrflash
+      bsr crsrclr
+      bsr crsrset
 .e1:     bsr dispatcher
          move.b mode(a3),d0
          beq mainloop
@@ -656,10 +658,9 @@ ttab:     dc.b 0,1,2,3,3,4,5,6,7,8,8,9,16,17,18,19,19,20
 ;          dc.b (zv/10)*16 + zv mod 10
 ;          end repeat
 
-;crsrtab   dc.w 0,$2000,80,$2050,160,$20a0,240,$20f0
 tilecnt   dc.w 0
 ;viewport  dc.l tiles
-;crsrtile  dc.l tiles
+crsrtile  dc.l tiles
 ;timercnt  dc.w 0, 0
 ;temp      dc.w 0
 ;temp2     dc.w 0
@@ -707,9 +708,8 @@ digifont dc.b	$3c,$66,$6e,$76,$66,$66,$3c,0   ;8th columns are free
 	 dc.b	$3c,$66,$66,$3e,$6,$66,$3c,0
          dc.w   0,0,0,0,0,0,0                ;space
 
-key_ready dc.b 0
-;crsrbyte  dc.b 0      ;y%8  word aligned
-;crsrbit   dc.b 128    ;x bit position
+crsrbyte  dc.b 0      ;y%8  word aligned
+crsrbit   dc.b 128    ;x bit position
 ;i1        dc.b 0,0
 cellcnt   dc.b 0,0,0
 gencnt    dc.b 0,0,0,0
@@ -801,7 +801,7 @@ FONT_ATTR:
 	DC.W	8		; Size
 
 COLORS:
-	DC.W	$00e0,$0FF0,$0000,$0FFF
+	DC.W	$00e0,$000F,$0000,$0FFF
 	DC.W	$000C,$000B,$000A,$0009
 
 coltran1: dc.b 0,14,0,8   ;stop-torus,stop-plain,run-torus,run-plain
