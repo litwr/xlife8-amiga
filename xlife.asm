@@ -70,15 +70,14 @@ start:
          call help
        endif
 
-     ;bsr clrscn
      move.l #$60c02000,tiles(a3) ;a glider
      ;move.l #$60c04000,tiles(a3) ;a r-pentamino
      ;move.l #$e7000018,tiles(a3)
      ;move.l #$18818181,tiles+4(a3)
      move.w #1,tilecnt(a3)
-     move.b #1,mode(a3)
      move.b #6,(tiles+sum,a3)
      move.l #1,(tiles+next,a3)
+     bsr showscn
 
 mainloop:
          ;call crsrflash
@@ -802,8 +801,11 @@ FONT_ATTR:
 	DC.W	8		; Size
 
 COLORS:
-	DC.W	$0000,$0FF0,$0F00,$0FFF
+	DC.W	$00e0,$0FF0,$0000,$0FFF
 	DC.W	$000C,$000B,$000A,$0009
+
+coltran1: dc.b 0,14,0,8   ;stop-torus,stop-plain,run-torus,run-plain
+coltran2: dc.b 14,0,8,0
 
 FONT_NAME:		DC.B	'topaz.font',0
 CONSOLE_NAME:		DC.B	'console.device',0,0
@@ -845,29 +847,4 @@ WINDOW_HANDLE:	DC.L	0
 	 CNOP 0,4
 tiles:
          include "initiles.s"
-
-	SECTION	Copper,DATA_C
-COPPERLIST:
-	;DC.W BPL1PTH,startpl1>>16
-	;DC.W BPL1PTL,startpl1&$ffff
-        ;DC.W BPL2PTH,startpl2>>16
-	;DC.W BPL2PTL,startpl2&$ffff
-	;DC.W	BPLCON0,$2200	; Bit-Plane control reg.
-	;DC.W	BPL1MOD,0	; Modulo (odd)  ;256,320
-        DC.W	BPL1MOD,0	; Modulo (odd)  ;248
-	DC.W	BPL2MOD,0	; Modulo (even)
-
-	;DC.W	DIWSTRT,$2C81	; Screen Size Start, 320
-        ;DC.W	DIWSTRT,$2C81	; Screen Size Start, 256
-        DC.W	DIWSTRT,$2C81	; Screen Size Start, 248
-	;DC.W	DIWSTOP,$2CC1	; Screen Size Stop, 320
-        ;DC.W	DIWSTOP,$2C81	; Screen Size Stop, 256
-	DC.W	DIWSTOP,$2C79	; Screen Size Stop, 248
-	;DC.W	DDFSTRT,$38	; H-start, 320
-        ;DC.W	DDFSTRT,$38	; H-start, 256
-	DC.W	DDFSTRT,$38	; H-start, 248
-	;DC.W	DDFSTOP,$D0	; H-stop, 320
-        ;DC.W	DDFSTOP,$B0	; H-stop, 256
-	DC.W	DDFSTOP,$ac	; H-stop, 248
-	DC.L	$FFFFFFFE	;End of Copper list
 

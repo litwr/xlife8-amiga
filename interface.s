@@ -46,9 +46,19 @@ dispatcher:
 .c2:     
          ;;inc [mode]
          addi.b #1,mode(a3)
-.c40:    
-         ;;jmp tograph
-         rts
+.c40:    moveq #0,d0
+         move.b mode(a3),d0
+         lsl.b #1,d0
+.c40a:   add.b topology(a3),d0
+         lea coltran1(a3),a0
+         move.b (a0,d0),d1
+         move.b (4,a0,d0),d2
+         moveq #0,d3
+         moveq #0,d0
+         move.l GRAPHICS_BASE(a3),a6
+         MOVE.L	SCREEN_HANDLE(A3),A0
+	 LEA.L	44(A0),A0		; Get the screens viewport
+         jmp SetRGB4(a6)
 
 .c3:     
          ;;cmp al,'Q'
@@ -73,16 +83,10 @@ dispatcher:
          ;;jz .c53
          beq .c53
 
-         ;;mov [mode],2
-         move.b #2,mode(a3)
-         ;;mov ax,4
-         ;;cmp [zoom],ah
-         ;;jz .l1
-
-         ;;mov al,1
-.l1:     ;;int 10h
-         ;;retn
-         rts
+         bsr clrscn
+         moveq #2,d0
+         move.b d0,mode(a3)
+         bra .c40a
 
 .c4:     
          ;;cmp [mode],2
@@ -98,12 +102,11 @@ dispatcher:
 
          bsr torus
          move.b #0,topology(a3)
-         bra .c86
+         bra .c40
 
 .c84:    bsr plain
          addq.b #1,topology(A3)
-.c86:    ;;jmp tograph
-         rts
+         bra .c40
 
 .c6:     cmpi.b #'o',d0
          bne .c7

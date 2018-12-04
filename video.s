@@ -2363,13 +2363,12 @@ printfloat: mov si,stringbuf
         retn
  endif
 
-clrscn:  
-     ;movea.l #startpl1,a0
-	 ;movea.l #startpl2,a1
+clrscn:  movea.l BITPLANE1_PTR(a3),a0
+	 movea.l BITPLANE2_PTR(a3),a1
 	 moveq #0,d0
-	 move.w #nextline*64-1,d1
+	 move.w #nextline*50-1,d1
 .l1:	 move.l d0,(a0)+
 	 move.l d0,(a1)+
-	 dbra.w d1,.l1
+	 dbra d1,.l1
 	 rts
 

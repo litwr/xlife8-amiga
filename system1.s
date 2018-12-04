@@ -169,7 +169,7 @@ KEYB_GETKEYS0:
 
 	MOVE.L	D3,D1
 	AND.L	#RAWKEY,D1	; Was it a raw key ??
-	BEQ	KEYB_ANSWER	; If no just answer
+	;BEQ	KEYB_ANSWER	; If no just answer
 
 	MOVE.W	24(A4),D4	; Key code
 	BTST	#7,D4		; Bit 7 - Key release

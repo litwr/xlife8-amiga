@@ -16,6 +16,7 @@ Forbid		= -132
 Permit		= -138
 
 WaitTOF		= -270
+SetRGB4 =	-288
 
 WaitForChar = -204
 Output = -60

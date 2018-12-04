@@ -1,3 +1,4 @@
+#reloc-lst.sh FILE-IN OFFSET >FILE-OUT
 awk --non-decimal-data '{
    p = match($0,"S01:00[0-9A-F]{6}")
    if (p) {
