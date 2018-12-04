@@ -263,76 +263,109 @@ torus:
          rts
 
 plain:
-        rts
-	if 0
 ;;         mov #tiles,r0
+         ;;mov si,tiles
+         move.l #tiles,a0
 ;;         mov #hormax,r1
+         ;;mov cx,hormax
+         move.w #hormax-1,d0
 ;;         mov #plainbox,r2
-         mov si,tiles
-         mov cx,hormax
-         mov ax,plainbox
+         ;;mov ax,plainbox
+         move.l #plainbox,a1
 
-;;5$:      mov r2,ul(r0)
+.c5:
+;;       mov r2,ul(r0)
+         ;;mov [si+ul],ax
+         move.l a1,(ul,a0)
 ;;         mov r2,up(r0)
+         ;;mov [si+up],ax
+         move.l a1,(up,a0)
 ;;         mov r2,ur(r0)
+         ;;mov [si+ur],ax
+         move.l a1,(ur,a0)
 ;;         add #tilesize,r0
+         ;;add si,tilesize
+         adda.l #tilesize,a0
 ;;         sob r1,5$
-.c5:     mov [si+ul],ax
-         mov [si+up],ax
-         mov [si+ur],ax
-         add si,tilesize
-         loop .c5
+         ;;loop .c5
+         dbra d0,.c5
 
 ;;         mov #tiles+<<vermax-1>*hormax*tilesize>,r0
+         ;;mov si,tiles+(vermax-1)*hormax*tilesize
+         move.l #tiles+(vermax-1)*hormax*tilesize,a0
 ;;         mov #hormax,r1
-         mov si,tiles+(vermax-1)*hormax*tilesize
-         mov cx,hormax
+         ;;mov cx,hormax
+         move.w #hormax-1,d0
 
-;;4$:      mov r2,dr(r0)
+.c4:
+;;         mov r2,dr(r0)
+         ;;mov [si+dr],ax
+         move.l a1,(dr,a0)
 ;;         mov r2,down(r0)
+         ;;mov [si+down],ax
+         move.l a1,(down,a0)
 ;;         mov r2,dl(r0)
+         ;;mov [si+dle],ax
+         move.l a1,(dl,a0)
 ;;         add #tilesize,r0
+         ;;add si,tilesize
+         adda.l #tilesize,a0
 ;;         sob r1,4$
-.c4:     mov [si+dr],ax
-         mov [si+down],ax
-         mov [si+dle],ax
-         add si,tilesize
-         loop .c4
+         ;;loop .c4
+	 dbra d0,.c4
 
 ;;         mov #tiles,r0
+         ;;mov si,tiles
+         move.l #tiles,a0
 ;;         mov #vermax,r1
-         mov si,tiles
-         mov cx,vermax
+         ;;mov cx,vermax
+         move.w #vermax-1,d0
 
-;;3$:      mov r2,left(r0)
+.c3:
+;;         mov r2,left(r0)
+         ;;mov [si+left],ax
+         move.l a1,(left,a0)
 ;;         mov r2,ul(r0)
+         ;;mov [si+ul],ax
+         move.l a1,(ul,a0)
 ;;         mov r2,dl(r0)
+         ;;mov [si+dle],ax
+         move.l a1,(dl,a0)
 ;;         add #tilesize*hormax,r0
+         ;;add si,tilesize*hormax
+         adda.l #tilesize*hormax,a0
 ;;         sob r1,3$
-.c3:     mov [si+left],ax
-         mov [si+ul],ax
-         mov [si+dle],ax
-         add si,tilesize*hormax
-         loop .c3
+         ;;loop .c3
+	 dbra d0,.c3
 
 ;;         mov #tiles+<<hormax-1>*tilesize>,r0
+         ;;mov si,tiles+(hormax-1)*tilesize
+	 move.l #tiles+(hormax-1)*tilesize,a0
 ;;         mov #vermax,r1
-         mov si,tiles+(hormax-1)*tilesize
-         mov cx,vermax
+         ;;mov cx,vermax
+         move.w #vermax-1,d0
 
-;;2$:      mov r2,ur(r0)
+.c2:
+;;         mov r2,ur(r0)
+         ;;mov [si+ur],ax
+         move.l a1,(ur,a0)
 ;;         mov r2,right(r0)
+         ;;mov [si+right],ax
+         move.l a1,(right,a0)
 ;;         mov r2,dr(r0)
+         ;;mov [si+dr],ax
+         move.l a1,(dr,a0)
 ;;         add #tilesize*hormax,r0
+         ;;add si,tilesize*hormax
+         adda.l #tilesize*hormax,a0
 ;;         sob r1,2$
+         ;;loop .c2
+	 dbra d0,.c2
 ;;         return
-.c2:     mov [si+ur],ax
-         mov [si+right],ax
-         mov [si+dr],ax
-         add si,tilesize*hormax
-         loop .c2
-         retn
+         ;;retn
+         rts
 
+    if 0
 random:
 ;;;uses: adjcell:2 - r2, i1:2 - r3/r5, i2 - r4, t1 - r1
 ;;         clr r1   ;dir: 0 - left, 1 - right
