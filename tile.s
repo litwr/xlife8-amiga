@@ -10,15 +10,15 @@ clear:    bsr zerocc
           clr.b (sum,a4)
           ;;mov [si],ax
           ;;mov [si+2],ax
-          clr.l (a4)+
+          clr.l (a4)
           ;;mov [si+4],ax
           ;;mov [si+6],ax
-          clr.l (a4)
+          clr.l (4,a4)
 
 .c11:
 ;;         mov next(r0),r0
 	 ;;mov si,[si+next]
-	 movea.l (next-4,a4),a4
+	 movea.l (next,a4),a4
 ;;          cmp r0,#1
          ;;cmp si,1
 	 cmpa.l #1,a4

@@ -70,13 +70,6 @@ start:
          call help
        endif
 
-     move.l #$60c02000,tiles(a3) ;a glider
-     ;move.l #$60c04000,tiles(a3) ;a r-pentamino
-     ;move.l #$e7000018,tiles(a3)
-     ;move.l #$18818181,tiles+4(a3)
-     move.w #1,tilecnt(a3)
-     move.b #6,(tiles+sum,a3)
-     move.l #1,(tiles+next,a3)
      bsr showscn
 
 mainloop:
@@ -634,7 +627,7 @@ oldcopper:	dc.l 0
 cout:		dc.l 0
 cin:		dc.l 0
 doslib:		dc.l 0
-startp:         dc.l tiles
+startp:         dc.l 1
 
 olddmareq:	dc.w 0
 ;oldintreq:	dc.w 0
@@ -751,7 +744,6 @@ topology  dc.b 0      ;0 - torus
 ;copyleft  dc.b "\CR.TXT",0
 ;nofnchar  dc.b "?,./:;<=>[\]|"
 ;stringbuf blk.b 19     ;must be after nofnchar
-kbdbuf	   blk.b 19
 
 dosname  dc.b "dos.library",0
 

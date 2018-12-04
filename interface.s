@@ -235,35 +235,48 @@ dispatcher:
          bne .c170
 
          ;;mov di,[crsrtile]
+         movea.l crsrtile(a3),a5
          ;;mov [di+sum],al        ;always writes no-zero value
+         move.b d0,(sum,a5)
          ;;call chkadd
+         bsr chkadd
          ;;xor bx,bx
          ;;mov bl,[crsrbyte]
+         moveq #0,d0
+         move.b crsrbyte(a3),d0
           ;;add bx,di
          ;;mov al,[crsrbit]
+         move.b crsrbit(a3),d1
          ;;mov ah,al
+         move.b d1,d2
          ;;xor al,[bx]
+         move.b (a5,d0),d2
+         eor.b d2,d1
          ;;mov [bx],al
+         move.b d1,(a5,d0)
          ;;test al,ah
+         and.b d2,d1
          ;;jz .c79
+         beq .c79
 
           ;;mov al,1
           ;;call inctsum
 
          ;;call infoout
+         bsr infoout
          ;;jmp .c270
+         bra .c270
 
-;;.c79:    call calccells
-         ;;jmp .c270
+.c79:    ;bsr calccells
+         jmp .c270
 
 .c170:   cmpi.b #'.',d0
          bne .c171
 
-         ;;call crsrclr
-           ;;mov [crsrtile],tiles+tilesize*(hormax*vermax/2+hormax/2-1)
-           ;;mov al,1
-           ;;mov [crsrbyte],al
-
+         bsr crsrclr
+         move.l #tiles+tilesize*(hormax*vermax/2+hormax/2-1),crsrtile(a3)
+         moveq #1,d0
+         move.b d0,crsrbyte(a3)
 .c272:   move.b d0,crsrbit(a3)
          bsr .c270
          tst.b zoom(a3)
@@ -384,11 +397,9 @@ dispatcher:
 	 bsr crsrclr
          movea.l crsrtile(a3),a0
          movea.l (right,a0),a1
-         cmpa.l #plainbox,a1
+.csct2:  cmpa.l #plainbox,a1
          beq .c270
-
-         move.l a1,crsrtile(a3)
-         bra .c270
+         bra .csct
 
 .c20cr:  ;;inc [vptilecx]
          move.b crsrbit(a3),d0
@@ -396,7 +407,7 @@ dispatcher:
          beq .c71
 
          lsr.b d0
-         move.b d0,(crsrbit,a3)
+         move.b d0,crsrbit(a3)
          bra .c270
 
 .c71:	 bsr crsrclr
@@ -406,8 +417,7 @@ dispatcher:
          beq .c270
 
          move.b #$80,crsrbit(a3)
-         move.l a1,crsrtile(a3)
-         bra .c270
+         bra .csct
 
 .c160:   cmpi.b #$44,d0   ;cursor left
          beq .c160cl
@@ -423,11 +433,7 @@ dispatcher:
 	 bsr crsrclr
          movea.l crsrtile(a3),a0
          movea.l (left,a0),a1
-         cmpa.l #plainbox,a1
-         beq .c270
-
-         move.l a1,crsrtile(a3)
-         bra .c270
+         bra .csct2
 
 .c160cl:  ;;inc [vptilecx]
          move.b crsrbit(a3),d0
@@ -445,63 +451,66 @@ dispatcher:
          beq .c270
 
          move.b #1,crsrbit(a3)
-         move.l a1,crsrtile(a3)
-         bra .c270
+         bra .csct
 
 .c161:   cmpi.b #$41,d0  ;cursor up
+         beq .c161cu
+
+         cmpi.b #$54,d0  ;shifted
          bne .c162
 
-        ;;call crsrclr
-        ;;mov bx,crsrbyte
-        ;;mov di,up
-         ;;call shift
-         ;;jz .cup
+	 ;;sub [vptilecy],8
+	 bsr crsrclr
+         movea.l crsrtile(a3),a0
+         movea.l (up,a0),a1
+         bra .csct2
 
-         ;;sub [vptilecy],8
-         ;;jmp .c270
+.c161cu: ;;dec [vptilecy]
+	 bsr crsrclr
+         move.b crsrbyte(a3),d0
+         beq .c71cu
 
-;;.cup:    dec [vptilecy]
-         ;;cmp byte [bx],0
-         ;;jz .c77
-
-         ;;dec byte [bx]
-         ;;jmp .c270
-
-;;.c77:    mov cl,7
-         ;;jmp .c72
-
-.c162:   cmpi.b #$42,d0  ;cursor down
-         bne .c101
-
-        ;;call crsrclr
-        ;;mov bx,crsrbyte
-        ;;mov di,down
-         ;;call shift
-         ;;jz .cdown
-
-         ;;add [vptilecy],8
-         ;;jmp .c270
-
-;;.cdown:
-         ;;inc [vptilecy]
-         ;;cmp byte [bx],7
-         ;;jz .c78
-
-         ;;inc byte [bx]
+         subq.b #1,crsrbyte(a3)
          bra .c270
 
-;;shift:   mov ah,2
-         ;;int 16h
-         ;;test al,43h
-         ;;jz .l1
+.c71cu:  movea.l crsrtile(a3),a0
+         movea.l (up,a0),a1
+         cmpa.l #plainbox,a1
+         beq .c270
 
-        ;;mov bp,[crsrtile]
-         ;;mov ax,[ds:bp+di]
-         ;;cmp ax,plainbox   ;sets NZ
-         ;;jz .l1
+         move.b #7,crsrbyte(a3)
+         bra .csct
 
-         ;;mov [crsrtile],ax
-;;.l1:     retn
+.c162:   cmpi.b #$42,d0  ;cursor down
+         beq .c162cd
+
+         cmpi.b #$53,d0  ;shifted
+         bne .c101
+
+	 ;;add [vptilecy],8
+	 bsr crsrclr
+         movea.l crsrtile(a3),a0
+         movea.l (down,a0),a1
+         bra .csct2
+
+.c162cd: ;;inc [vptilecy]
+         bsr crsrclr
+         move.b crsrbyte(a3),d0
+         cmpi.b #7,d0
+         beq .c71cd
+
+         addq.b #1,crsrbyte(a3)
+         bra .c270
+
+.c71cd:	 movea.l crsrtile(a3),a0
+         movea.l (down,a0),a1
+         cmpa.l #plainbox,a1
+         beq .c270
+
+         move.b #0,crsrbyte(a3)
+.csct:   move.l a1,crsrtile(a3)
+         bra .c270
+
    if 0
 benchcalc: call stop_timer
          mov ax,20480    ;=4096*5=TIMERV*5
