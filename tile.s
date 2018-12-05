@@ -456,30 +456,48 @@ random:
         mov bl,right
 .cont1: mov di,[di+down]
         jmp .cont3
-
-calccells: call zerocc
-         cmp [tilecnt],0
-         jnz .c12
-         retn
-
-.c12:    mov si,[startp]
-.c2:     mov cx,8
-         xor ax,ax
-.c4:     lodsb
-         or al,al
-         jz .c5
-
-         mov bx,tab3
-         xlatb
-         call inctsum
-         mov ah,cl
-.c5:     loop .c4
-         mov [si+sum-8],ah
-         mov si,[si+next-8]
-         cmp si,1
-         jnz .c2
-         jmp infoout
    endif
+
+calccells: bsr zerocc
+         tst.w tilecnt(a3)
+         bne .c12
+         rts
+.c12:    
+         ;;mov si,[startp]
+         movea.l startp(a3),a0
+.c2:     
+         ;;mov cx,8
+         moveq #7,d2
+         ;;xor ax,ax
+         moveq #0,d0
+         lea tab3(a3),a2
+.c4:     
+         ;;lodsb
+         move.b (a0)+,d0
+         ;;or al,al
+         ;;jz .c5
+         beq .c5
+
+         ;;mov bx,tab3
+         ;;xlatb
+         move.b (a2,d0),d0
+         ;;call inctsum
+         bsr inctsum
+         ;;mov ah,cl
+.c5:     
+         ;;loop .c4
+         dbra d2,.c4
+
+         ;;mov [si+sum-8],ah
+         move.b d2,(sum-8,a0)
+         ;;mov si,[si+next-8]
+         movea.l (next-8,a0),a0
+         ;;cmp si,1
+         cmpa.l #1,a0
+         ;;jnz .c2
+         bne .c2
+         ;;jmp infoout
+         bra infoout
 
 inctsum:            ;in: d0
          cellsum

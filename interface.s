@@ -266,7 +266,7 @@ dispatcher:
          ;;jmp .c270
          bra .c270
 
-.c79:    ;bsr calccells
+.c79:    bsr calccells
          jmp .c270
 
 .c170:   cmpi.b #'.',d0

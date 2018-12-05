@@ -144,7 +144,7 @@ cellsum macro  ;in: d0		;;macro cellsum l1 {  ;in: al
          move #0,CCR
 	 abcd d0,d1			;;add al,[bx]
 	            			;;aaa
-	 bcc .\@				;;jnc l1
+	 bcc .\@			;;jnc l1
 
 	 move.b d1,(a1)	
 	 moveq #0,d0

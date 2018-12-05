@@ -3,6 +3,8 @@
 ;**from z80 port for Amstrad CPC6128 v2, from K1801VM1 port for BK0011 v1
 ;**from 8088 port for IBM PC v1
 ;written by litwr, 2018
+;thanks to Tuomas Järvensivu's blog post Crash course to Amiga assembly programming
+;some materials were used from AsmOne examples coded by Rune Gram-Madsen
 ;it is under GNU GPL
 
 	 include "amiga.mac"
