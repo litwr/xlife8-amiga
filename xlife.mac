@@ -134,7 +134,7 @@ genmac macro
          cmpi.b #2,mode(a3)		;;cmp [mode],2			;;cmpb #2,@#mode
          beq .\@			;;jz @f
 
-         cellsum .x\@			;;cellsum @f
+         cellsum			;;cellsum @f
 .\@:					;;@@:
 endm
 
@@ -144,14 +144,14 @@ cellsum macro  ;in: d0		;;macro cellsum l1 {  ;in: al
          move #0,CCR
 	 abcd d0,d1			;;add al,[bx]
 	            			;;aaa
-	 bcc \1				;;jnc l1
+	 bcc .\@				;;jnc l1
 
 	 move.b d1,(a1)	
 	 moveq #0,d0
-         incbcd \1			;;incbcd l1
+         incbcd .\@			;;incbcd l1
 	 move.b -(a1),d1
 	 abcd d0,d1
-\1:	 move.b d1,(a1)		
+.\@:	 move.b d1,(a1)		
 endm
 
 incbcd macro				;;macro incbcd l1 {

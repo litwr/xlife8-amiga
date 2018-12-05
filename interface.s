@@ -248,19 +248,18 @@ dispatcher:
          ;;mov al,[crsrbit]
          move.b crsrbit(a3),d1
          ;;mov ah,al
-         move.b d1,d2
          ;;xor al,[bx]
          move.b (a5,d0),d2
-         eor.b d2,d1
+         eor.b d1,d2
          ;;mov [bx],al
-         move.b d1,(a5,d0)
+         move.b d2,(a5,d0)
          ;;test al,ah
          and.b d2,d1
          ;;jz .c79
          beq .c79
 
-          ;;mov al,1
-          ;;call inctsum
+         moveq #1,d0
+         bsr inctsum
 
          ;;call infoout
          bsr infoout

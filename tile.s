@@ -479,11 +479,13 @@ calccells: call zerocc
          cmp si,1
          jnz .c2
          jmp infoout
+   endif
 
-inctsum:            ;in: al
-         cellsum .l1
-.l1:     retn
+inctsum:            ;in: d0
+         cellsum
+	 rts
 
+   if 0
 putpixel:     ;IN: x0,y0; DON'T USE: SI,BP
          call xchgxy
          mov dx,word [x0]

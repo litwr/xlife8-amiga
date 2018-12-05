@@ -595,7 +595,7 @@ showscnzp:
          jmp .loop3
 	endif
 
-gexit:    ;;jmp crsrset
+gexit:    jmp crsrset
 
 showscn:
 	 ;;call infoout
