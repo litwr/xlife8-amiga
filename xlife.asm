@@ -545,7 +545,7 @@ generate:
 	endb a6
 .lnext:
          move.l (next,a4),a4		;;mov si,[si+next]
-         cmpa.l #1,a4			;;cmp si,1
+         cmpa.w #1,a4			;;cmp si,1
 	 bne .c5			;;jz stage2
 					;;jmp .c5
 
@@ -562,25 +562,24 @@ stage2:  movea.l startp(a3),a4		;;mov si,[startp]
          genmac 6
          genmac 7
 	 movea.l (next,a4),a4		;;mov si,[si+next]
-	 cmpa.l #1,a4			;;cmp si,1
+	 cmpa.w #1,a4			;;cmp si,1
 	 bne .c1			;;jz incgen
 					;;jmp .c1
 
 incgen:  lea (gencnt+4,a3),a1		;;mov bx,gencnt+7
 	 moveq #0,d0
          move #16,CCR			;;stc
-         incbcd rts2
-         incbcd rts2
-         incbcd rts2
+         incbcd .irts
+         incbcd .irts
+         incbcd .irts
          move.b -(a1),d1
 	 abcd d0,d1
-rts2:	 move.b d1,(a1)
-	 rts				;;retn
-
+.irts:	 move.b d1,(a1)
+iexit:	 rts				;;retn
 
 cleanup: addi.b #8,clncnt(a3)		;;inc [clncnt]
 	 				;;test [clncnt],15
-	 bpl rts2			;;jnz rts2
+	 bpl iexit			;;jnz iexit
 
 cleanup0:
          move.b #0,clncnt(a3)
@@ -592,7 +591,7 @@ cleanup0:
 		      ;save pointer to previous
 	 move.l a1,a4			;;mov si,bx			;;mov r0,r2
 	 movea.l (next,a1),a1		;;mov bx,[bx+next]		;;mov next(r0),r0
-	 cmpa.l #1,a1			;;cmp bx,1			;;cmp #1,r0
+	 cmpa.w #1,a1			;;cmp bx,1			;;cmp #1,r0
 	 bne .c1			;;jnz .c1
 	 rts				;;retn
 
@@ -796,7 +795,7 @@ FONT_ATTR:
 	DC.W	8		; Size
 
 COLORS:
-	DC.W	$00e0,$000F,$0000,$0FFF
+	DC.W	$00e0,$0990,$0000,$0FFF
 	DC.W	$000C,$000B,$000A,$0009
 
 coltran1: dc.b 0,14,0,8   ;stop-torus,stop-plain,run-torus,run-plain

@@ -304,7 +304,7 @@ xyout:   tst.b zoom(a3)
          bsr digiout
 
 infoout: ;must be before showtinfo
-
+  
          ;;cmp [zoom],0
 	 tst.b zoom(a3)
          ;;jnz infoout2
@@ -448,8 +448,6 @@ showscnz:
 ;;         sta xlimit
          mov bl,5
 
-;;         lda pseudoc
-;;         bne showscnzp
          cmp [pseudoc],0
          jnz showscnzp
 
@@ -633,7 +631,7 @@ showscn2:
 ;;       mov video(r0),r5
 	 ;;mov di,[video+si]
 	 movea.l (video,a4),a5
-	 adda.l BITPLANE1_PTR(A3),A5
+    	 adda.l BITPLANE1_PTR(A3),A5
 
          ;;lodsw
 	 move.l (a4),d0
@@ -679,33 +677,50 @@ showscnp:
 .l1:
 ;;       mov video(r0),r5
 	 ;;mov di,[video+si]
-	 movea.l (video,a4),a5
-	 adda.l BITPLANE2_PTR(A3),A5
+	 movea.l (video,a4),a0
+         movea.l a0,a1
+         adda.l BITPLANE1_PTR(a3),a0
+	 adda.l BITPLANE2_PTR(a3),a1
 
-         ;;lodsw
 	 move.l (a4),d0
+         vidmacp count3
+	 move.b d0,(nextline*3,a1)
+         move.b d1,(nextline*3,a0)
 
-	 move.b d0,(nextline*3,a5)
 	 lsr.w #8,d0
-	 move.b d0,(nextline*2,a5)
+         vidmacp count2
+	 move.b d0,(nextline*2,a1)
+         move.b d1,(nextline*2,a0)
 
 	 swap d0
-	 move.b d0,(nextline,a5)
+	 vidmacp count1
+	 move.b d0,(nextline,a1)
+         move.b d1,(nextline,a0)
 
 	 lsr.w #8,d0
-	 move.b d0,(a5)
+	 vidmacp count0
+	 move.b d0,(a1)
+         move.b d1,(a0)
 
          move.l (4,a4),d0
+	 vidmacp count7
+	 move.b d0,(nextline*7,a1)
+         move.b d1,(nextline*7,a0)
 
-	 move.b d0,(nextline*7,a5)
 	 lsr.w #8,d0
-	 move.b d0,(nextline*6,a5)
+         vidmacp count6
+	 move.b d0,(nextline*6,a1)
+         move.b d1,(nextline*6,a0)
 
 	 swap d0
-	 move.b d0,(nextline*5,a5)
+	 vidmacp count5
+	 move.b d0,(nextline*5,a1)
+         move.b d1,(nextline*5,a0)
 
 	 lsr.w #8,d0
-	 move.b d0,(nextline*4,a5)
+	 vidmacp count4
+	 move.b d0,(nextline*4,a1)
+         move.b d1,(nextline*4,a0)
 
 ;;         mov next(r0),r0
          ;;mov si,[next-8+si]

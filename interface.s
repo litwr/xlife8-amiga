@@ -17,7 +17,7 @@ getkey2:  ;******* KEY POLLING *******
 	 BNE	KEYB_GETKEYS0
 	 rts
 
-dispatcher: 
+dispatcher:
 	 ;;call getkey2
          bsr getkey2
          ;tst.b d0
