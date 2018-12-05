@@ -1713,24 +1713,44 @@ pixel11p:push si
 crsrclr: tst.b zoom(a3)
          bne gexit2
 
-         movea.l crsrtile(a3),a0
-         moveq #0,d0
-         move.b crsrbyte(a3),d0
-         move.b (a0,d0.w),d1
-         mulu #nextline,d0
-         add.l (video,a0),d0
+         movea.l crsrtile(a3),a4
+         moveq #0,d1
+         move.b crsrbyte(a3),d1
+         move.b (a4,d1.w),d0
          movea.l BITPLANE1_PTR(a3),a0
          movea.l BITPLANE2_PTR(a3),a1
+         move.w d1,d6
+         mulu #nextline,d1
+         add.l (video,a4),d1
 
          tst.b pseudoc(a3)
          bne .c2
 
-         move.b #0,(a1,d0)
-         move.b d1,(a0,d0)
+         move.b #0,(a1,d1)
+         move.b d0,(a0,d1)
          rts
 
-.c2:     move.b #0,(a0,d0)
-         move.b d1,(a1,d0)
+.c2:     lsl.w #2,d6
+         move.l (count0,a4,d6.w),d4
+         andi.w #$1803,d4
+         move.w d4,d2
+         lsr.w #1,d4
+         lsr.w #8,d4
+         or.b d4,d2
+
+         swap d4
+	 andi.w #$C018,d4
+         move.w d4,d3
+         add.b d4,d4
+         lsr.w #8,d3
+         or.b d4,d3
+         or.b d2,d3
+         move.b d3,d4
+         and.b d0,d4   ;for plane #1
+         move.b d4,(a0,d1)
+         not.b d3
+         and.b d3,d0   ;for plane #2
+         move.b d0,(a1,d1)
          rts
 
 
