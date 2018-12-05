@@ -284,8 +284,7 @@ dispatcher:
          ;;call setviewport
          ;;call showscnz
 .c270:   bsr crsrset
-         ;;jmp crsrcalc
-         rts
+         jmp crsrcalc
 
 .c171:   cmpi.b #"H",d0    ;home
          bne .c172

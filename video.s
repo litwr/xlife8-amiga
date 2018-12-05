@@ -286,19 +286,23 @@ help:    call totext
          call curoff
          call getkey
          jmp tograph
-
-xyout:   cmp [zoom],0
-         jnz xyout2
-
-         mov dx,3
-         mov di,192*40+66
-         mov bx,xcrsr
-         call digiout
-         mov dl,3
-         mov di,192*40+74
-         ;mov bx,ycrsr
-         jmp digiout
    endif
+
+xyout:   tst.b zoom(a3)
+         ;bne xyout2
+
+         lea ycrsr+2(a3),a1
+         moveq #2,d0
+         movea.l BITPLANE2_PTR(a3),a0
+         adda.l #192*40+39,a0
+         bsr digiout
+
+         lea xcrsr+2(a3),a1
+         moveq #2,d0
+         movea.l BITPLANE2_PTR(a3),a0
+         adda.l #192*40+35,a0
+         bsr digiout
+
 infoout: ;must be before showtinfo
 
          ;;cmp [zoom],0
@@ -1714,180 +1718,104 @@ crsrclr: tst.b zoom(a3)
          move.b d1,(a1,d0)
          rts
 
-   if 0
+
 crsrcalc:
-;;        mov @#crsrtile,r0
-;;        mov video(r0),r0     ;start of coorditates calculation
-        mov bx,[crsrtile]
-        mov bx,[bx+video]
-        push bx
+         ;;mov bx,[crsrtile]
+         movea.l crsrtile(a3),a1
+         ;;mov bx,[bx+video]
+         move.l (video,a1),d1
+         subq.w #4,d1   ;(40-hormax)/2
+         divu #40,d1
+         ;move.b d1,crsry(a3)
+         move.w d1,d0
+         add.b crsrbyte(a3),d0
+         move.w #0,d1
+         swap d1
+         lsl.w #3,d1
+         ;move.b d1,crsrx(a3)
 
-;;        sub #videostart,r0
-        sub bx,40-hormax
-        push bx
+         move.b crsrbit(a3),d2
+.c10:    add.b d2,d2
+         bcs .c8
 
-;;        asl r0
-;;        asl r0
-;;        mov r0,@#crsrx
-        shl bx,1
-        shl bx,1
-        mov [crsrx],bl
-        pop ax
-        mov cl,40
-        div cl
-        mov [crsry],al
-        pop ax
-;;        clr r1
-;;        movb @#crsrbit,r2
-;;10$:    aslb r2
-;;        bcs 8$
+         addq #1,d1
+         bra .c10
 
-;;        inc r1
-;;        br 10$
-        xor bh,bh
-        xchg bl,bh
-        mov cl,[crsrbit]
-.c10:   shl cl,1
-        jc .c8
+.c8:     divu #100,d1
+         move.b d1,xcrsr(a3)
+         move.w #0,d1
+         swap d1
+         divu #10,d1
+         move.w d1,d2
+         lsl #4,d2
+         swap d1
+         add.b d2,d1
+         move.b d1,xcrsr+1(a3)
 
-        inc bl
-        jmp .c10
+         divu #100,d0
+	 move.b d0,ycrsr(a3)
+         move.w #0,d0
+         swap d0
+         divu #10,d0
+         move.w d0,d2
+         lsl #4,d2
+         swap d0
+         or.b d2,d0
+         move.b d0,ycrsr+1(a3)
 
-;;8$:     add r1,r0
-;;        clr r1
-;;        cmpb r0,#100
-;;        bcs 1$
-.c8:    add bh,bl
-        xor bl,bl
-.c8x:   cmp bh,100
-        jc .c1
+         bsr xyout
+         tst.b zoom(a3)
+         ;bne .c18
+         rts
 
-;;        inc r1
-;;        sub #100,r0
-        inc bl
-        sub bh,100
-        jmp .c8x
+.c18:   ;;mov di,up
+        ;;mov al,[vptilecy]
+        ;;mov ah,al
+        ;;add al,8
+        ;;or ah,ah
+        ;;js .c33
 
-;;1$:     movb r1,@#xcrsr
-;;        clr r1
-.c1:    mov [xcrsr],bl
-        xor bl,bl
+        ;;mov di,down
+        ;;sub al,16
+        ;;cmp ah,24
+        ;;jc .c34
 
-;;3$:     cmpb r0,#10
-;;        bcs 2$
-.c3:    cmp bh,10
-        jc .c2
+.c33:   ;;mov [vptilecy],al
+        ;;jmp .c31
 
-;;        inc r1
-;;        sub #10,r0
-;;        br 3$
-        inc bl
-        sub bh,10
-        jmp .c3
+.c34:   ;;mov di,left
+        ;;mov al,[vptilecx]
+        ;;mov ah,al
+        ;;add al,8
+        ;;or ah,ah
+        ;;js .c35
 
-.c2:    mov word [xcrsr+1],bx
-        mov cl,80
-        div cl
-        shl al,1
-        add al,[crsrbyte]
+        ;;mov di,right
+        ;;sub al,16
+        ;;cmp ah,40
+        ;;jc .c30
 
-        mov [ycrsr],1
-        sub al,100
-        jnc .l1
+.c35:   ;;mov [vptilecx],al
+.c31:   ;;add di,[viewport]
+        ;;mov bx,[di]
+        ;;mov [viewport],bx
+        ;;mov di,[bx+dr]
+        ;;mov di,[di+dr]
+        ;;mov di,[di+right]
+        ;;mov di,[di+right]
+        ;;add bx,44*tilesize
+        ;;cmp bx,di
+        ;;jz .c30
 
-        dec [ycrsr]
-        add al,100
-.l1:    xor ah,ah
-        mov cl,10
-        div cl
-        mov word [ycrsr+1],ax
-        call xyout
-        cmp [zoom],0
-        jnz .c18
-        retn
-
-;;18$:    mov #up,r1
-;;        movb @#vptilecy,r3
-;;        add #8,r3
-;;        movb @#vptilecy,r2
-;;        bmi 33$
-.c18:   mov di,up
-        mov al,[vptilecy]
-        mov ah,al
-        add al,8
-        or ah,ah
-        js .c33
-
-;;        mov #down,r1
-;;        sub #16,r3
-;;        cmpb r2,#24
-;;        bcs 34$
-        mov di,down
-        sub al,16
-        cmp ah,24
-        jc .c34
-
-;;33$:    movb r3,@#vptilecy
-;;        br 31$
-.c33:   mov [vptilecy],al
-        jmp .c31
-
-;;34$:    mov #left,r1
-;;        movb @#vptilecx,r3
-;;        add #8,r3
-;;        movb @#vptilecx,r2
-;;        bmi 35$
-.c34:   mov di,left
-        mov al,[vptilecx]
-        mov ah,al
-        add al,8
-        or ah,ah
-        js .c35
-
-;;        mov #right,r1
-;;        sub #16,r3
-;;        cmpb r2,#40
-;;        bcs 30$
-        mov di,right
-        sub al,16
-        cmp ah,40
-        jc .c30
-
-;;35$:    movb r3,@#vptilecx
-.c35:   mov [vptilecx],al
-
-;;31$:    add @#viewport,r1
-;;       mov @r1,r3
-;;        mov r3,@#viewport
-;;        mov dr(r3),r1
-;;        mov dr(r1),r1
-;;        mov right(r1),r1
-;;        mov right(r1),r1
-.c31:   add di,[viewport]
-        mov bx,[di]
-        mov [viewport],bx
-        mov di,[bx+dr]
-        mov di,[di+dr]
-        mov di,[di+right]
-        mov di,[di+right]
-
-;;        add #44*tilesize,r3
-;;        cmp r1,r3
-;;        beq 30$
-        add bx,44*tilesize
-        cmp bx,di
-        jz .c30
-
-;;        call @#setviewport
-;;30$:    jmp @#showscnz
-        call setviewport
-.c30:   call showscnz
-        mov ah,2
-        xor bh,bh
-        mov dx,word [vptilecx]
-        int 10h
-        retn
-
+        ;;call setviewport
+.c30:   ;;call showscnz
+        ;;mov ah,2
+        ;;xor bh,bh
+        ;;mov dx,word [vptilecx]
+        ;;int 10h
+        ;;retn
+        rts
+    if 0
 outdec:  xor dx,dx            ;in: ax
          call todec
          mov si,stringbuf

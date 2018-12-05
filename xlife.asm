@@ -73,6 +73,7 @@ start:
        endif
 
      bsr showscn
+     bsr xyout
 
 mainloop:
          ;call crsrflash
@@ -708,12 +709,12 @@ crsrbit   dc.b 128    ;x bit position
 ;i1        dc.b 0,0
 cellcnt   dc.b 0,0,0
 gencnt    dc.b 0,0,0,0
-;crsrx     dc.b 0      ;[x/8]*8, word aligned
+;crsrx     dc.b 0      ;[x/8]*8
 ;crsry     dc.b 0      ;[y/8]*8
 ;vptilecx  dc.b 0      ;must be word aligned
 ;vptilecy  dc.b 0
-;xcrsr     dc.b 0,0,0
-;ycrsr     dc.b 0,0,0  ;must follow xcrsr
+xcrsr     dc.b 0,0
+ycrsr     dc.b 0,0  ;must follow xcrsr
 tinfo     dc.b 0,0
 ;xchgdir   dc.b 0
 ;xdir      dc.b 0      ;linear transformation, word aligned
