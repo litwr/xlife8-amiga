@@ -145,7 +145,7 @@ printstr:pop dx         ;uses: si,dx,ax
          jmp si
   endif
 digiout:	;in: d0 - length, a0 - scrpos, a1 - data
-	 moveq #0,d1          ;blitter?
+	 moveq #0,d1          ;use blitter?
 	 lea digifont(a3),a2
 .c0:     moveq #6,d2
          move.b -(a1),d1

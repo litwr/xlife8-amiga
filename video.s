@@ -329,49 +329,50 @@ infoout: ;must be before showtinfo
          ;;call digiout
 	 bsr digiout
 
-	 rts
+showtinfo:
+         ;;mov bx,tinfo
+         lea tinfo(a3),a0
+         ;;mov si,[tilecnt]
+         move.w tilecnt(a3),d0
+         ;;shr si,1
+         ;;shr si,1
+         lsr #2,d0
+         ;;cmp si,hormax*vermax/4
+         cmpi.w #hormax*vermax/4,d0
+         ;;jnz .c1
+         bne .c1
+
+         ;;mov word [bx],1
+         move.b #1,(a0)+
+         ;;mov byte [bx+2],0
+         move.b #0,(a0)
+         ;;jmp .c2
+         bra .c2
+
+.c1:        
+	 ;;mov word [bx],0a0ah
+         move.b #$a,(a0)+
+         ;;mov al,[si+ttab]
+         lea ttab(a3),a2
+         move.b (a2,d0),d0
+         ;;mov ah,al
+         move.b d0,d1
+         andi.b #$f0,d1
+         bne .c2
+
+         andi.b #$f,d0
+         ori.b #$a0,d0
+.c2:     move.b d0,(a0)
+         lea tinfo+2(a3),a1
+         ;;mov dx,3
+         moveq #2,d0
+         ;;mov di,192*40+30
+         movea.l BITPLANE2_PTR(a3),a0
+         adda.l #192*40+14+3,a0
+         ;;jmp digiout
+         bra digiout
+
    if 0
-showtinfo:  ;;mov #tinfo,r0  ;must be after infoout
-;;            mov @#tilecnt,r3
-;;            asr r3
-;;            asr r3
-;;            cmp #120,r3   ;sets CY=0
-;;            bne 1$
-         ;cmp [zoom],0
-         ;jnz showtinfo2
-
-            mov bx,tinfo
-            mov si,[tilecnt]
-            shr si,1
-            shr si,1
-            cmp si,hormax*vermax/4
-            jnz .c1
-
-            mov word [bx],1
-            mov byte [bx+2],0
-            jmp .c2
-
-.c1:        mov word [bx],0a0ah
-            mov al,[si+ttab]
-            mov ah,al
-            and al,0fh
-            mov [bx+2],al
-            mov al,ah
-            mov cl,4
-            shr al,cl
-            jz .c2
-
-;;            movb r2,1(r0)
-            mov [bx+1],al
-
-;;2$:         mov #3,r1
-;;            mov #<statusline*64+16384+30>,r2
-;;            call @#digiout
-;;            mov #todata,@#pageport
-.c2:       mov dx,3
-           mov di,192*40+30
-           jmp digiout
-
 xyout2:    mov cx,3
            mov di,24*80+66
            mov si,xcrsr

@@ -714,7 +714,7 @@ gencnt    dc.b 0,0,0,0
 ;vptilecy  dc.b 0
 ;xcrsr     dc.b 0,0,0
 ;ycrsr     dc.b 0,0,0  ;must follow xcrsr
-;tinfo     dc.b 0,0,0
+tinfo     dc.b 0,0
 ;xchgdir   dc.b 0
 ;xdir      dc.b 0      ;linear transformation, word aligned
 ;ydir      dc.b 0
