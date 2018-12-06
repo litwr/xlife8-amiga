@@ -78,8 +78,6 @@ clrtoeol equ '                                       ',0dh
    endif
 
 vidmacp macro
-         ;;mov cx,[si+one]
-         move.l (\1,a4),d1
          andi.w #$1803,d1
          move.w d1,d2
          lsr.w #1,d1

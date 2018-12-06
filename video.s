@@ -683,42 +683,50 @@ showscnp:
 	 adda.l BITPLANE2_PTR(a3),a1
 
 	 move.l (a4),d0
-         vidmacp count3
+         move.l (count3,a4),d1
+         vidmacp
 	 move.b d0,(nextline*3,a1)
          move.b d1,(nextline*3,a0)
 
 	 lsr.w #8,d0
-         vidmacp count2
+         move.l (count2,a4),d1
+         vidmacp
 	 move.b d0,(nextline*2,a1)
          move.b d1,(nextline*2,a0)
 
 	 swap d0
-	 vidmacp count1
+	 move.l (count1,a4),d1
+         vidmacp
 	 move.b d0,(nextline,a1)
          move.b d1,(nextline,a0)
 
 	 lsr.w #8,d0
-	 vidmacp count0
+	 move.l (count0,a4),d1
+         vidmacp
 	 move.b d0,(a1)
          move.b d1,(a0)
 
          move.l (4,a4),d0
-	 vidmacp count7
+	 move.l (count7,a4),d1
+         vidmacp
 	 move.b d0,(nextline*7,a1)
          move.b d1,(nextline*7,a0)
 
 	 lsr.w #8,d0
-         vidmacp count6
+         move.l (count6,a4),d1
+         vidmacp
 	 move.b d0,(nextline*6,a1)
          move.b d1,(nextline*6,a0)
 
 	 swap d0
-	 vidmacp count5
+	 move.l (count5,a4),d1
+         vidmacp
 	 move.b d0,(nextline*5,a1)
          move.b d1,(nextline*5,a0)
 
 	 lsr.w #8,d0
-	 vidmacp count4
+	 move.l (count4,a4),d1
+         vidmacp
 	 move.b d0,(nextline*4,a1)
          move.b d1,(nextline*4,a0)
 
@@ -1714,43 +1722,27 @@ crsrclr: tst.b zoom(a3)
          bne gexit2
 
          movea.l crsrtile(a3),a4
-         moveq #0,d1
-         move.b crsrbyte(a3),d1
-         move.b (a4,d1.w),d0
+         moveq #0,d4
+         move.b crsrbyte(a3),d4
+         move.b (a4,d4.w),d0
          movea.l BITPLANE1_PTR(a3),a0
          movea.l BITPLANE2_PTR(a3),a1
-         move.w d1,d6
-         mulu #nextline,d1
-         add.l (video,a4),d1
+         move.w d4,d6
+         mulu #nextline,d4
+         add.l (video,a4),d4
 
          tst.b pseudoc(a3)
          bne .c2
 
-         move.b #0,(a1,d1)
-         move.b d0,(a0,d1)
+         move.b #0,(a1,d4)
+         move.b d0,(a0,d4)
          rts
 
 .c2:     lsl.w #2,d6
-         move.l (count0,a4,d6.w),d4
-         andi.w #$1803,d4
-         move.w d4,d2
-         lsr.w #1,d4
-         lsr.w #8,d4
-         or.b d4,d2
-
-         swap d4
-	 andi.w #$C018,d4
-         move.w d4,d3
-         add.b d4,d4
-         lsr.w #8,d3
-         or.b d4,d3
-         or.b d2,d3
-         move.b d3,d4
-         and.b d0,d4   ;for plane #1
-         move.b d4,(a0,d1)
-         not.b d3
-         and.b d3,d0   ;for plane #2
-         move.b d0,(a1,d1)
+         move.l (count0,a4,d6.w),d1
+         vidmacp
+         move.b d1,(a0,d4)
+         move.b d0,(a1,d4)
          rts
 
 
