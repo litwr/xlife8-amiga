@@ -13,40 +13,54 @@ curonz: mov ah,1
         mov cx,7
         int 10h
         retn
+  endif
+initxt: 
+        moveq #1,d0   ;draw frame vertical borders
+        move.b #$80,d1
+        move.w #191,d2
+        movea.l BITPLANE1_PTR(a3),a1
+        movea.l BITPLANE2_PTR(a3),a2
+.c1:    move.b d0,(3,a1)
+        move.b d0,(3,a2)
+        move.b d1,(35,a1)
+        move.b d1,(35,a2)
+        adda.l #40,a1
+        adda.l #40,a2
+        dbra d2,.c1
 
-initxt: mov ax,0c003h    ;draw frame vertical borders
-        mov di,39-hormax
-        mov cx,96
-.c1:    mov [es:di+2000h],al
-        mov [es:di+hormax*2+1],ah
-        mov [es:di+hormax*2+1+2000h],ah
-        stosb
-        add di,79
-        loop .c1
+initxt2: move.l GRAPHICS_BASE(a3),a6    ;must follow initxt
+         bsr showtopology
+         movea.l RASTER_PORT(a3),a1
+         move.w #18*8,d0
+         move.w #198,d1
+         jsr Move(a6)
 
-initxt2: call showtopology.l1    ;must follow initxt
-        mov ah,2
-        mov dl,18
-        int 10h
+         movea.l RASTER_PORT(a3),a1
+         lea texts+1(a3),a0
+         move.w #1,d0
+         jsr Text(a6)
 
-        mov ax,9*256+'%'
-        int 10h
+         movea.l RASTER_PORT(a3),a1
+         move.w #32*8,d0
+         move.w #198,d1
+         jsr Move(a6)
 
-        mov ah,2
-        mov dl,32
-        int 10h
+         movea.l RASTER_PORT(a3),a1
+         lea texts+2(a3),a0
+         move.w #1,d0
+         jsr Text(a6)
 
-        mov ax,9*256+'X'
-        int 10h
+         movea.l RASTER_PORT(a3),a1
+         move.w #36*8,d0
+         move.w #198,d1
+         jsr Move(a6)
 
-        mov ah,2
-        mov dl,36
-        int 10h
+         movea.l RASTER_PORT(a3),a1
+         lea texts+3(a3),a0
+         move.w #1,d0
+         jmp Text(a6)
 
-        mov ax,9*256+'Y'
-        int 10h
-        retn
-
+   if 0
 totext: mov ax,1    ;set video mode #4 = 40x25x16
 .e1:    int 10h
         jmp stop_timer2
@@ -98,33 +112,31 @@ showmode: xor bx,bx    ;bg=0=black
 .modego: mov ah,0bh
         int 10h
         retn
+   endif
 
 showtopology:
-        cmp [topology],0
-        jz .l1
+         tst.b topology(a3)
+         beq .l1
 
-        mov di,192*40
-        mov cx,4
-.loop:  mov ax,[es:di+2000h]
-        not ax
-        mov [es:di+2000h],ax
-        mov ax,[es:di]
-        not ax
-        stosw
-        add di,78
-        loop .loop
-        retn
+         movea.l RASTER_PORT(a3),a1
+         moveq #4,d0
+         jsr SetDrMd(a6)
 
-.l1:    mov ah,2     ;must follow initxt
-        mov bx,1   ;color
-        mov dx,24*256
-        int 10h
+.l1:     movea.l RASTER_PORT(a3),a1
+         moveq #1,d0
+         move.w #198,d1
+         jsr Move(a6)
 
-        mov ax,9*256+'G'
-        mov cx,1
-        int 10h
-        retn
+         movea.l RASTER_PORT(a3),a1
+         lea texts(a3),a0
+         move.w #1,d0
+         jsr Text(a6)
 
+         movea.l RASTER_PORT(a3),a1
+         moveq #0,d0
+         jmp SetDrMd(a6)
+
+   if 0
 showtopology2:
         mov al,9
         cmp [topology],0

@@ -12,7 +12,7 @@ getkey2:  ;******* KEY POLLING *******
 
 	 MOVE.L	KEY_PORT(A3),A0	; Our key port
 	 MOVE.L	4.W,A6
-	 JSR	GETMSG(A6)
+	 JSR	GetMsg(A6)
 	 MOVE.L	D0,KEY_MSG(A3)   ;D0=0 means no message
 	 BNE	KEYB_GETKEYS0
 	 rts
@@ -128,7 +128,7 @@ dispatcher:
 .c7:     cmpi.b #'?',d0
          bne .c8
 
-         ;bra help
+         bra help
 
 .c8:     cmpi.b #'C',d0
          bne .c10

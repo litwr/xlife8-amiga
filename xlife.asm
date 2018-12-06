@@ -24,10 +24,6 @@ start:
 	 jsr	OldOpenLibrary(a6)
 	 ;move.l  d0,a6
          move.l d0,doslib(a3)
-         ;jsr     Output(a6)          ;get stdout
-         ;move.l  d0,cout(a3)
-         ;jsr     Input(a6)          ;get stdin
-         ;move.l  d0,cin(a3)
 
 	if 0
 	 mov [iobseg],ds
@@ -74,6 +70,7 @@ start:
 
      bsr showscn
      bsr xyout
+     bsr initxt
 
 mainloop:
          ;call crsrflash
@@ -626,8 +623,6 @@ cleanup0:
 	section Data
 SOD:
 oldcopper:	dc.l 0
-cout:		dc.l 0
-cin:		dc.l 0
 doslib:		dc.l 0
 startp:         dc.l 1
 
@@ -648,10 +643,6 @@ ttab:     dc.b 0,1,2,3,3,4,5,6,7,8,8,9,16,17,18,19,19,20
           dc.b 117,118,119,120,120,121,128,129,130,131,131,132
           dc.b 133,134,135,136,136,137,144,145,146,147,147,148
           dc.b 149,150,151,152,152,153
-;ttab:     repeat hormax*vermax/4
-;          zv = (%-1)*400/hormax/vermax
-;          dc.b (zv/10)*16 + zv mod 10
-;          end repeat
 
 tilecnt   dc.w 0
 ;viewport  dc.l tiles
@@ -774,7 +765,7 @@ WINDOW_DEFS:
 	dc.l	BACKDROP+BORDERLESS+ACTIVATE+RMBTRAP
 	dc.l	0	;Intuition Direct Communications Message Port
 	dc.l	0
-	DC.L	REQUESTER_NAME	; Window name
+	DC.L	0	;REQUESTER_NAME	; Window name
 SCREEN_HANDLE:
 	dc.l	0	;custom screen pointer
 	dc.l	0
@@ -801,10 +792,11 @@ COLORS:
 coltran1: dc.b 0,14,0,8   ;stop-torus,stop-plain,run-torus,run-plain
 coltran2: dc.b 14,0,8,0
 
+texts:	dc.b 'G%XY'
+
 FONT_NAME:		DC.B	'topaz.font',0
 CONSOLE_NAME:		DC.B	'console.device',0,0
-REQUESTER_NAME:		DC.B	'My Requester',0
-SCREEN_NAME:		DC.B	'Xlife-8 for Commodore Amiga',0
+;SCREEN_NAME:		DC.B	'Xlife-8 for Commodore Amiga',0
 INTUITION_NAME:		DC.B	'intuition.library',0
 GRAPHICS_NAME:		DC.B	'graphics.library',0
 	even
@@ -827,6 +819,7 @@ IO_REQUEST:		DCB.B	32,0
 KEY_BUFFER:		DCB.B	80,0
 KEY_PORT:		DC.L	0
 KEY_MSG:		DC.L	0
+RASTER_PORT:		dc.l	0
 
 MY_EVENT:	DC.L	0	; Insert after each event
 EVENT_IECLASS:	DC.B	IECLASS_RAWKEY

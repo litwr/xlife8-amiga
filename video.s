@@ -232,7 +232,22 @@ inmode:  call printstr
 
          sub al,'1'
          retn
+	endif
+text1: dc.b '*** XLIFE COMMANDS ***'
+   cnop 0,4
+help:    move.l GRAPHICS_BASE(a3),a6 
+         movea.l RASTER_PORT(a3),a1
+         moveq #0,d0
+         moveq #8,d1
+         jsr Move(a6)
 
+         movea.l RASTER_PORT(a3),a1
+         lea text1(pc),a0
+         move.w #23,d0
+         jsr Text(a6)
+         rts
+
+        if 0
 help:    call totext
          call printstr
          db black,bold,t9,'*** XLIFE COMMANDS ***',normal
