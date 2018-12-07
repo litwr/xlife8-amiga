@@ -14,8 +14,8 @@ curonz: mov ah,1
         int 10h
         retn
   endif
-initxt: 
-        moveq #1,d0   ;draw frame vertical borders
+
+initxt: moveq #1,d0     ;draw frame vertical borders
         move.b #$80,d1
         move.w #191,d2
         movea.l BITPLANE1_PTR(a3),a1
@@ -28,134 +28,104 @@ initxt:
         adda.l #40,a2
         dbra d2,.c1
 
-initxt2: move.l GRAPHICS_BASE(a3),a6    ;must follow initxt
-         bsr showtopology
-         movea.l RASTER_PORT(a3),a1
+initxt2: bsr showtopology    ;must follow initxt
+         ;movea.l RASTER_PORT(a3),a1
          move.w #18*8,d0
          move.w #198,d1
          jsr Move(a6)
 
-         movea.l RASTER_PORT(a3),a1
-         lea texts+1(a3),a0
-         move.w #1,d0
+         ;movea.l RASTER_PORT(a3),a1
+         lea texts+1(a3),a0  ;%
+         moveq #1,d0
          jsr Text(a6)
 
-         movea.l RASTER_PORT(a3),a1
+         ;movea.l RASTER_PORT(a3),a1
          move.w #32*8,d0
          move.w #198,d1
          jsr Move(a6)
 
-         movea.l RASTER_PORT(a3),a1
-         lea texts+2(a3),a0
-         move.w #1,d0
+         ;movea.l RASTER_PORT(a3),a1
+         lea texts+2(a3),a0  ;X
+         moveq #1,d0
          jsr Text(a6)
 
-         movea.l RASTER_PORT(a3),a1
+         ;movea.l RASTER_PORT(a3),a1
          move.w #36*8,d0
          move.w #198,d1
          jsr Move(a6)
 
-         movea.l RASTER_PORT(a3),a1
-         lea texts+3(a3),a0
-         move.w #1,d0
+         ;movea.l RASTER_PORT(a3),a1
+         lea texts+3(a3),a0  ;Y
+         moveq #1,d0
          jmp Text(a6)
 
-   if 0
-totext: mov ax,1    ;set video mode #4 = 40x25x16
-.e1:    int 10h
-        jmp stop_timer2
+totext:
+        ;bsr stop_timer2
+        bra clrscn
 
-tograph:cmp [zoom],0
-        je .l1
+tograph:bsr clrscn
+        bsr initxt
+        bsr showmode
+        bsr showscn
+        ;bsr start_timer2
+        ;bsr showrules
+        bra xyout
 
-        call totext
-        call curonz
-        call initxt2
-        call setviewport
-        call showmode2
-        call showscn
-        call showtopology2
-        call showrules
-        call xyout2
-        jmp dispatcher.c270
+showmode:moveq #14,d2
+         tst.b mode(a3)
+         bne .e1
 
-.l1:    mov ax,4    ;set video mode #4 = 320x200x4
-        int 10h
-
-        mov bl,[palette]
-        mov bh,1
-        mov ah,0bh
-        int 10h
-
-        call initxt
-        call showmode
-        call showscn
-        call start_timer2
-        call showtopology
-        call showrules
-        jmp xyout
-
-showmode2: cmp [mode],1
-        mov al,[zbgr]
-        jz .modego
-
-        mov al,[zbgs]
-.modego: mov [czbg],al
-        retn
-
-showmode: xor bx,bx    ;bg=0=black
-        mov bl,[bgr]
-        cmp [mode],1
-        jz .modego
-
-        mov bl,[bgs]
-.modego: mov ah,0bh
-        int 10h
-        retn
-   endif
+         moveq #8,d2
+.e1:     moveq #0,d3
+         moveq #0,d0
+         moveq #0,d1
+         move.l GRAPHICS_BASE(a3),a6
+         MOVE.L	VIEW_PORT(A3),A0
+         jmp SetRGB4(a6)
 
 showtopology:
+         move.l GRAPHICS_BASE(a3),a6
+	 movea.l RASTER_PORT(a3),a1
          tst.b topology(a3)
          beq .l1
-
-         movea.l RASTER_PORT(a3),a1
+         
          moveq #4,d0
          jsr SetDrMd(a6)
 
-.l1:     movea.l RASTER_PORT(a3),a1
-         moveq #1,d0
+.l1:     ;movea.l RASTER_PORT(a3),a1
+         moveq #0,d0
          move.w #198,d1
          jsr Move(a6)
 
-         movea.l RASTER_PORT(a3),a1
+         ;movea.l RASTER_PORT(a3),a1
          lea texts(a3),a0
-         move.w #1,d0
+         moveq #1,d0
          jsr Text(a6)
 
-         movea.l RASTER_PORT(a3),a1
+         ;movea.l RASTER_PORT(a3),a1
          moveq #0,d0
          jmp SetDrMd(a6)
 
-   if 0
-showtopology2:
-        mov al,9
-        cmp [topology],0
-        jz .l1
+printstr:
+         movea.l (sp)+,a2
+         lea stringbuf(a3),a1
+         moveq #0,d0
+.l1:     addq.w #1,d0
+         move.b (a2)+,d1
+         move.b d1,(a1)+
+         bne .l1
+         
+         move.l a2,d1
+         addq.l #1,d1
+         andi.b #$fe,d1
+         move.l d1,-(sp)
 
-        mov al,69h
-.l1:    mov [es:1921],al
-        retn
+         movea.l GRAPHICS_BASE(a3),a6
+         movea.l RASTER_PORT(a3),a1
+         lea stringbuf(a3),a0
+         subq.w #1,d0
+         jmp Text(a6)
 
-printstr:pop dx         ;uses: si,dx,ax
-         mov si,dx
-.l1:     lodsb
-         cmp al,'$'
-         jnz .l1
-
-         mov ah,9
-         int 21h
-         jmp si
-  endif
 digiout:	;in: d0 - length, a0 - scrpos, a1 - data
 	 moveq #0,d1          ;use blitter?
 	 lea digifont(a3),a2
@@ -185,12 +155,4 @@ digiout:	;in: d0 - length, a0 - scrpos, a1 - data
 
 	 dbra d0,.c0
 .ce:	 rts
-  if 0
-digiout2:        ;in: cx - length, di - srcpos, si - data
-         mov ah,5   ;color
-.c1:     lodsb
-         add al,'0'
-         stosw
-         loop .c1
-         retn
-  endif
+

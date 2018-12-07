@@ -48,8 +48,7 @@ TASK_FIND:
 	RTS
 
 COLORS_SET:
-	MOVE.L	SCREEN_HANDLE(A3),A0
-	lea	44(A0),A0		; Get the screens viewport
+        movea.l VIEW_PORT(a3),a0
 
 	MOVE.L	GRAPHICS_BASE(A3),A6
 	lea	COLORS(A3),A1		; Pointer to the color list
@@ -110,6 +109,8 @@ SCREEN_OPEN:
 	BEQ	STARTUP_ERROR
 
 	MOVE.L	D0,A0
+        lea 44(a0),a2
+        move.l a2,VIEW_PORT(a3)
 	LEA	$C0(A0),A2		; Get bitplane pointers
 	LEA	BITPLANE1_PTR(A3),A1
 	MOVE.L	(A2)+,(A1)+		; Bitplane 1

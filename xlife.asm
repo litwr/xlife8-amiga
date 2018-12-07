@@ -68,9 +68,7 @@ start:
          call help
        endif
 
-     bsr showscn
-     bsr xyout
-     bsr initxt
+     bsr tograph
 
 mainloop:
          ;call crsrflash
@@ -123,7 +121,7 @@ mainloop:
          include "video.s"
          include "utils.s"
          include "interface.s"
-         ;include "rules.s"
+         include "rules.s"
          include "tile.s"
          ;include "ramdata.s"
 
@@ -626,7 +624,7 @@ oldcopper:	dc.l 0
 doslib:		dc.l 0
 startp:         dc.l 1
 
-olddmareq:	dc.w 0
+;olddmareq:	dc.w 0
 ;oldintreq:	dc.w 0
 ;oldintena:	dc.w 0
 ;oldadkcon:	dc.w 0
@@ -736,7 +734,7 @@ topology  dc.b 0      ;0 - torus
 ;cf        dc.b "\COLORS.CFG",0
 ;copyleft  dc.b "\CR.TXT",0
 ;nofnchar  dc.b "?,./:;<=>[\]|"
-;stringbuf blk.b 19     ;must be after nofnchar
+stringbuf blk.b 40     ;must be after nofnchar
 
 dosname  dc.b "dos.library",0
 
@@ -789,9 +787,6 @@ COLORS:
 	DC.W	$00e0,$0990,$0000,$0FFF
 	DC.W	$000C,$000B,$000A,$0009
 
-coltran1: dc.b 0,14,0,8   ;stop-torus,stop-plain,run-torus,run-plain
-coltran2: dc.b 14,0,8,0
-
 texts:	dc.b 'G%XY'
 
 FONT_NAME:		DC.B	'topaz.font',0
@@ -820,6 +815,7 @@ KEY_BUFFER:		DCB.B	80,0
 KEY_PORT:		DC.L	0
 KEY_MSG:		DC.L	0
 RASTER_PORT:		dc.l	0
+VIEW_PORT:		dc.l 0
 
 MY_EVENT:	DC.L	0	; Insert after each event
 EVENT_IECLASS:	DC.B	IECLASS_RAWKEY
