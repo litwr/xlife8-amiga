@@ -234,61 +234,157 @@ inmode:  call printstr
          retn
 	endif
 
-help:    move.l GRAPHICS_BASE(a3),a6 
+help:    bsr totext
+         move.l GRAPHICS_BASE(a3),a6 
          movea.l RASTER_PORT(a3),a1
-         moveq #0,d0
-         move.w #8,d1
-         jsr Move(a6)
-         bsr printstr
-         dc.b '*** XLIFE COMMANDS ***',0
-         even
-         rts
+         normvideo
+         movepenq 72,8
+         color 3
+         print '*** XLIFE COMMANDS ***'
+         movepenq 0,16
+         color 1
+         print '!'
+         color 2
+         print ' randomize screen'
+         movepenq 0,24
+         color 1
+         print '%'
+         color 2
+         print ' set random density - default=42%'
+         movepenq 0,32
+	 color 1
+         print '+'
+         color 2
+         print '/'
+	 color 1
+         print '-'
+         color 2
+         print ' zoom in/out'
+         movepenq 0,40
+	 color 1
+         print '.'
+         color 2
+         print '/'
+	 color 1
+         print 'H'
+         color 2
+         print ' center/home cursor'
+         movepenq 0,48
+	 color 1
+         print '?'
+         color 2
+         print ' show this help'
+         movepenq 0,56
+	 color 1
+         print 'B'
+         color 2
+         print ' benchmark'
+         movepenq 0,64
+	 color 1
+         print 'C'
+         color 2
+         print ' clear screen'
+         movepenq 0,72
+	 color 1
+         print 'E'
+         color 2
+         print ' toggle pseudocolor mode'
+         movepenq 0,80
+	 color 1
+         print 'g'
+         color 2
+         print ' toggle run/stop mode'
+         movepenq 0,88
+	 color 1
+         print 'h'
+         color 2
+         print ' toggle hide mode - is the fastest'
+         movepenq 0,96
+	 color 1
+         print 'l'
+         color 2
+         print ' load and transform pattern'
+         movepenq 0,104
+	 color 1
+         print 'L'
+         color 2
+         print ' reload pattern'
+         movepenq 0,112
+	 color 1
+         print 'o'
+         color 2
+         print ' one step'
+         movepenq 0,120
+	 color 1
+         print 'Q'
+         color 2
+         print ' quit'
+         movepen 0,128
+	 color 1
+         print 'R'
+         color 2
+         print ' set the rules'
+         movepen 0,136
+	 color 1
+         print 'S'
+         color 2
+         print ' save'
+         movepen 0,144
+	 color 1
+         print 't'
+         color 2
+         print ' toggle plain/torus topology'
+         movepen 0,152
+	 color 1
+         print 'v'
+         color 2
+         print ' show some info'
+         movepen 0,160
+	 color 1
+         print 'V'
+         color 2
+         print ' show comments to the pattern'
+         movepen 0,168
+	 color 1
+         print 'X'
+         color 2
+         print '/'
+	 color 1
+         print 'Z'
+         color 2
+         print ' reload/set&save palette'
+         movepen 0,182
+	 invvideo
+         print 'Use '
+         ;normvideo
+         color 1
+         print 'cursor keys'
+	 color 2
+         invvideo
+         print ' to set a position and a '
+         ;normvideo
+         movepen 0,190
+	 color 1
+         print 'space key'
+         color 2
+         invvideo
+         print ' to toggle the current cell. Us'
+         movepen 0,198
+         print 'e a '
+         ;normvideo
+         color 1
+         print 'shift'
+         color 2
+         invvideo
+         print ' to speed up the movement'
+         normvideo
+         bsr getkey
+         jmp tograph
 
         if 0
 help:    call totext
          call printstr
          db black,bold,t9,'*** XLIFE COMMANDS ***',normal
-         db 0dh,10,red,'!',green
-         db ' randomize screen'
-         db 0dh,10,red,'%',green
-         db ' set random density - default=42%'
-         db 0dh,10,red,'+',green,'/',red,'-',green
-         db ' zoom in/out'
-         db 0dh,10,red,'.',green,'/',red,'Home',green
-         db ' center/home cursor'
-         db 0dh,10,red,'?',green
-         db ' show this help'
-         db 0dh,10,red,'B',green
-         db ' benchmark'
-         db 0dh,10,red,'C',green
-         db ' clear screen'
-         db 0dh,10,red,'E',green
-         db ' toggle pseudocolor mode'
-         db 0dh,10,red,'g',green
-         db ' toggle run/stop mode'
-         db 0dh,10,red,'h',green
-         db ' toggle hide mode - about 10% faster'
-         db 0dh,10,red,'l',green
-         db ' load and transform file'
-         db 0dh,10,red,'L',green
-         db ' reload pattern'
-         db 0dh,10,red,'o',green
-         db ' one step'
-         db 0dh,10,red,'Q',green
-         db ' quit'
-         db 0dh,10,red,'R',green
-         db ' set the rules'
-         db 0dh,10,red,'S',green
-         db ' save'
-         db 0dh,10,red,'t',green
-         db ' toggle plain/torus topology'
-         db 0dh,10,red,'v',green
-         db ' show some info'
-         db 0dh,10,red,'V',green
-         db ' show comments to the pattern'
-         db 0dh,10,red,'X',green,'/',red,'Z',green
-         db ' reload/set&save palette'
-         db 0dh,10,0dh,10,black
          db 'Use ',red,'cursor keys'
          db black, ' to set the position and '
          db red, 'space key', black

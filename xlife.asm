@@ -65,10 +65,8 @@ start:
          call copyr
          call setcolors
          ;incb @#errst
-         call help
        endif
-
-     bsr tograph
+         bsr help
 
 mainloop:
          ;call crsrflash

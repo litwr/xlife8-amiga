@@ -30,9 +30,7 @@ initxt: moveq #1,d0     ;draw frame vertical borders
 
 initxt2: bsr showtopology    ;must follow initxt
          ;movea.l RASTER_PORT(a3),a1
-         move.w #18*8,d0
-         move.w #198,d1
-         jsr Move(a6)
+	 movepen 18*8,198
 
          ;movea.l RASTER_PORT(a3),a1
          lea texts+1(a3),a0  ;%
@@ -40,9 +38,7 @@ initxt2: bsr showtopology    ;must follow initxt
          jsr Text(a6)
 
          ;movea.l RASTER_PORT(a3),a1
-         move.w #32*8,d0
-         move.w #198,d1
-         jsr Move(a6)
+         movepen 32*8,198
 
          ;movea.l RASTER_PORT(a3),a1
          lea texts+2(a3),a0  ;X
@@ -50,9 +46,7 @@ initxt2: bsr showtopology    ;must follow initxt
          jsr Text(a6)
 
          ;movea.l RASTER_PORT(a3),a1
-         move.w #36*8,d0
-         move.w #198,d1
-         jsr Move(a6)
+         movepen 36*8,198
 
          ;movea.l RASTER_PORT(a3),a1
          lea texts+3(a3),a0  ;Y
@@ -89,9 +83,7 @@ showtopology:
          tst.b topology(a3)
          beq .l1
          
-         moveq #4,d0
-         jsr SetDrMd(a6)
-
+         invvideo
 .l1:     ;movea.l RASTER_PORT(a3),a1
          moveq #0,d0
          move.w #198,d1
@@ -108,11 +100,11 @@ showtopology:
 
 printstr:
          movea.l (sp)+,a2
-         lea stringbuf(a3),a1
+         lea stringbuf(a3),a4
          moveq #0,d0
 .l1:     addq.w #1,d0
          move.b (a2)+,d1
-         move.b d1,(a1)+
+         move.b d1,(a4)+
          bne .l1
          
          move.l a2,d1
@@ -120,8 +112,8 @@ printstr:
          andi.b #$fe,d1
          move.l d1,-(sp)
 
-         movea.l GRAPHICS_BASE(a3),a6
-         movea.l RASTER_PORT(a3),a1
+         ;movea.l GRAPHICS_BASE(a3),a6
+         ;movea.l RASTER_PORT(a3),a1
          lea stringbuf(a3),a0
          subq.w #1,d0
          jmp Text(a6)
