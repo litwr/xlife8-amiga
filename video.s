@@ -1,74 +1,96 @@
+insteps: bsr totext
+         move.l GRAPHICS_BASE(a3),a6 
+         movea.l RASTER_PORT(a3),a1
+.c38:    movepenq 0,8
+         color 2
+         print "NUMBER OF GENERATIONS: "   ;24 chars = 192 pixels
+         bsr TXT_PLACE_CURSOR
+.c3:     lea stringbuf(a3),a4
+         moveq #0,d3
+         moveq #0,d6
+.c1:     movem.l a1/a4/a6/d3,-(sp)
+         bsr getkey
+         movem.l (sp)+,a1/a4/a6/d3
+         cmpi.b #$d,d0  ;enter
+         beq .c11
+
+         cmpi.b #27,d0   ;esc
+         bne .c16
+.c20:    bra tograph
+
+.c16:    cmpi.b #8,d0    ;backspace
+         beq .c12
+
+         cmpi.b #'0'+10,d0
+         bcc .c1
+
+         cmpi.b #'0',d0
+         bcs .c1
+
+         cmpi.b #5*8,d3
+         beq .c1
+
+         bsr TXT_ON_CURSOR
+         move.l a4,a0
+         move.b d0,(a4)+
+         addq.w #8,d3
+         moveq #1,d0
+         jsr Text(a6)
+.cont4:  bsr TXT_PLACE_CURSOR
+         bra .c1
+
+.c12:    subq.l #1,a4
+         subq.b #8,d3
+         bmi .c3
+
+         bsr TXT_REMOVE_CURSOR
+         bra .cont4
+
+.c11:    ;bsr TXT_REMOVE_CURSOR
+         tst.b d3
+         beq .c20
+
+;         sub si,bx   ;convert to binary
+          move.w d3,d1
+          lsr #3,d1
+          suba.w d1,a4
+;         xor dx,dx
+          moveq #0,d1
+;         dec bx
+          subq.b #8,d3
+;         shl bx,1
+          lsr #2,d3
+.c33:    ;;lodsb
+          move.b (a4)+,d0
+          sub.b #'0',d0
+;         or al,al
+;         jz .c34
+          beq .c34
+
+;         mov di,[tobin+bx]
+          lea tobin(a3),a0
+          move.w (a0,d3),d5
+.c32:     ;;add dx,di
+          add.w d5,d1
+;         jnc .c38a
+          bcc .c38a
+;         jmp .c38       ;65535=max
+          bra .c38
+
+.c38a:    ;;dec al
+          subq.b #1,d0
+;         jnz .c32
+          bne .c32
+
+.c34:     ;;sub bx,2
+          sub.w #2,d3
+;         jns .c33
+          bpl .c33
+
+         move.w d1,d6
+         bra .c20
+
   if 0
-insteps: call totext
-.c38:    call printstr
-         db ansiclrscn,green,"NUMBER OF GENERATIONS: "
-         db black,'$'
-
-.c3:     mov si,stringbuf
-         xor bx,bx
-         mov [temp2],bx
-.c1:     call getkey
-         cmp al,0dh  ;enter
-         jz .c11
-
-         cmp al,27   ;esc
-         jnz .c16
-.c20:    jmp curoff
-
-.c16:    cmp al,8    ;backspace
-         jz .c12
-
-         cmp al,'0'+10
-         jnc .c1
-
-         cmp al,'0'
-         jc .c1
-
-         cmp bl,5
-         jz .c1
-
-         inc bx
-         mov dl,al
-         mov ah,2
-         int 21h
-
-         sub al,'0'
-         mov [si],al
-         inc si
-         jmp .c1
-
-.c12:    dec si
-         dec bx
-         js .c3
-
-         call delchr
-         jmp .c1
-
-.c11:    cmp bl,0
-         jz .c20
-
-         sub si,bx   ;convert to binary
-         xor dx,dx
-         dec bx
-         shl bx,1
-.c33:    lodsb
-         or al,al
-         jz .c34
-
-         mov di,[tobin+bx]
-.c32:    add dx,di
-         jnc .c38a
-         jmp .c38       ;65535=max
-
-.c38a:   dec al
-         jnz .c32
-
-.c34:    sub bx,2
-         jns .c33
-
-         mov [temp2],dx
-         jmp .c20
-
 bornstay:
          mov si,stringbuf
 .c3:     mov di,si
@@ -119,12 +141,6 @@ bornstay:
          call delchr
          jmp .c1
 
-delchr:  push si              ;changes: ax,dx
-         call printstr
-         db 8,' ',8,'$'
-         pop si
-         retn
-
 inborn:  call printstr
          db green,'THE RULES ARE DEFINED BY ',blue
          db 'BORN',green,' AND ',blue,'STAY',green
@@ -141,98 +157,117 @@ inborn:  call printstr
          mov cl,'1'
          jmp bornstay
 
-
 instay:  call printstr
          db 0dh,10,'STAY = $'
 
          mov cl,'0'
          jmp bornstay
+     endif
 
-indens:  call totext
-         call printstr
-;         .byte 146
-;         .ascii "SELECT DENSITY OR PRESS "
-;         .byte 145
-;         .ascii "KT"
-;         .byte 146
-;         .ascii " TO EXIT"
-         db black,'SELECT DENSITY OR PRESS ',red,'ESC',black,' TO EXIT'
-;         .byte 10,9,145,'0,147
-;         .ascii " - 12.5%"
-         db 0dh,10,t9,red,'0',green,' - 12.5%'
-;         .byte 10,9,145,'1,147
-;         .ascii " - 28%"
-         db 0dh,10,t9,red,'1',green,' - 28%'
-;         .byte 10,9,145,'2,147
-;         .ascii " - 42%"
-         db 0dh,10,t9,red,'2',green,' - 42%'
-;         .byte 10,9,145,'3,147
-;         .ascii " - 54%"
-         db 0dh,10,t9,red,'3',green,' - 54%'
-;         .byte 10,9,145,'4,147
-;         .ascii " - 64%"
-         db 0dh,10,t9,red,'4',green,' - 64%'
-;         .byte 10,9,145,'5,147
-;         .ascii " - 73%"
-         db 0dh,10,t9,red,'5',green,' - 73%'
-;         .byte 10,9,145,'6,147
-;         .ascii " - 81%"
-         db 0dh,10,t9,red,'6',green,' - 81%'
-;         .byte 10,9,145,'7,147
-;         .ascii " - 88.5%"
-         db 0dh,10,t9,red,'7',green,' - 88.5%'
-;         .byte 10,9,145,'8,147
-;         .ascii " - 95%"
-         db 0dh,10,t9,red,'8',green,' - 95%'
-;         .byte 10,9,145,'9,147
-;         .asciz " - 100%"
-;         .byte 0
-         db 0dh,10,t9,red,'9',green,' - 100%',black,'$'
-;1$:      call @#getkey
-;         cmpb #9,r0
-;         beq 2$
-         call curoff
-.c1:     call getkey
-         cmp al,27   ;ESC
-         jz .c2
+indens:  bsr totext
+         move.l GRAPHICS_BASE(a3),a6 
+         movea.l RASTER_PORT(a3),a1
+         movepenq 0,8
+         color 3
+         print "SELECT DENSITY OR PRESS "
+         color 1
+         print "ESC"
+         color 3
+         print " TO EXIT"
+         movepenq 36,16
+         color 1
+         print '0'
+         color 2
+         print ' - 12.5%'
+         movepenq 36,24
+         color 1
+         print '1'
+         color 2
+         print ' - 28%'
+         movepenq 36,32
+         color 1
+         print '2'
+         color 2
+         print ' - 42%'
+         movepenq 36,40
+         color 1
+         print '3'
+         color 2
+         print ' - 54%'
+         movepenq 36,48
+         color 1
+         print '4'
+         color 2
+         print ' - 64%'
+         movepenq 36,56
+         color 1
+         print '5'
+         color 2
+         print ' - 73%'
+         movepenq 36,64
+         color 1
+         print '6'
+         color 2
+         print ' - 81%'
+	 movepenq 36,72
+         color 1
+         print '7'
+         color 2
+         print ' - 88.5%'
+         movepenq 36,80
+         color 1
+         print '8'
+         color 2
+         print ' - 95%'
+	 movepenq 36,88
+         color 1
+         print '9'
+         color 2
+         print ' - 100%'
+.c1:     bsr getkey
+         cmpi.b #27,d0   ;ESC
+         beq .c2
 
-;         cmpb r0,#'0
-;         bcs 1$
-         cmp al,'0'
-         jc .c1
+         cmpi.b #'0',d0
+         bcs .c1
 
-;         cmpb r0,#'0+10
-;         bcc 1$
-         cmp al,'0'+10
-         jnc .c1
+         cmpi.b #'0'+10,d0
+         bcc .c1
 
-;         sub #'0-1,r0
-;         movb r0,@#density
-         sub al,'0'-1
-         mov [density],al
+         subi #'0'-1,d0
+         move.b d0,density(a3)
+.c2:     bra tograph
 
-;2$:      jmp @#tograph
-.c2:     jmp tograph
+inmode:  bsr totext
+         move.l GRAPHICS_BASE(a3),a6 
+         movea.l RASTER_PORT(a3),a1
+         movepenq 0,24
+         color 2
+         print 'SELECT BENCHMARK MODE'
+         movepenq 8,32
+         color 1
+         print '0'
+         color 2
+         print ' - CALCULATIONS'
+         movepenq 8,40
+         color 1
+         print '1'
+         color 2
+         print ' - VIDEO'
+         movepenq 8,48
+         color 1
+         print '2'
+         color 2
+         print ' - BOTH'
+.c1:     bsr getkey
+         cmpi.b #'0',d0
+         bcs .c1
 
-inmode:  call printstr
-         db 0dh,10,0dh,10,green
-         db 'SELECT BENCHMARK MODE'
-         db 0dh,10,32,red,'0',green
-         db ' - CALCULATIONS'
-         db 0dh,10,32,red,'1',green
-         db ' - VIDEO'
-         db 0dh,10,32,red,'2',green
-         db " - BOTH$"
-.c1:     call getkey
-         cmp al,'0'
-         jc .c1
+         cmpi.b #'3',d0
+         bcc .c1
 
-         cmp al,'3'
-         jnc .c1
-
-         sub al,'1'
-         retn
-	endif
+         subi.b #'1',d0
+         rts
 
 help:    bsr totext
          move.l GRAPHICS_BASE(a3),a6 
@@ -268,7 +303,7 @@ help:    bsr totext
 	 color 1
          print 'H'
          color 2
-         print ' center/home cursor'
+         print ' center/home the cursor'
          movepenq 0,48
 	 color 1
          print '?'
@@ -283,32 +318,32 @@ help:    bsr totext
 	 color 1
          print 'C'
          color 2
-         print ' clear screen'
+         print ' clear the screen'
          movepenq 0,72
 	 color 1
          print 'E'
          color 2
-         print ' toggle pseudocolor mode'
+         print ' toggle the pseudocolor mode'
          movepenq 0,80
 	 color 1
          print 'g'
          color 2
-         print ' toggle run/stop mode'
+         print ' toggle the run/stop mode'
          movepenq 0,88
 	 color 1
          print 'h'
          color 2
-         print ' toggle hide mode - is the fastest'
+         print ' toggle the hiding (fastest) mode'
          movepenq 0,96
 	 color 1
          print 'l'
          color 2
-         print ' load and transform pattern'
+         print ' load and transform a pattern'
          movepenq 0,104
 	 color 1
          print 'L'
          color 2
-         print ' reload pattern'
+         print ' reload a pattern'
          movepenq 0,112
 	 color 1
          print 'o'
@@ -343,7 +378,7 @@ help:    bsr totext
 	 color 1
          print 'V'
          color 2
-         print ' show comments to the pattern'
+         print ' show comments to a pattern'
          movepen 0,168
 	 color 1
          print 'X'
@@ -352,7 +387,7 @@ help:    bsr totext
 	 color 1
          print 'Z'
          color 2
-         print ' reload/set&save palette'
+         print ' reload/set&save a palette'
          movepen 0,182
 	 invvideo
          print 'Use '
@@ -380,21 +415,6 @@ help:    bsr totext
          normvideo
          bsr getkey
          jmp tograph
-
-        if 0
-help:    call totext
-         call printstr
-         db black,bold,t9,'*** XLIFE COMMANDS ***',normal
-         db 'Use ',red,'cursor keys'
-         db black, ' to set the position and '
-         db red, 'space key', black
-         db ' to toggle the current cell. '
-         db 'Use ',red, 'shift', black
-         db ' to speed up the movement$'
-         call curoff
-         call getkey
-         jmp tograph
-   endif
 
 xyout:   tst.b zoom(a3)
          ;bne xyout2
@@ -485,52 +505,6 @@ showtinfo:
          bra digiout
 
    if 0
-xyout2:    mov cx,3
-           mov di,24*80+66
-           mov si,xcrsr
-           call digiout2
-           mov cl,3
-           mov di,24*80+74
-           jmp digiout2
-
-infoout2: ;must be before showtinfo2
-           mov si,gencnt
-           mov cx,7
-           mov di,24*80+2
-           call digiout2
-           mov si,cellcnt
-           mov cl,5
-           mov di,24*80+18
-           call digiout2
-
-showtinfo2:  ;must be after infoout2
-           mov bx,tinfo      ;it is too similar to showtinfo
-           mov si,[tilecnt]
-           shr si,1
-           shr si,1
-           cmp si,hormax*vermax/4
-           jnz .c1
-
-           mov word [bx],1
-           mov byte [bx+2],0
-           jmp .c2
-
-.c1:       mov word [bx],0f0f0h
-           mov al,[si+ttab]
-           mov cl,al
-           and al,0fh
-           mov [bx+2],al
-           mov al,cl
-           mov cl,4
-           shr al,cl
-           jz .c2
-
-           mov [bx+1],al
-.c2:       mov cx,3
-           mov si,bx
-           mov di,24*80+30
-           jmp digiout2
-
 calcx:   ;;movb @#crsrbit,r1  ;$80 -> 0, $40 -> 1, ...
 ;;         bis #65280,r1      ;$ff00, IN: R1, OUT: R1
 ;;1$:      add #256,r1
@@ -1199,7 +1173,6 @@ xchgxy:  or [xchgdir],0
          mov [x0],al
 exit7:   retn
 
-
 drawrect: call xchgxy
          xor bx,bx
          mov [xcut],bx       ;0 -> xcut,ycut
@@ -1852,7 +1825,6 @@ crsrclr: tst.b zoom(a3)
          move.b d1,(a0,d4)
          move.b d0,(a1,d4)
          rts
-
 
 crsrcalc:
          ;;mov bx,[crsrtile]

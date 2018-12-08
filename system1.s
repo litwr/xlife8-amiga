@@ -17,16 +17,20 @@ J	BSR.S	STARTUP
 .ERROR:	RTS
 
 STARTUP:
-	MOVE.L	A7,ERROR_STACK(A3)	; Save stack pointer if an error
-	BSR	TASK_FIND
-	BSR	INTULIB_OPEN
-	BSR	GRAPHLIB_OPEN
-	BSR	SCREEN_OPEN
-	BSR	WINDOW_OPEN
-	BSR	KEYB_INIT
-	BSR	COLORS_SET
-	MOVEQ	#-1,D0		; Set ok value
-	RTS
+	 MOVE.L	A7,ERROR_STACK(A3)	; Save stack pointer if an error
+	 BSR	TASK_FIND
+	 BSR	INTULIB_OPEN
+	 BSR	GRAPHLIB_OPEN
+	 BSR	SCREEN_OPEN
+	 BSR	WINDOW_OPEN
+	 BSR	KEYB_INIT
+	 BSR	COLORS_SET
+         move.l GRAPHICS_BASE(a3),a6 
+         movea.l RASTER_PORT(a3),a1
+         moveq #0,d0
+         jsr SetBPen(a6)
+	 MOVEQ	#-1,D0		; Set ok value
+	 RTS
 
 STARTUP_ERROR:
 	MOVE.L	ERROR_STACK(A3),A7	; Restore old stackpointer
@@ -135,8 +139,6 @@ WINDOW_OPEN:
 	MOVE.L	TASK_PTR(A3),A0		; Get task pointer
 	MOVE.L	$B8(A0),TASK_OLDWINDOW(A3)	; Store the old window
 	MOVE.L	D0,$B8(A0)		; Make Reguesters turn up on this Window
-        move.l d0,a0
-        move.l 50(a0),RASTER_PORT(a3)
 	RTS				
 
 WINDOW_CLOSE:

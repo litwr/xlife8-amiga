@@ -1,3 +1,37 @@
+TXT_PLACE_CURSOR:
+	 invvideo
+         print ' '
+         normvideo
+         rts
+
+TXT_ON_CURSOR:        ;IN: d3,a6,a1
+         move.w d0,-(sp)
+         move.w d3,d0
+         addi.w #184,d0
+         moveq #8,d1
+         jsr Move(a6)
+
+         moveq #1,d0
+         jsr SetDrMd(a6)
+         move.w (sp)+,d0
+         rts
+
+TXT_REMOVE_CURSOR:  ;IN: d3,a6,a1
+         move.w d3,d0
+         addi.w #192,d0
+         moveq #8,d1
+         jsr Move(a6)
+
+         moveq #1,d0
+         jsr SetDrMd(a6)
+
+         print ' '
+
+         move.w d3,d0
+         addi.w #184,d0
+         moveq #8,d1
+         jmp Move(a6)
+
   if 0
 curon:  mov ah,1
         mov cx,607h
@@ -80,6 +114,7 @@ showmode:moveq #14,d2
 showtopology:
          move.l GRAPHICS_BASE(a3),a6
 	 movea.l RASTER_PORT(a3),a1
+         color 3
          tst.b topology(a3)
          beq .l1
          
@@ -96,25 +131,23 @@ showtopology:
 
          ;movea.l RASTER_PORT(a3),a1
          moveq #0,d0
-         jmp SetDrMd(a6)
+         jmp SetDrMd(a6)  ;normvideo
 
 printstr:
-         movea.l (sp)+,a2
-         lea stringbuf(a3),a4
+         movea.l (sp),a2
+         movea.l a2,a0
          moveq #0,d0
 .l1:     addq.w #1,d0
-         move.b (a2)+,d1
-         move.b d1,(a4)+
+         tst.b (a2)+
          bne .l1
          
          move.l a2,d1
          addq.l #1,d1
          andi.b #$fe,d1
-         move.l d1,-(sp)
+         move.l d1,(sp)
 
          ;movea.l GRAPHICS_BASE(a3),a6
          ;movea.l RASTER_PORT(a3),a1
-         lea stringbuf(a3),a0
          subq.w #1,d0
          jmp Text(a6)
 

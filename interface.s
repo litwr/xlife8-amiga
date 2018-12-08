@@ -144,15 +144,14 @@ dispatcher:
 .c12:    cmpi.b #'%',d0
          bne .c14
 
-         ;jmp indens
+         jmp indens
 
 .c14:    cmpi.b #'B',d0
          bne .c15
 
-;;.c159:   call insteps
-         ;;mov ax,[temp2]
-         ;;or ax,ax
-         ;;jz .c142
+.c159:   bsr insteps
+         tst.w d6
+         beq .c142
 
          ;;mov word [x0],ax
          ;;call inmode
@@ -173,8 +172,8 @@ dispatcher:
 ;;         jnz .c146
 
 ;;.c401:   call benchcalc
-;;.c142:   call tograph
-         ;;jmp calccells
+.c142:   bsr tograph
+         bra calccells
 
 ;;.c400:   call tograph
          ;;call start_timer
@@ -214,7 +213,7 @@ dispatcher:
          ;;mov bx,live
          ;;call setrconst
          ;;call fillrt
-;;.c200:   jmp tograph
+.c200:   bra tograph
 
 .c16:    cmpi.b #' ',d0    ;space
          bne .c170

@@ -651,7 +651,7 @@ crsrtile  dc.l tiles
 ;filesz    dc.w 0
 ;tsz       dc.w 0
 ;saved     dc.w 0
-;tobin     dc.w 1,10,100,1000,10000
+tobin     dc.w 1,10,100,1000,10000
 ;x0        dc.b 0   ;word aligned for the speed
 ;y0        dc.b 0
 ;live      dc.w 12  ;x0,y0,live,born have to go sequently
@@ -710,7 +710,7 @@ pseudoc   dc.b 0
 mode      dc.b 0      ;0-stop, 1-run, 2-hide, 3-exit
 zoom      dc.b 0
 ;fn        dc.b 0,0,0,0,0,0,0,0,0,0,0,0
-;density   dc.b 3
+density   dc.b 3
 ;czbg      dc.b 0
 ;palette   dc.b 0
 ;bgr       dc.b 0ah
@@ -782,7 +782,7 @@ FONT_ATTR:
 	DC.W	8		; Size
 
 COLORS:
-	DC.W	$00e0,$0990,$0000,$0FFF
+	DC.W	$0080,$0ee0,$0000,$0FFF  ;green,yellow,black,white
 	DC.W	$000C,$000B,$000A,$0009
 
 texts:	dc.b 'G%XY'
