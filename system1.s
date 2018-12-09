@@ -33,16 +33,16 @@ STARTUP:
 	 RTS
 
 STARTUP_ERROR:
-	MOVE.L	ERROR_STACK(A3),A7	; Restore old stackpointer
-	MOVEQ	#0,D0		; Set error value
-	RTS			; Return to main to main routine
+	 MOVE.L	ERROR_STACK(A3),A7	; Restore old stackpointer
+	 MOVEQ	#0,D0		; Set error value
+	 RTS			; Return to main to main routine
 
 CLOSEDOWN:
-	BSR	KEYB_EXIT
-	BSR	WINDOW_CLOSE
-	BSR	SCREEN_CLOSE
-	BSR	GRAPHLIB_CLOSE
-	BRA	INTULIB_CLOSE
+	 BSR	KEYB_EXIT
+	 BSR	WINDOW_CLOSE
+	 BSR	SCREEN_CLOSE
+	 BSR	GRAPHLIB_CLOSE
+	 BRA	INTULIB_CLOSE
 
 TASK_FIND:
 	SUB.L	A1,A1		; a1 = 0 Our task

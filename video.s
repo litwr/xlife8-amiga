@@ -16,7 +16,7 @@ insteps: bsr totext
 
          cmpi.b #27,d0   ;esc
          bne .c16
-.c20:    bra tograph
+.c20:    rts
 
 .c16:    cmpi.b #8,d0    ;backspace
          beq .c12
@@ -46,7 +46,7 @@ insteps: bsr totext
          bsr TXT_REMOVE_CURSOR
          bra .cont4
 
-.c11:    ;bsr TXT_REMOVE_CURSOR
+.c11:    bsr TXT_REMOVE_CURSOR2
          tst.b d3
          beq .c20
 
@@ -238,9 +238,8 @@ indens:  bsr totext
          move.b d0,density(a3)
 .c2:     bra tograph
 
-inmode:  bsr totext
-         move.l GRAPHICS_BASE(a3),a6 
-         movea.l RASTER_PORT(a3),a1
+inmode:  ;move.l GRAPHICS_BASE(a3),a6 
+         ;movea.l RASTER_PORT(a3),a1
          movepenq 0,24
          color 2
          print 'SELECT BENCHMARK MODE'
@@ -2195,41 +2194,14 @@ showtent:mov ax,word [x0]
          mov word [x0],ax
          inc [ppmode]
          retn
-
-printfloat: mov si,stringbuf
-        xor cx,cx
-        mov cl,[stringbuf]
-        mov ah,2
-        cmp cl,1
-        jnz .l3
-
-        mov dl,'.'
-        int 21h
-        mov dl,'0'
-        int 21h
-.l3:    add si,cx
-.l2:    std
-        lodsb
-        cld
-        cmp cl,ah
-        jnz .l1
-
-        mov dl,'.'
-        push ax
-        int 21h
-        pop ax
-.l1:    mov dl,al
-        int 21h
-        loop .l2
-        retn
- endif
+  endif
 
 clrscn:  movea.l BITPLANE1_PTR(a3),a0
-	 movea.l BITPLANE2_PTR(a3),a1
+	 movea.l BITPLANE2_PTR(a3),a2
 	 moveq #0,d0
 	 move.w #nextline*50-1,d1
 .l1:	 move.l d0,(a0)+
-	 move.l d0,(a1)+
+	 move.l d0,(a2)+
 	 dbra d1,.l1
 	 rts
 

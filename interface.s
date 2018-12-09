@@ -17,6 +17,18 @@ getkey2:  ;******* KEY POLLING *******
 	 BNE	KEYB_GETKEYS0
 	 rts
 
+start_timer:
+         move.l $6c,interrupt(a3)
+         ;move.l $6c,rasterie+2
+         clr.l timercnt(a3)
+         move.l #rasteri,$6c
+         rts
+
+stop_timer:
+         move.l interrupt(a3),$6c
+         ;move.l rasterie+2,$6c
+         rts
+
 dispatcher:
 	 ;;call getkey2
          bsr getkey2
@@ -143,7 +155,6 @@ dispatcher:
 
 .c12:    cmpi.b #'%',d0
          bne .c14
-
          jmp indens
 
 .c14:    cmpi.b #'B',d0
@@ -153,51 +164,50 @@ dispatcher:
          tst.w d6
          beq .c142
 
-         ;;mov word [x0],ax
-         ;;call inmode
-         ;;js .c402
-         ;;jnz .c400
-         ;;jmp .c500
+         move.w d6,x0(a3)
+         move.w d6,temp2(a3)
+         bsr inmode
+         beq .c500
+         bhi .c400
 
-;;.c402:   call start_timer
-;;.c146:   cmp [tilecnt],0
-         ;;jnz .c147
+         bsr start_timer
+.c146:   tst.w tilecnt(a3)
+         bne .c147
 
-         ;;call incgen
-         ;;jmp .c148
+         bsr incgen
+         bra .c148
 
-;;.c147:   call generate
-;;         call cleanup
-;;.c148:   dec word [x0]
-;;         jnz .c146
+.c147:   bsr generate
+         bsr cleanup
+.c148:   subq.w #1,temp2(a3)
+         bne .c146
 
-;;.c401:   call benchcalc
+.c401:   bsr benchcalc
 .c142:   bsr tograph
          bra calccells
 
-;;.c400:   call tograph
-         ;;call start_timer
+.c400:   bsr tograph
+         bsr start_timer
+.c5146:  tst.w tilecnt(a3)
+         bne .c5147
 
-;;.c5146:  cmp [tilecnt],0
-         ;;jnz .c5147
+         bsr incgen
+         bra .c5148
 
-         ;;call incgen
-         ;;jmp .c5148
+.c5147:  bsr zerocc
+         bsr generate
+         bsr showscn
+         bsr cleanup
+.c5148:  subq.w #1,temp2(a3)
+         bne .c5146
+         bra .c401
 
-;;.c5147:  call zerocc
-;;         call generate
-         ;;call showscn
-         ;;call cleanup
-;;.c5148:  dec word [x0]
-         ;;jnz .c5146
-         ;;jmp .c401
-
-;;.c500:   call tograph
-         ;;call start_timer
-;;.c4147:  call showscn
-         ;;dec word [x0]
-         ;;jnz .c4147
-         ;;jmp .c401
+.c500:   bsr tograph
+         bsr start_timer
+.c4147:  bsr showscn
+         subq.w #1,temp2(a3)
+         bne .c4147
+         bra .c401
 
 .c15:    cmpi.b #'R',d0
          bne .c16
@@ -493,51 +503,103 @@ dispatcher:
 .csct:   move.l a1,crsrtile(a3)
          bra .c270
 
-   if 0
-benchcalc: call stop_timer
-         mov ax,20480    ;=4096*5=TIMERV*5
-         mul [timercnt]
-         mov cx,59659    ;=1193180/20
-         div cx
-         inc ax
-         shr cx,1
-         cmp dx,cx
-         jbe .c143
+benchcalc: bsr stop_timer
+         move.l timercnt(a3),d5
+         move.l d5,d3
+         add.l d5,d5
+         movea.l 4,a2
+         cmp.b #50,VBlankFrequency(a2)
+         beq .l8
 
-         inc ax
-.c143:   push ax
-         xor dx,dx
-         call todec      ;takes centiseconds in ds:ax
-         call totext
-         call printstr
-         db 'TIME: $'
-         call printfloat
-         mov ax,[temp2]
-         mov cx,10000
-         mul cx
-         pop si
-         or si,si
-         jz .c143x
+         add.l d5,d5      ;60 Hz
+         add.l d3,d5
+         move d5,d3
+         clr.w d5
+         swap d5
+         divu #3,d5
+         swap d5
+         swap d3
+         move.w d5,d3
+         swap d3
+         divu #3,d3
+         move.w d3,d5
+         swap d3
+         lsr.w #2,d3
+         negx.l d5
+         neg.l d5
 
-.c143b:  mov cx,ax
-         mov ax,dx
-         xor dx,dx
-         div si
-         xchg ax,cx
-         div si
-         shr si,1
-         cmp dx,si
-         jb .c143a
+.l8:     move.l d5,d7
+         divu #100,d5
+         swap d5
+         lea tbformat(a3),a0
+         lea temp(a3),a1
+         move.l d5,(a1)
+         lea stuffChar(pc),a2
+         move.l a3,-(sp)
+         lea stringbuf(a3),a3
+         movea.l 4.w,a6
+         jsr RawDoFmt(a6)
+         move.l (sp)+,a3
 
-         inc ax
-.c143a:  mov dx,cx
-         call todec
-         call printstr
-         db 's',0dh,10,'SPEED: $'
-         call printfloat
-         call printstr
-         db black,'$'
-.c143x:  call curoff
-         jmp getkey
-   endif
+         bsr totext
+         move.l GRAPHICS_BASE(a3),a6 
+         movea.l RASTER_PORT(a3),a1
+         movepenq 0,8
+         color 2
+         moveq #-1,d0
+         lea stringbuf(a3),a0
+.strlen1:
+         addq.w #1,d0
+         tst.b (a0)+
+         bne .strlen1
+
+         lea stringbuf(a3),a0
+         jsr Text(a6)
+
+         move.w x0(a3),d5  ;*100
+         mulu #10000,d5
+         move.l d5,d6
+         exg d6,d7
+
+         clr.w d5
+         swap d5
+         divu d6,d5
+         swap d5
+         swap d7
+         move.w d5,d7
+         swap d7
+         divu d6,d7
+         move.w d7,d5
+         swap d7
+         add.w d7,d7
+         sub.w d7,d6
+         negx.l d5
+         neg.l d5
+
+         divu #100,d5
+         swap d5
+         lea sbformat(a3),a0
+         lea temp(a3),a1
+         move.l d5,(a1)
+         lea stuffChar(pc),a2
+         move.l a3,-(sp)
+         lea stringbuf(a3),a3
+         movea.l 4.w,a6
+         jsr RawDoFmt(a6)
+         move.l (sp)+,a3
+
+         move.l GRAPHICS_BASE(a3),a6 
+         movea.l RASTER_PORT(a3),a1
+         movepenq 0,16
+         color 2
+         moveq #-1,d0
+         lea stringbuf(a3),a0
+.strlen2:
+         addq.w #1,d0
+         tst.b (a0)+
+         bne .strlen2
+
+         lea stringbuf(a3),a0
+         jsr Text(a6)         
+         bra getkey
 

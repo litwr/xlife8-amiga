@@ -19,18 +19,25 @@ TXT_ON_CURSOR:        ;IN: d3,a6,a1
 TXT_REMOVE_CURSOR:  ;IN: d3,a6,a1
          move.w d3,d0
          addi.w #192,d0
+
+         bsr TXT_REMOVE_CURSOR2\.e
+         
+         move.w d3,d0
+         addi.w #184,d0
          moveq #8,d1
+         jmp Move(a6)
+
+TXT_REMOVE_CURSOR2:  ;IN: d3,a6,a1
+         move.w d3,d0
+         addi.w #184,d0
+.e:      moveq #8,d1
          jsr Move(a6)
 
          moveq #1,d0
          jsr SetDrMd(a6)
 
          print ' '
-
-         move.w d3,d0
-         addi.w #184,d0
-         moveq #8,d1
-         jmp Move(a6)
+         rts
 
   if 0
 curon:  mov ah,1
@@ -92,12 +99,12 @@ totext:
         bra clrscn
 
 tograph:bsr clrscn
-        bsr initxt
         bsr showmode
         bsr showscn
         ;bsr start_timer2
         ;bsr showrules
-        bra xyout
+        bsr xyout
+        bra initxt
 
 showmode:moveq #14,d2
          tst.b mode(a3)

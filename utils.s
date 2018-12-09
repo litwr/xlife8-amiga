@@ -8,26 +8,50 @@ zerocc:   inibcd cellcnt,3
 
 zerogc:   inibcd gencnt,4
           rts
+
+stuffChar:  move.b  d0,(a3)+        ;Put data to an output string
+            rts
+
+todec:    ;;mov bx,stringbuf+1    ;convert d5 to stringbuf
+          lea stringbuf+1(a3),a2
+          movea.l a2,a0
+          ;;mov si,10
+.l1:      ;;mov cx,ax
+          move.w d5,d2
+          ;;mov ax,dx
+          move.w d5,d0
+          ;;xor dx,dx
+          clr.w d0
+          swap d0
+          ;;div si
+          divu #10,d0
+          ;;xchg ax,cx
+          swap d0
+          swap d2
+          move.w d0,d2
+          swap d2
+          ;;div si
+          divu #10,d2
+          ;;or dl,'0'
+          move.w d2,d0
+          swap d2
+          or.b #'0',d2
+          ;;mov [bx],dl
+          ;;inc bx
+          move.b d2,(a2)+
+          ;;mov dx,cx
+          ;;or cx,ax
+          move.l d0,d5
+          ;;jnz .l1
+          bne .l1
+
+          ;;sub bx,stringbuf+1
+          suba.l a0,a2
+          ;;mov [stringbuf],bl
+          move.w a2,d0
+          move.b d0,stringbuf(a3)
+          rts
   if 0
-todec:    mov bx,stringbuf+1    ;convert dx:ax to stringbuf
-          mov si,10
-.l1:      mov cx,ax
-          mov ax,dx
-          xor dx,dx
-          div si
-          xchg ax,cx
-          div si
-          or dl,'0'
-          mov [bx],dl
-          inc bx
-          mov dx,cx
-          or cx,ax
-          jnz .l1
-
-          sub bx,stringbuf+1
-          mov [stringbuf],bl
-          retn
-
 boxsz:   mov byte [boxsz_ymin],vermax*8
          mov byte [boxsz_xmin],hormax*8
          xor cx,cx               ;dl=boxsz_ymax, ch=boxsz_xmax

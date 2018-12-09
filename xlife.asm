@@ -4,6 +4,7 @@
 ;**from 8088 port for IBM PC v1
 ;written by litwr, 2018
 ;thanks to Tuomas Järvensivu's blog post Crash course to Amiga assembly programming
+;a lot of thanks to guys at http://eab.abime.net
 ;some materials were used from AsmOne examples coded by Rune Gram-Madsen
 ;it is under GNU GPL
 
@@ -97,7 +98,7 @@ mainloop:
 
          clr.b mode(a3)
          bsr incgen
-         ;bsr tograph
+         bsr tograph
          bra mainloop
 
 .c4:     cmp.b #2,d0
@@ -123,101 +124,12 @@ mainloop:
          include "tile.s"
          ;include "ramdata.s"
 
-	if 0
-start_timer:    cli                 ;SAVE/SET INTR8 VECTOR
-                xor ax,ax
-                mov [timercnt],ax
-                mov [timercnt+2],ax
-                mov ds,ax
-                mov ax,[8*4]
-                MOV [cs:SAVE8LO],ax
-                mov ax,[8*4+2]
-                MOV [cs:SAVE8HI],ax
-                mov word [8*4],intr8
-                mov [8*4+2],cs
-                MOV     AL,36H          ;SET TIMER 0 HARDWARE
-                OUT     43H,AL
-                MOV     AL,TIMERV AND 0FFH
-                OUT     40H,AL
-                MOV     AL,TIMERV SHR 8
-                jmp stop_timer.e1
+rasteri:     btst #6,$dff01e   ;blitter?
+             bne rasterie
 
-stop_timer:     CLI                 ;SAVE/SET INTR8 VECTOR
-                xor ax,ax
-                mov ds,ax
-                MOV ax,[cs:SAVE8LO]
-                mov [8*4],ax
-                MOV ax,[cs:SAVE8HI]
-                mov [8*4+2],ax
-                MOV     AL,36H          ;RESTORE TIMER HARDWARE
-                OUT     43H,AL
-                XOR     AL,AL
-                OUT     40H,AL
-.e1:            OUT     40H,AL
-                jmp stop_timer2.e1
-
-start_timer2:   cli                 ;SAVE/SET INTR8 VECTOR
-                xor ax,ax
-                cmp ax,[cs:SAVE8LO2]
-                jne stop_timer2.exit
-
-                mov ds,ax
-                mov ax,[8*4]
-                MOV [cs:SAVE8LO2],ax
-                mov ax,[8*4+2]
-                MOV [cs:SAVE8HI2],ax
-                mov word [8*4],intr82
-                mov [8*4+2],cs
-                jmp stop_timer2.e1
-
-
-stop_timer2:    CLI                 ;SAVE/SET INTR8 VECTOR
-                xor ax,ax
-                cmp ax,[cs:SAVE8LO2]
-                je .exit
-
-                mov ds,ax
-                XCHG ax,[cs:SAVE8LO2]
-                mov [8*4],ax
-                MOV ax,[cs:SAVE8HI2]
-                mov [8*4+2],ax
-.e1:            push cs
-                pop ds
-.exit:          STI
-.e2:            RETN
-
-intr8:   inc [cs:timercnt]
-         jnz .c1
-
-         inc [cs:timercnt+2]
-.c1:     test [cs:timercnt],TIMERV-1
-         jz .c2
-
-         push ax
-         MOV AL,20H
-         OUT 20H,AL
-         pop ax
-         iret
-
-.c2:     db  0eah
-SAVE8LO  DW      0
-SAVE8HI  DW      0
-
-intr82:  inc [cs:crsrticks]
-          db  0eah
-SAVE8LO2  DW      0
-SAVE8HI2  DW      0
-
-crsrflash:
-         test [crsrticks],3
-         jne stop_timer2.e2
-
-         test [crsrticks],4
-         je .l1
-
-         jmp crsrset
-.l1:     jmp crsrclr
-	endif
+             addq.l #1,timercnt
+rasterie:    move.l interrupt,-(sp)
+             rts
 
 generate:
          movea.l startp(a3),a4 ;currp   ;;mov si,[startp]
@@ -606,7 +518,7 @@ cleanup0:
 	 subq #1,d1			;;dec ax			;;dec r1
 	 bne .c1			;;jnz .c1
 
-.c4:	 rts				;;retn
+	 rts				;;retn
 
 .del1st:
 	 move.l d1,startp(a3)		;;mov [startp],bx		;;mov r1,@#startp
@@ -614,13 +526,23 @@ cleanup0:
 	 bne .c1			;;jnz .c1
 	 rts				;;retn
 
+;crsrflash:
+;         move timercnt+2(a3),CCR
+;         bcc exit4   ;rts
+;         bvc exit4   ;rts
+
+;         btst.b #2,timercnt+3(a3)
+;         beq crsrclr
+;         bra crsrset
+
 	endb a3
 
 	section Data
 SOD:
-oldcopper:	dc.l 0
+;oldcopper:	dc.l 0
 doslib:		dc.l 0
 startp:         dc.l 1
+interrupt:	dc.l 0
 
 ;olddmareq:	dc.w 0
 ;oldintreq:	dc.w 0
@@ -643,19 +565,19 @@ ttab:     dc.b 0,1,2,3,3,4,5,6,7,8,8,9,16,17,18,19,19,20
 tilecnt   dc.w 0
 ;viewport  dc.l tiles
 crsrtile  dc.l tiles
-;timercnt  dc.w 0, 0
-;temp      dc.w 0
-;temp2     dc.w 0
+timercnt     dc.l 0
+temp      dc.w 0
+temp2     dc.w 0
 ;iobseg    dc.w 0
 ;filehl    dc.w 0
 ;filesz    dc.w 0
 ;tsz       dc.w 0
 ;saved     dc.w 0
 tobin     dc.w 1,10,100,1000,10000
-;x0        dc.b 0   ;word aligned for the speed
-;y0        dc.b 0
-;live      dc.w 12  ;x0,y0,live,born have to go sequently
-;born      dc.w 8
+x0        dc.b 0   ;word aligned for the speed
+y0        dc.b 0
+live      dc.w 12  ;x0,y0,live,born have to go sequently
+born      dc.w 8
 
          include "tab12.s"
 gentab:
@@ -680,14 +602,14 @@ tab3      dc.b 0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4
 
 digifont dc.b	$3c,$66,$6e,$76,$66,$66,$3c,0   ;8th columns are free
 	 dc.b	$18,$18,$38,$18,$18,$18,$7e,0
-	 dc.b	$3c,$66,$6,$c,$30,$60,$7e,0
-	 dc.b	$3c,$66,$6,$c,$6,$66,$3c,0
-	 dc.b	$6,$c,$1e,$36,$7f,$6,$6,0
-	 dc.b	$7e,$60,$7c,$6,$6,$66,$3c,0    ;5
+	 dc.b	$3c,$66,6,$c,$30,$60,$7e,0
+	 dc.b	$3c,$66,6,$c,6,$66,$3c,0
+	 dc.b	6,$c,$1e,$36,$7f,6,6,0
+	 dc.b	$7e,$60,$7c,6,6,$66,$3c,0    ;5
 	 dc.b	$3c,$66,$60,$7c,$66,$66,$3c,0
 	 dc.b	$7e,$66,$c,$18,$18,$18,$18,0
 	 dc.b	$3c,$66,$66,$3c,$66,$66,$3c,0
-	 dc.b	$3c,$66,$66,$3e,$6,$66,$3c,0
+	 dc.b	$3c,$66,$66,$3e,6,$66,$3c,0
          dc.w   0,0,0,0,0,0,0                ;space
 
 crsrbyte  dc.b 0      ;y%8  word aligned
@@ -732,7 +654,9 @@ topology  dc.b 0      ;0 - torus
 ;cf        dc.b "\COLORS.CFG",0
 ;copyleft  dc.b "\CR.TXT",0
 ;nofnchar  dc.b "?,./:;<=>[\]|"
-stringbuf blk.b 40     ;must be after nofnchar
+stringbuf blk.b 21     ;must be after nofnchar
+tbformat   dc.b "TIME: %d.%02ds",0
+sbformat   dc.b "SPEED: %d.%02d",0
 
 dosname  dc.b "dos.library",0
 
