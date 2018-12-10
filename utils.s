@@ -124,6 +124,7 @@ randomize:
          add.b gencnt+3(a3),d5
          add.b cellcnt+2(a3),d5
          add.w tilecnt(a3),d5
+         add.w crsrtick(a3),d5
          move.l d5,d6
          swap d6
          eor.w d6,d5

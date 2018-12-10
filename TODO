@@ -1,4 +1,4 @@
 * mouse support
 * implement: RlL+-XZVvS
 * manpage
-
+* optimize work with sides if it is possible

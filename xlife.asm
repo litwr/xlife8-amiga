@@ -129,14 +129,12 @@ rasterie:    move.l interruptv,-(sp)
 
 generate:
          movea.l startp(a3),a4 ;currp   ;;mov si,[startp]
-         move.w #$c0c0,d2		;;mov cx,0c0c0h
-         move.w #$3030,d3		;;mov dx,3030h
-         move.w #$c0c,d6		;;mov bp,0c0ch
-         move.w #$303,d0		;;mov ax,303h
+         move.l #$c0c0c0c0,d2
+         move.l #$30303030,d3
+         move.l #$c0c0c0c,d6
+         move.l #$3030303,d0
 .c30:    setcount 0
-         setcount 2
          setcount 4
-         setcount 6
          move.l (next,a4),a4		;;mov si,[next+si]
          cmpa.w #1,a4			;;cmp si,1
          bne .c30			;;jnz .c30
