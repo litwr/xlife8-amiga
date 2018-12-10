@@ -70,9 +70,7 @@ start:
          bsr help
 
 mainloop:
-         ;call crsrflash
-      bsr crsrclr
-      bsr crsrset
+         bsr crsrflash
 .e1:     bsr dispatcher
          move.b mode(a3),d0
          beq mainloop
@@ -89,9 +87,7 @@ mainloop:
 .exit:
          move.l doslib(a3),a1
          movea.l 4,a6
-	 jsr CloseLibrary(a6)
-         moveq #0,d0
-         rts
+	 jmp CloseLibrary(a6)
 
 .c3:     tst.w tilecnt(a3)
          bne .c4
@@ -128,7 +124,7 @@ rasteri:     btst #6,$dff01e   ;blitter?
              bne rasterie
 
              addq.l #1,timercnt
-rasterie:    move.l interrupt,-(sp)
+rasterie:    move.l interruptv,-(sp)
              rts
 
 generate:
@@ -526,14 +522,22 @@ cleanup0:
 	 bne .c1			;;jnz .c1
 	 rts				;;retn
 
-;crsrflash:
-;         move timercnt+2(a3),CCR
-;         bcc exit4   ;rts
-;         bvc exit4   ;rts
+crsrflash:
+         move.w crsrtick(a3),d0
+         ;add.w tilecnt(a3),d0
+         addq.w #1,d0
+         cmpi.w #10000,d0
+         bcs .l1
 
-;         btst.b #2,timercnt+3(a3)
-;         beq crsrclr
-;         bra crsrset
+         clr.w crsrtick(a3)
+         bsr crsrclr
+         bchg.b #0,crsrstate(a3)
+         beq crsrset
+         rts
+
+.l1:     ;addq.w #8,d0
+         move.w d0,crsrtick(a3)
+         rts
 
 	endb a3
 
@@ -542,8 +546,9 @@ SOD:
 ;oldcopper:	dc.l 0
 doslib:		dc.l 0
 startp:         dc.l 1
-interrupt:	dc.l 0
+interruptv:	dc.l 0
 
+crsrtick:	dc.w 0
 ;olddmareq:	dc.w 0
 ;oldintreq:	dc.w 0
 ;oldintena:	dc.w 0
@@ -655,6 +660,7 @@ topology  dc.b 0      ;0 - torus
 ;copyleft  dc.b "\CR.TXT",0
 ;nofnchar  dc.b "?,./:;<=>[\]|"
 stringbuf blk.b 21     ;must be after nofnchar
+crsrstate  dc.b 0
 tbformat   dc.b "TIME: %d.%02ds",0
 sbformat   dc.b "SPEED: %d.%02d",0
 

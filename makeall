@@ -20,4 +20,4 @@ compile xlife.asm # && \
 #sudo sync
 #ls -l $M/xlife*.com $M/manpage.com
 #sudo umount $M
-#rm initiles.s gentab.s tab12.s vistab.s a.out manpage.txt
+rm initiles.s gentab.s tab12.s a.out  # manpage.txt

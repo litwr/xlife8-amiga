@@ -18,15 +18,13 @@ getkey2:  ;******* KEY POLLING *******
 	 rts
 
 start_timer:
-         move.l $6c,interrupt(a3)
-         ;move.l $6c,rasterie+2
+         move.l $6c,interruptv(a3)
          clr.l timercnt(a3)
          move.l #rasteri,$6c
          rts
 
 stop_timer:
-         move.l interrupt(a3),$6c
-         ;move.l rasterie+2,$6c
+         move.l interruptv(a3),$6c
          rts
 
 dispatcher:
@@ -382,7 +380,7 @@ dispatcher:
          bne .c160
 
          bsr getkey2
-         cmpi.b #$40,d0
+         cmpi.b #$40,d0   ;cursor right shifted
          bne .c160x
 
          ;;add [vptilecx],8
@@ -394,6 +392,7 @@ dispatcher:
          bra .csct
 
 .c20cr:  ;;inc [vptilecx]
+         bsr crsrclr
          move.b crsrbit(a3),d0
          cmpi.b #1,d0
          beq .c71
@@ -428,6 +427,7 @@ dispatcher:
          bra .csct2
 
 .c160cl:  ;;inc [vptilecx]
+         bsr crsrclr
          move.b crsrbit(a3),d0
          cmpi.b #$80,d0
          beq .c71x
