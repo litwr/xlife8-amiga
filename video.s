@@ -478,7 +478,7 @@ showtinfo:
          ;;mov byte [bx+2],0
          move.b #0,(a0)
          ;;jmp .c2
-         bra .c2
+         bra .c3
 
 .c1:        
 	 ;;mov word [bx],0a0ah
@@ -494,7 +494,7 @@ showtinfo:
          andi.b #$f,d0
          ori.b #$a0,d0
 .c2:     move.b d0,(a0)
-         lea tinfo+2(a3),a1
+.c3:     lea tinfo+2(a3),a1
          ;;mov dx,3
          moveq #2,d0
          ;;mov di,192*40+30

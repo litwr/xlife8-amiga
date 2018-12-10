@@ -363,100 +363,75 @@ plain:
          ;;retn
          rts
 
-    if 0
 random:
 ;;;uses: adjcell:2 - r2, i1:2 - r3/r5, i2 - r4, t1 - r1
-;;         clr r1   ;dir: 0 - left, 1 - right
-;;         mov #tiles+<<hormax*4+3>*tilesize>,r2
-;;         mov #16,r3    ;ver rnd max
-;;         mov #right,r5
-;;         mov #14,r4    ;hor rnd max
-         in al,61h
-         or al,1
-         out 61h,al         ;enable timer 2 gate
-         MOV     AL,94H          ;SET TIMER 2 HARDWARE
-         OUT     43H,AL
-         mov     al,251
-         OUT     42H,AL
 
-         xor bp,bp   ;dir: 0 - left, 1 - right
-         mov di,tiles+(hormax*4+3)*tilesize
-         mov dx,(vermax-8)*256+hormax-6    ;dh - ver rnd max, dl - hor rnd max
-         mov bx,right
+         ;;in al,61h
+         ;;or al,1
+         ;;out 61h,al         ;enable timer 2 gate
+         ;;MOV     AL,94H          ;SET TIMER 2 HARDWARE
+         ;;OUT     43H,AL
+         ;;mov     al,251
+         ;;OUT     42H,AL
 
+         ;;xor bp,bp   ;dir: 0 - left, 1 - right
+         moveq #0,d6
+         ;;mov di,tiles+(hormax*4+3)*tilesize
+         lea tiles+(hormax*4+3)*tilesize(a3),a5
+         ;;mov dx,(vermax-8)*256+hormax-6    ;dh - ver rnd max, dl - hor rnd max
+         move.b #vermax-8,d7
+         move.b #hormax-6,d3
+         ;;mov bx,right
+         moveq #right,d1
 
-;;;cont3    ldy #sum
-;;;         sta (adjcell),y
-;;;         lda #8
-;;;         sta t3
-;;23$:     mov #1,sum(r2)
-;;         mov #8,r0
-.cont3:  mov word [di+sum],1
-         mov cx,8
+.cont3:  
+	 ;;mov word [di+sum],1
+         move.b #1,(sum,a5)
+         ;;mov cx,8
+         move.w #7,d2
 
-;;;loop1    jsr rndbyte
-;;;         dec t3
-;;;         bne loop1
-;;1$:      call @#rndbyte
-;;         sob r0,1$
-;;         sub #8,r2
-.loop1:  call rndbyte
-         loop .loop1
-         sub di,8
+.loop1:  
+	 ;;call rndbyte
+         bsr rndbyte
+         ;;loop .loop1
+         dbra d2,.loop1
+         ;;sub di,8
+         suba.w #8,a5
 
-;;;         jsr chkadd
-;;;         dec i2
-;;;         beq cont2
-;;        call @#chkadd
-;;        dec r4
-;;        beq 22$
-         call chkadd
-         dec dl
-         jz .cont2
+         bsr chkadd
+         ;;dec dl
+         subq.b #1,d3
+         ;;jz .cont2
+         beq .cont2
 
-;;;         ldy i1+1
-;;;cont4    lda (adjcell),y
-;;;         tax
-;;;         iny
-;;;         lda (adjcell),y
-;;;         stx adjcell
-;;;         sta adjcell+1
-;;;         bne cont3
-;;         add r5,r2
-;;24$:     mov @r2,r2
-;;         br 23$
-.cont4:  mov di,[di+bx]
-         jmp .cont3
+.cont4:  
+	 ;;mov di,[di+bx]
+         movea.l (a5,d1),a5
+         ;;jmp .cont3
+         bra .cont3
 
+.cont2:  
+	 ;;dec dh
+         subq.b #1,d7 
+         ;;jz calccells
+         beq calccells
 
-;;;cont2    dec i1
-;;;         beq cont5
-;;22$:     dec r3
-;;         beq calccells
-.cont2:  dec dh
-         jz calccells
+         ;;mov bl,left
+         moveq #left,d1
+         ;;mov dl,hormax-6       ;hor rnd max
+         move.b #hormax-6,d3
+         ;;xor bp,1
+         eori.b #1,d6
+         ;;jnz .cont1
+         bne .cont1
 
-;;         mov #14,r4   ;hor rnd max
-;;         mov #left,r5
-;;         mov #1,r0
-;;         xor r0,r1
-;;         bne 21$
-         mov bl,left
-         mov dl,hormax-6       ;hor rnd max
-         xor bp,1
-         jnz .cont1
-
-;;;         ldy #right
-;;;cont1    sty i1+1
-;;;         ldy #down
-;;;         bne cont4
-;;         mov #right,r5
-;;21$:     add #down,r2
-;;         br 24$
-        mov bl,right
-.cont1: mov di,[di+down]
-        jmp .cont3
-   endif
+        ;;mov bl,right
+        moveq #right,d1
+.cont1: 
+	;;mov di,[di+down]
+        movea.l (down,a5),a5
+        ;;jmp .cont3
+        bra .cont3
 
 calccells: bsr zerocc
          tst.w tilecnt(a3)

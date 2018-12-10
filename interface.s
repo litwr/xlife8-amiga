@@ -148,7 +148,7 @@ dispatcher:
 .c11:    cmpi.b #'!',d0
          bne .c12
 
-         ;;call random
+         bsr random
          bra showscn
 
 .c12:    cmpi.b #'%',d0

@@ -111,40 +111,48 @@ boxsz:   mov byte [boxsz_ymin],vermax*8
          or ah,dl
          or ah,ch  ;ch = boxsz_xmax, dl = boxsz_ymax
          retn
-
-rndbyte: push cx   ;in: di
-         push dx
-         push bx
-
-         mov cl,[density]
-         xor dl,dl
-         mov al,80h
-         cli
-         out 43h,al
-         in al,42h
-         mov ah,al
-.l1:     shr ah,1
-         jnz .l1
-
-         mov ah,al
-         xor al,al
-         out 43h,al
-         in al,40h
-         shr al,1        ;mode 3 decrements counter by 2
-         xor al,ah
-         and al,7
-         mov bx,bittab
-         xlatb
-         or dl,al
-         in al,40h
-         sti
-         loop .l1
-
-         or [di],dl
-         inc di
-         pop bx
-         pop dx
-         pop cx
-         retn
   endif
+rndbyte: ;;push cx   ;in: di
+         ;;push dx
+         ;;push bx
+         movem.l d1/d2/d3/d7,-(sp)
+
+         ;;mov cl,[density]
+         moveq #0,d2
+         move.b density(a3),d2
+         ;;xor dl,dl
+         ;moveq #0,d3
+         ;;mov al,80h
+         ;;cli
+         ;;out 43h,al
+         ;;in al,42h
+         ;;mov ah,al
+.l1:     ;;shr ah,1
+         ;;jnz .l1
+
+         ;;mov ah,al
+         ;;xor al,al
+         ;;out 43h,al
+         ;;in al,40h
+
+         ;;shr al,1        ;mode 3 decrements counter by 2
+         ;;xor al,ah
+         ;;and al,7
+         ;;mov bx,bittab
+         ;;xlatb
+         ;;or dl,al
+         ;;in al,40h
+         ;;sti
+         ;;loop .l1
+
+         ;;or [di],dl
+         ;;inc di
+         or.b d3,(a5)+
+
+         ;;pop bx
+         ;;pop dx
+         ;;pop cx
+         movem.l (sp)+,d1/d2/d3/d7
+         ;;retn
+         rts
 
