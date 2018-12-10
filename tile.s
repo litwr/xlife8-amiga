@@ -363,16 +363,10 @@ plain:
          ;;retn
          rts
 
-random:
-;;;uses: adjcell:2 - r2, i1:2 - r3/r5, i2 - r4, t1 - r1
-
-         ;;in al,61h
-         ;;or al,1
-         ;;out 61h,al         ;enable timer 2 gate
-         ;;MOV     AL,94H          ;SET TIMER 2 HARDWARE
-         ;;OUT     43H,AL
-         ;;mov     al,251
-         ;;OUT     42H,AL
+random:  bsr randomize
+         move.l #$fc0000,a0
+         move d5,d4
+         lea bittab(a3),a1
 
          ;;xor bp,bp   ;dir: 0 - left, 1 - right
          moveq #0,d6
@@ -396,7 +390,7 @@ random:
          ;;loop .loop1
          dbra d2,.loop1
          ;;sub di,8
-         suba.w #8,a5
+         suba #8,a5
 
          bsr chkadd
          ;;dec dl

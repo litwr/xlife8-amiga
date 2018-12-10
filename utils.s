@@ -112,47 +112,45 @@ boxsz:   mov byte [boxsz_ymin],vermax*8
          or ah,ch  ;ch = boxsz_xmax, dl = boxsz_ymax
          retn
   endif
-rndbyte: ;;push cx   ;in: di
-         ;;push dx
-         ;;push bx
-         movem.l d1/d2/d3/d7,-(sp)
 
-         ;;mov cl,[density]
+randomize:
+         clr d5
+         move.b $bfea01,d5
+         swap d5
+         move.b $bfe901,d5
+         lsl #8,d5
+         move.b $bfe801,d5
+         lsl #8,d5
+         add.b gencnt+3(a3),d5
+         add.b cellcnt+2(a3),d5
+         add.w tilecnt(a3),d5
+         move.l d5,d6
+         swap d6
+         eor.w d6,d5
+         swap d5
+         clr.w d5
+         swap d5
+         rts
+
+rndbyte: movem.l d1/d2/d3/d6/d7,-(sp)
+         moveq #0,d0
+         moveq #7,d6
          moveq #0,d2
          move.b density(a3),d2
-         ;;xor dl,dl
-         ;moveq #0,d3
-         ;;mov al,80h
-         ;;cli
-         ;;out 43h,al
-         ;;in al,42h
-         ;;mov ah,al
-.l1:     ;;shr ah,1
-         ;;jnz .l1
+         subq.b #1,d2
+         moveq #0,d3
+.l1:     move.b (a0,d5.l),d0
+         add.w d0,d5
+         rol.w d2,d5
+         rol.w #1,d4
+         add.w d4,d5
+         add.w d5,d0
+         rol.b d4,d0
+         andi.w #7,d0
+         or.b (a1,d0),d3
+         dbra d2,.l1
 
-         ;;mov ah,al
-         ;;xor al,al
-         ;;out 43h,al
-         ;;in al,40h
-
-         ;;shr al,1        ;mode 3 decrements counter by 2
-         ;;xor al,ah
-         ;;and al,7
-         ;;mov bx,bittab
-         ;;xlatb
-         ;;or dl,al
-         ;;in al,40h
-         ;;sti
-         ;;loop .l1
-
-         ;;or [di],dl
-         ;;inc di
          or.b d3,(a5)+
-
-         ;;pop bx
-         ;;pop dx
-         ;;pop cx
-         movem.l (sp)+,d1/d2/d3/d7
-         ;;retn
+         movem.l (sp)+,d1/d2/d3/d6/d7
          rts
 
