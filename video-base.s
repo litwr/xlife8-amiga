@@ -72,7 +72,6 @@ initxt: moveq #1,d0     ;draw frame vertical borders
 initxt2: bsr showtopology    ;must follow initxt
          ;movea.l RASTER_PORT(a3),a1
 	 movepen 18*8,198
-
          ;movea.l RASTER_PORT(a3),a1
          lea texts+1(a3),a0  ;%
          moveq #1,d0
@@ -80,7 +79,6 @@ initxt2: bsr showtopology    ;must follow initxt
 
          ;movea.l RASTER_PORT(a3),a1
          movepen 32*8,198
-
          ;movea.l RASTER_PORT(a3),a1
          lea texts+2(a3),a0  ;X
          moveq #1,d0
@@ -88,25 +86,22 @@ initxt2: bsr showtopology    ;must follow initxt
 
          ;movea.l RASTER_PORT(a3),a1
          movepen 36*8,198
-
          ;movea.l RASTER_PORT(a3),a1
          lea texts+3(a3),a0  ;Y
          moveq #1,d0
          jmp Text(a6)
 
 totext:
-        ;bsr stop_timer2
         bra clrscn
 
 tograph:bsr clrscn
         bsr showmode
         bsr showscn
-        ;bsr start_timer2
-        ;bsr showrules
+        bsr showrules
         bsr xyout
         bra initxt
 
-showmode:moveq #14,d2
+showmode:moveq #12,d2
          tst.b mode(a3)
          bne .e1
 

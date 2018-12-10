@@ -270,6 +270,11 @@ setrconst:      ;IN: si - string, di - end of string, bp - live/born
           jmp .c2
    endif
 showrules:
+         move.l GRAPHICS_BASE(a3),a6 
+         movea.l RASTER_PORT(a3),a1
+         movepen 20*8,198
+         color 2
+
         ;;mov ah,2
         ;;xor bh,bh
         ;;mov dx,24*256+20
@@ -281,70 +286,136 @@ showrules:
         ;;int 10h
 
         ;;mov di,live
+        lea live(a3),a5
         ;;mov cl,0
+        moveq #0,d2
 
         ;;mov al,1
-;;.loop1: test al,[di]
+        moveq #0,d0
+.loop1: 
+        ;;test al,[di]
+        btst.b d0,(1,a5)
         ;;jnz .cont1
+        bne .cont1
 
-;;.loop2: shl al,1
+.loop2: 
+        ;;shl al,1
+        addq.b #1,d0
         ;;jnz .loop1
+        cmpi.b #8,d0
+        bne .loop1
 
         ;;mov al,[di+1]
+        move.b (a5),d0
         ;;or al,al
         ;;jz .cont4
+        beq .cont4
 
         ;;mov al,'8'
+        move.b #'8',d0
         ;;call .showr1
+        bsr .showr1
         ;;jnz .cont4
-;;.e1:    retn
+        bne .cont4
+.e1:    
+        ;;retn
+        rts
 
-;;.cont4: mov al,'/'
+.cont4: 
+        ;;mov al,'/'
+        move.b #'/',d0
         ;;call .showr1
+        bsr .showr1
         ;;jz .e1
+        beq .e1
 
         ;;mov al,1
-;;.loop4: test al,[di+2]
+        moveq #0,d0
+.loop4: 
+        ;;test al,[di+2]
+        btst.b d0,(3,a5)
         ;;jnz .cont5
+        bne .cont5
 
-;;.loop5: shl al,1
+.loop5: ;;shl al,1
+        addq.b #1,d0
         ;;jnz .loop4
+        cmpi.b #8,d0
+        bne .loop4
 
         ;;mov al,[di+3]
+        move.b (2,a5),d0
         ;;or al,al
         ;;jz .e1
+        beq .e1
 
         ;;mov al,'8'
+        move.b #8,d0
         ;;jmp .showr1
+        bra .showr1
 
-;;.cont5: call .showr0
+.cont5: 
+        ;;call .showr0
+        bsr .showr0
         ;;jnz .loop5
+        bne .loop5
         ;;retn
+        rts
 
-;;.cont1: call .showr0
+.cont1: 
+        ;;call .showr0
+        bsr .showr0
         ;;jnz .loop2
+        bne .loop2
         ;;retn
+        rts
 
-;;.showr0: mov dl,al
+.showr0:
+         ;;mov dl,al
+         move.b d0,d3
          ;;mov ch,0ffh
+         move.b #$ff,d4
 
-;;.loop3: inc ch
+.loop3: 
+        ;;inc ch
+        addq.b #1,d4
+
         ;;shr al,1
+        subq.b #1,d0
         ;;jnc .loop3
+        bpl .loop3
 
         ;;mov al,ch
+        move.b d4,d0
         ;;xor al,'0'
-;;.showr1:cmp cl,10
+        add.b #'0',d0
+.showr1:
+        ;;cmp cl,10
+        cmpi.b #10,d2
         ;;jnz .cont2
+        bne .cont2
 
         ;;mov al,'*'
-;;.cont2: mov ah,0eh
+        move.b #'*',d0
+.cont2: 
+        ;;mov ah,0eh
         ;;mov bl,2
         ;;int 10h
+         movem d2/d3,-(sp)
+         move.b d0,stringbuf(a3)
+         lea stringbuf(a3),a0
+         moveq #1,d0
+         jsr Text(a6)
+         movem (sp)+,d2/d3
+
         ;;inc cl
-        ;;cmp cl,11
+        addq #1,d2
         ;;mov al,dl
+        move.b d3,d0
+        ;;cmp cl,11
+        cmpi.b #11,d2
         ;;retn
+        rts
    if 0
 showrules2:
 ;;        mov #stringbuf,r3
