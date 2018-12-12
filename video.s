@@ -718,26 +718,25 @@ showscn2:
 	 move.l (a4),d0
 
 	 move.b d0,(nextline*3,a5)
-	 lsr.w #8,d0
-	 move.b d0,(nextline*2,a5)
 
 	 swap d0
 	 move.b d0,(nextline,a5)
 
-	 lsr.w #8,d0
+	 lsr.l #8,d0
 	 move.b d0,(a5)
+
+	 swap d0
+	 move.b d0,(nextline*2,a5)
 
          move.l (4,a4),d0
 
 	 move.b d0,(nextline*7,a5)
-	 lsr.w #8,d0
-	 move.b d0,(nextline*6,a5)
-
 	 swap d0
 	 move.b d0,(nextline*5,a5)
-
-	 lsr.w #8,d0
+	 lsr.l #8,d0
 	 move.b d0,(nextline*4,a5)
+	 swap d0
+	 move.b d0,(nextline*6,a5)
 
 ;;         mov next(r0),r0
          ;;mov si,[next-8+si]
