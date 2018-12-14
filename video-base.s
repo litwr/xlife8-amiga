@@ -137,7 +137,6 @@ showtopology:
 
 printstr:
          movea.l (sp),a2
-         movea.l a2,a0
          moveq #0,d0
 .l1:     addq.w #1,d0
          tst.b (a2)+

@@ -1,4 +1,19 @@
+AX - D0/A0
+BX - D1/A1
+CX - D2/A2
+DX - D3/A3
+SI - D4/A4
+DI - D5/A5
+BP - D6/A6
+
 * mouse support
 * implement: RlL+-XZVvS
 * manpage
-* optimize work with sides if it is possible
+* optimize work with sides: get 4 rows (??), mix left and right cases (check if it is applyable for other architectures)
+* work with word as 2 bytes maybe slow, check a use of 2 bytes instead
+* chkaddtr -> macro (?)
+* cmp.l -> cmp.w
+* cleanup: add, #8
+* delel rep stosw
+* cellsum: check earlier
+
