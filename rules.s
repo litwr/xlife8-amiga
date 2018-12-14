@@ -405,6 +405,8 @@ showrules:
          move.b d0,stringbuf(a3)
          lea stringbuf(a3),a0
          moveq #1,d0
+         ;move.l GRAPHICS_BASE(a3),a6 
+         movea.l RASTER_PORT(a3),a1
          jsr Text(a6)
          movem (sp)+,d2/d3
 

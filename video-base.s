@@ -72,21 +72,21 @@ initxt: moveq #1,d0     ;draw frame vertical borders
 initxt2: bsr showtopology    ;must follow initxt
          ;movea.l RASTER_PORT(a3),a1
 	 movepen 18*8,198
-         ;movea.l RASTER_PORT(a3),a1
+         movea.l RASTER_PORT(a3),a1
          lea texts+1(a3),a0  ;%
          moveq #1,d0
          jsr Text(a6)
 
          ;movea.l RASTER_PORT(a3),a1
          movepen 32*8,198
-         ;movea.l RASTER_PORT(a3),a1
+         movea.l RASTER_PORT(a3),a1
          lea texts+2(a3),a0  ;X
          moveq #1,d0
          jsr Text(a6)
 
          ;movea.l RASTER_PORT(a3),a1
          movepen 36*8,198
-         ;movea.l RASTER_PORT(a3),a1
+         movea.l RASTER_PORT(a3),a1
          lea texts+3(a3),a0  ;Y
          moveq #1,d0
          jmp Text(a6)
@@ -121,22 +121,23 @@ showtopology:
          beq .l1
          
          invvideo
-.l1:     ;movea.l RASTER_PORT(a3),a1
+.l1:     movea.l RASTER_PORT(a3),a1
          moveq #0,d0
          move.w #198,d1
          jsr Move(a6)
 
-         ;movea.l RASTER_PORT(a3),a1
+         movea.l RASTER_PORT(a3),a1
          lea texts(a3),a0
          moveq #1,d0
          jsr Text(a6)
 
-         ;movea.l RASTER_PORT(a3),a1
+         movea.l RASTER_PORT(a3),a1
          moveq #0,d0
          jmp SetDrMd(a6)  ;normvideo
 
 printstr:
          movea.l (sp),a2
+         movea.l a2,a0
          moveq #0,d0
 .l1:     addq.w #1,d0
          tst.b (a2)+
@@ -148,7 +149,7 @@ printstr:
          move.l d1,(sp)
 
          ;movea.l GRAPHICS_BASE(a3),a6
-         ;movea.l RASTER_PORT(a3),a1
+         movea.l RASTER_PORT(a3),a1
          subq.w #1,d0
          jmp Text(a6)
 

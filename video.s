@@ -1,6 +1,6 @@
 insteps: bsr totext
          move.l GRAPHICS_BASE(a3),a6 
-         movea.l RASTER_PORT(a3),a1
+         ;movea.l RASTER_PORT(a3),a1
 .c38:    movepenq 0,8
          color 2
          print "NUMBER OF GENERATIONS: "   ;24 chars = 192 pixels
@@ -166,7 +166,7 @@ instay:  call printstr
 
 indens:  bsr totext
          move.l GRAPHICS_BASE(a3),a6 
-         movea.l RASTER_PORT(a3),a1
+         ;movea.l RASTER_PORT(a3),a1
          movepenq 0,8
          color 3
          print "SELECT DENSITY OR PRESS "
@@ -270,7 +270,7 @@ inmode:  ;move.l GRAPHICS_BASE(a3),a6
 
 help:    bsr totext
          move.l GRAPHICS_BASE(a3),a6 
-         movea.l RASTER_PORT(a3),a1
+         ;movea.l RASTER_PORT(a3),a1
          normvideo
          movepenq 72,8
          color 3
