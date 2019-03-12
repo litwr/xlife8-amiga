@@ -30,6 +30,9 @@ insteps: bsr totext
          cmpi.b #5*8,d3
          beq .c1
 
+         moveq #8,d1
+         moveq #92,d4
+         add.w d4,d4
          bsr TXT_ON_CURSOR
          move.l a4,a0
          move.b d0,(a4)+
@@ -43,10 +46,14 @@ insteps: bsr totext
          subq.b #8,d3
          bmi .c3
 
+         move.w #192,d0
+         moveq #8,d1
          bsr TXT_REMOVE_CURSOR
          bra .cont4
 
-.c11:    bsr TXT_REMOVE_CURSOR2
+.c11:    move.w #184,d0
+         moveq #8,d1
+	 bsr TXT_REMOVE_CURSOR
          tst.b d3
          beq .c20
 
@@ -90,79 +97,135 @@ insteps: bsr totext
          move.w d1,d6
          bra .c20
 
-  if 0
 bornstay:
-         mov si,stringbuf
-.c3:     mov di,si
-.c1:     call getkey
-         cmp al,0dh    ;Enter
-         jz .c11
+;;         mov si,stringbuf
+;;.c3:     mov di,si
+;;.c1:     call getkey
+.c3:     lea stringbuf(a3),a4
+         moveq #0,d3
+.c1:     movem.l a1/a4/a6/d2/d3,-(sp)
+         bsr getkey
+         movem.l (sp)+,a1/a4/a6/d2/d3
+         cmpi.b #$d,d0  ;enter
+         beq .c11
 
-         cmp al,8     ;backspace
-         jz .c12
+         cmpi.b #8,d0    ;backspace
+         beq .c12
 
-         cmp cl,'0'
-         jz .c40
+         cmpi.b #'0',d2
+         beq .c40
 
-         cmp al,27    ;esc
-         jz .c11
+         cmpi.b #27,d0  ;esc
+         beq .c11
 
-.c40:    cmp al,cl
-         jc .c1
+.c40:    cmp.b d2,d0
+         bcs .c1
 
-         cmp al,'9'
-         jnc .c1
+         cmpi.b #'9',d0
+         bcc .c1
 
-         mov bp,si
-.c4:     cmp bp,di
-         jz .c5
+         move.l a4,a0
+         move.w d3,d1
+.c4:     tst.w d1
+         beq .c5
 
-;;         cmpb (r2)+,r0
-         cmp al,[ds:bp]
-         lahf
-         inc bp
-         sahf
-         jz .c1
-         jmp .c4
+         cmp.b -(a0),d0
+         beq .c1
 
-.c5:     mov [di],al
-         inc di
-         mov dl,al
-         mov ah,2
-         int 21h
-         jmp .c1
+         subq.w #8,d1
+         bra .c4
 
-.c11:    retn
+.c5:     move d7,d1
+         moveq #56,d4
+	 bsr TXT_ON_CURSOR
+         move.l a4,a0
+         move.b d0,(a4)+
+         addq.w #8,d3
+         moveq #1,d0
+         jsr Text(a6)
+.cont4:  bsr TXT_PLACE_CURSOR
+         bra .c1
 
-.c12:    dec di
-         cmp di,si
-         js .c3
+.c11:    rts
 
-         call delchr
-         jmp .c1
+.c12:    subq.l #1,a4
+         subq.b #8,d3
+         bmi .c3
 
-inborn:  call printstr
-         db green,'THE RULES ARE DEFINED BY ',blue
-         db 'BORN',green,' AND ',blue,'STAY',green
-         db ' VALUES.  FOR EXAMPLE, ',purple
-         db 'CONWAYS''S LIFE',green,' HAS BORN=3 AND STAY=23, '
-         db  purple,'SEEDS',green,' - BORN=2 AND EMPTY STAY, '
-         db purple,'HIGHLIFE,',green,' - BORN=36 AND STAY=23, '
-         db purple,'LIFE WITHOUT DEATH',green
-         db ' - BORN=3 AND STAY=012345678, ...',0dh,10,black
-         db 'BORN = $'
+         move d7,d1
+         moveq #64,d0
+         bsr TXT_REMOVE_CURSOR
+         bra .cont4
 
-;;         mov #'1,r5
-;;         jmp @#bornstay
-         mov cl,'1'
-         jmp bornstay
+inborn:  bsr totext
+         move.l GRAPHICS_BASE(a3),a6 
+         ;movea.l RASTER_PORT(a3),a1
+         movepenq 0,8
+         color 2  ;green
+         print 'THE RULES ARE DEFINED BY '
+         invvideo ;blue
+         print 'BORN'
+         normvideo
+         color 2
+         print ' AND '
+         invvideo ;blue
+         print 'STAY'
+         normvideo
+         color 2
+         print ' V'
+         movepenq 0,16
+         print 'ALUES.  FOR EXAMPLE, '
+         color 1
+         invvideo ;purple
+         print "CONWAYS'S LIFE"
+         normvideo
+         color 2
+         print ' HAS'
+         movepenq 0,24
+         print 'BORN=3 AND STAY=23, '
+         color  1 ;purple
+         invvideo
+         print 'SEEDS'
+         normvideo
+         color 2
+         print ' - BORN=2 AND E'
+         movepenq 0,32
+         print 'MPTY STAY, '
+         color 1
+         invvideo ;purple
+         print 'HIGHLIFE'
+         normvideo
+         color 2
+         print ' - BORN=36 AND STAY=2'
+         movepenq 0,40
+         print '3, '
+         color 1
+         invvideo ;purple
+         print 'LIFE WITHOUT DEATH'
+         normvideo
+         color 2
+         print ' - BORN=3 AND STAY='
+         movepenq 0,48
+         print '012345678, ...'
+         movepenq 0,56
+         color 3
+         print 'BORN = '
+         bsr TXT_PLACE_CURSOR
 
-instay:  call printstr
-         db 0dh,10,'STAY = $'
+         moveq #56,d7
+         moveq #'1',d2
+         bsr bornstay
+         move d7,d1
+         moveq #56,d0
+	 bra TXT_REMOVE_CURSOR
 
-         mov cl,'0'
-         jmp bornstay
-     endif
+instay:  movepenq 0,64
+         print 'STAY = '
+         bsr TXT_PLACE_CURSOR
+
+         moveq #64,d7
+         moveq #'0',d2
+         bra bornstay
 
 indens:  bsr totext
          move.l GRAPHICS_BASE(a3),a6 

@@ -4,11 +4,10 @@ TXT_PLACE_CURSOR:
          normvideo
          rts
 
-TXT_ON_CURSOR:        ;IN: d3,a6,a1
+TXT_ON_CURSOR:        ;IN: d3,a6,a1,d4,d1
          move.w d0,-(sp)
          move.w d3,d0
-         addi.w #184,d0
-         moveq #8,d1
+         add.w d4,d0
          jsr Move(a6)
 
          moveq #1,d0
@@ -16,28 +15,20 @@ TXT_ON_CURSOR:        ;IN: d3,a6,a1
          move.w (sp)+,d0
          rts
 
-TXT_REMOVE_CURSOR:  ;IN: d3,a6,a1
-         move.w d3,d0
-         addi.w #192,d0
+TXT_REMOVE_CURSOR:  ;IN: d3,a6,a1,d1,d0
+         add.w d3,d0
 
-         bsr TXT_REMOVE_CURSOR2\.e
-         
-         move.w d3,d0
-         addi.w #184,d0
-         moveq #8,d1
-         jmp Move(a6)
-
-TXT_REMOVE_CURSOR2:  ;IN: d3,a6,a1
-         move.w d3,d0
-         addi.w #184,d0
-.e:      moveq #8,d1
+         movem.w d0/d1,-(sp)
          jsr Move(a6)
 
          moveq #1,d0
          jsr SetDrMd(a6)
 
          print ' '
-         rts
+         movem.w (sp)+,d0/d1
+         
+         subi.w #8,d0
+         jmp Move(a6)
 
   if 0
 curon:  mov ah,1

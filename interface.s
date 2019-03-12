@@ -210,15 +210,14 @@ dispatcher:
 .c15:    cmpi.b #'R',d0
          bne .c16
 
-         ;;call totext
-         ;;call inborn
-         ;;cmp al,27         ;esc
-         ;;jz .c200
+         bsr inborn
+         cmpi.b #27,d0         ;esc
+         beq .c200
 
-         ;;mov bx,born
+         lea.l born(a3),a2
          ;;call setrconst
-         ;;call instay
-         ;;mov bx,live
+         bsr instay
+         lea.l live(a3),a2
          ;;call setrconst
          ;;call fillrt
 .c200:   bra tograph

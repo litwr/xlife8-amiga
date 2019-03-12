@@ -6,6 +6,11 @@ SI - D4/A4
 DI - D5/A5
 BP - D6/A6
 
+2 - green
+3 - black
+1 - red
+0 - bg
+
 * mouse support
 * implement: RlL+-XZVvS
 * manpage
