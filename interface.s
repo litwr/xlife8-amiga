@@ -291,16 +291,22 @@ dispatcher:
 
          ;;mov al,[zoom]
          ;;push ax
+         move.b zoom(a3),d0
+         move.w d0,-(sp)
          ;;mov [zoom],0
-         ;;call loadmenu
-         ;;jnz .c302
+         clr.b zoom(a3)
+         bsr loadmenu
+         bne .c302
 
-;;.c303:   call tograph
+.c303:   bsr tograph
          ;;call loadpat
-;;.c302:   pop ax
+.c302:
+         ;;pop ax
          ;;mov [zoom],al
-         ;;call calccells
-         ;;jmp tograph
+         move.w (sp)+,d0
+         move.b d0,zoom(a3)
+         bsr calccells
+         bra tograph
 
 .c173:   cmpi.b #'L',d0
          bne .c174
@@ -559,8 +565,11 @@ benchcalc: bsr stop_timer
          mulu #10000,d5
          move.l d5,d6
          exg d6,d7
+         tst.l d6
+         bne .divok
 
-         clr.w d5
+         addq.l #1,d6
+.divok:  clr.w d5
          swap d5
          divu d6,d5
          swap d5

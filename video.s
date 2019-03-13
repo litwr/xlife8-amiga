@@ -217,7 +217,7 @@ inborn:  bsr totext
          bsr bornstay
          move d7,d1
          moveq #56,d0
-	 bra TXT_REMOVE_CURSOR
+         bra TXT_REMOVE_CURSOR
 
 instay:  movepenq 0,64
          print 'STAY = '
@@ -909,14 +909,39 @@ chgdrv:  mov al,[curdrv]
          mov dx,patpath
          int 21h
          retn
+    endif
 
-loadmenu:call totext
-         call printstr
-         db green,'INPUT FILENAME, AN EMPTY STRING MEANS TO SHOW DIRECTORY. PRESS '
-         db red,'TAB',green,' TO USE RAMDISK, ',red,'*',green
-         db ' TO CHANGE DRIVE, ',red,'ESC',green,' TO EXIT',0dh,10,black
-.c80:    db 'A:$'
+loadmenu:bsr totext
+         move.l GRAPHICS_BASE(a3),a6 
+         ;movea.l RASTER_PORT(a3),a1
+         movepenq 0,8
+         color 2  ;green
+         print 'INPUT FILENAME, AN EMPTY STRING MEANS TO'
+         movepenq 0,16
+         print ' SHOW DIRECTORY. PRESS '
+         color 1 ;red
+         print 'TAB'
+         color 2
+         print ' TO USE RAMDIS'
+         movepenq 0,24
+         print 'K, '
+         color 1
+         print '*'
+         color 2
+         print ' TO CHANGE DRIVE, '
+         color 1
+         print 'ESC'
+         color 2
+         print ' TO EXIT'
+         color 3
+         movepenq 0,32
+.c80:    print 'DH0: '
+         bsr TXT_PLACE_CURSOR
 
+      bsr getkey
+      rts
+
+      if 0
 .c3:     mov di,fn
          xor cl,cl    ;length
 .c1:     call getkey
@@ -997,7 +1022,7 @@ loadmenu:call totext
          xor ch,ch
          mov [di+4],ch
          jmp .c101
-
+     
 menu2:   call setdirmsk
          cmp al,27     ;esc
          jz .c100
