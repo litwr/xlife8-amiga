@@ -2,273 +2,256 @@
 ;*;fillrt
 ;*;setrconst
 
-   if 0
-;;fillrt1: mov #1,r4
-;;         tstb r3
-;;         beq 1$
-fillrt1: mov ax,1
-         or ch,ch
-         jz .c1
+fillrt1: 
+         ;;mov ax,1
+         moveq #1,d0
+         ;;or ch,ch
+         tst.b d3
+         ;;jz .c1
+         beq .c1
 
-;;2$:      asl r4
-;;         dec r3
-;;         bne 2$
-.c2:     shl ax,1
-         dec ch
-         jnz .c2
+.c2:     ;;shl ax,1
+         lsl.w #1,d0
+         ;;dec ch
+         subq #1,d3
+         ;;jnz .c2
+         bne .c2
+.c1:     rts
 
-;;1$:      return
-.c1:     retn
+fillrtsl:
+         ;;adc ch,dh
+         addx.b d5,d3
+         bsr fillrt1
+         ;;mov [temp],ax
+         move.w d0,d6
+         ;;or ch,bl
+         or.b d2,d3
+         rts
 
-;;fillrtsl: adc r3
-;;         add r2,r3
-;;         call @#fillrt1
-;;         mov r4,@#temp
-;;         clr r3
-;;         bisb r1,r3
-;;         return
-fillrtsl:adc ch,dh
-         call fillrt1    ;sets ch=0
-         mov [temp],ax
-         or ch,bl
-         retn
+fillrtsr:
+         ;;adc ch,bh
+         clr.b d0
+         addx.b d0,d3
+         bsr fillrt1
+         ;;mov [temp2],ax
+         move.w d0,d7 
+         rts
 
-;;fillrtsr: adc r3
-;;         call @#fillrt1
-;;         mov r4,@#temp2
-;;         return
-fillrtsr:adc ch,bh
-         call fillrt1
-         mov [temp2],ax
-         retn
+fillrt2: 
+         ;;jnc .c1
+         bcc .c1
 
-;;fillrt2: bcc 1$
-fillrt2: jnc .c1
+         ;;mov ax,[live]
+         move.w live(a3),d0
+         ;;test [temp],ax
+         and.w d6,d0
+         ;;jz .c3
+         beq .c3
 
-;;         mov @#live,r4
-;;         bit @#temp,r4
-;;         beq 3$
-         mov ax,[live]
-         test [temp],ax
-         jz .c3
+.c2:     ;;shl dl,1
+         lsl.b #1,d4
+         ;;or [gentab+bx],dl
+         or.b d4,(a2,d2)
+         ;;shr dl,1
+         lsr.b #1,d4
+         ;;jnz .c3
+         bne .c3
 
-;;2$:      asl r0
-;;         bisb r0,gentab(r1)
-.c2:     shl dl,1
-         or [gentab+bx],dl
+.c1:     ;;mov ax,[born]
+         move.w born(a3),d0
+         and.w d6,d0
+         ;;jnz .c2
+         bne .c2
 
-;;         asr r0
-;;         bne 3$
-         shr dl,1
-         jnz .c3
+.c3:     ;;or dh,dh
+         tst.b d5
+         ;;jz .c11
+         beq .c11
 
-;;1$:      mov @#born,r4
-;;         bit @#temp,r4
-;;         bne 2$
-.c1:     mov ax,[born]
-         test [temp],ax
-         jnz .c2
+         ;;mov ax,[live]
+         move.w live(a3),d0
+         ;;test [temp2],ax
+         and.w d7,d0
+         ;;jz .c13
+         beq .c13
 
-;;3$:      tst r2
-;;         beq 11$
-.c3:     or dh,dh
-         jz .c11
+.c12:    ;;or [bx+gentab],dl
+         or.b d4,(a2,d2)
+         rts
 
-;;         mov @#live,r4
-;;         bit r4,@#temp2
-;;         beq 13$
-         mov ax,[live]
-         test [temp2],ax
-         jz .c13
+.c11:    ;;mov ax,[born]
+         move.w born(a3),d0
+         ;;test [temp2],ax
+         and d7,d0
+         ;;jnz .c12
+         bne .c12
+.c13:    rts
 
-;;12$:     bisb r0,gentab(r1)
-;;         return
-.c12:    or [bx+gentab],dl
-         retn
+fillrt:  
+           ;;xor bx,bx
+           clr.l d2
+           lea.l gentab(a3),a2
+;;.c1:     mov dl,1
+;;         mov [bx+gentab],bh
+.c1:     moveq #1,d4
+         clr.b (a2,d2)
 
-;;11$:     mov @#born,r4
-;;         bit @#temp2,r4
-;;         bne 12$
-;;13$:     return
-.c11:    mov ax,[born]
-         test [temp2],ax
-         jnz .c12
-.c13:    retn
-
-;;fillrt:  clr r1          ;XR
-fillrt:  xor bx,bx
-
-;;1$:      mov #1,r0       ;AC
-;;         clrb gentab(r1)
-.c1:     mov dl,1
-         mov [bx+gentab],bh
-
-;;         mov r1,r2
-;;         bic #65535-1,r2     ;i1
-;;         clr r3
-;;         bisb r1,r3
-;;         asr r3
-;;         asr r3
-;;         asr r3
-;;         asr r3
-;;         asr r3
-         mov dh,bl
-         and dh,1
-         xor ch,ch
-         or ch,bl
-         mov cl,5
-         shr ch,cl
+;;         mov dh,bl
+         move.b d2,d5
+;;         and dh,1
+         andi.b #1,d5
+;;         xor ch,ch
+         clr.b d3
+;;         or ch,bl
+         or.b d2,d3
+;;         mov cl,5
+;;         shr ch,cl
+         lsr.b #5,d3
 
 ;;         clc
-;;         push r3
-;;         call @#fillrtsl
-         clc
-         push cx
-         call fillrtsl
+         addi.b #0,d0   ;0 -> X
+;;         push cx
+         move.w d3,-(sp)
+         bsr fillrtsl
 
-;;         bic #65535-30,r3
-;;         asr r3
-;;         asr r3
-;;         mfps r5
-;;         call @#fillrtsr
-         and ch,30
-         shr ch,1
-         shr ch,1
-         pushf
-         call fillrtsr
+         ;;and ch,30
+         and.b #30,d3
+         ;;shr ch,1
+         ;;shr ch,1
+         lsr.b #2,d3
+         ;;pushf
+      ;move sr,-(sp)
+         clr.w d1           ;d1 is used to keep X flag
+         roxr.w #1,d1
+         move.w d1,d0
+         add.w d0,d0
+         bsr fillrtsr
 
-;;         mtps r5
-;;         call @#fillrt2
-         popf
-         call fillrt2
+         ;;popf
+      ;move (sp)+,ccr
+         add.w d1,d1
+         bsr fillrt2
 
-;;         mov #4,r0
-;;         mov r1,r2
-;;         bic #65535-8,r2
-;;         asr r2
-;;         asr r2
-;;         asr r2
-;;         pop r3
-         mov dl,4
-         mov dh,bl
-         and dh,8
-         mov cl,3
-         shr dh,cl
-         pop cx
+         ;;mov dl,4
+         moveq #4,d4
+         ;;mov dh,bl
+         move.b d2,d5
+         ;;and dh,8
+         andi.b #8,d5
+         ;;mov cl,3
+         ;;shr dh,cl
+         lsr.b #3,d5
+         ;;pop cx
+         move.w (sp)+,d3
+         bsr fillrtsl
+         ;;and ch,16
+         andi.b #16,d3
+         ;;mov cl,4
+         ;;shl ch,cl
+         lsl.b #4,d3
 
-;;         call @#fillrtsl
-;;         bic #65535-16,r3
-;;         aslb r3
-;;         aslb r3
-;;         aslb r3
-;;         aslb r3
-         call fillrtsl
-         and ch,16
-         mov cl,4
-         shl ch,cl
+         ;;pushf
+      ;move sr,-(sp)
+         roxr #1,d1
+         ;;mov ch,bl
+         move.b d2,d3
+         ;;and ch,7
+         andi.b #7,d3
+         ;;popf
+         ;;pushf
+      ;move (sp)+,ccr
+      ;move sr,-(sp)
+         move.w d1,d0
+         add.w d0,d0
+         bsr fillrtsr
+         ;;popf
+         ;;pushf
+      ;move (sp)+,ccr
+      ;move sr,-(sp)
+         move.w d1,d0
+         add.w d0,d0
 
-;;         mfps r5
-;;         mov r1,r3
-;;         bic #65535-7,r3
-;;         call @#fillrtsr
-;;         mtps r5
-         pushf
-         mov ch,bl
-         and ch,7
-         popf
-         pushf
-         call fillrtsr
-         popf
-         pushf
+         bsr fillrt2
+         ;;mov dl,16
+         moveq #16,d4
+         ;;popf
+     ;move (sp)+,ccr
+         add.w d1,d1
+         bsr fillrt2
+         ;;mov dl,64
+         moveq #64,d4
+         ;;mov dh,bl
+         move.b d2,d5
+         ;;and dh,64
+         andi.b #64,d5
+         ;;shl dh,1
+         ;;shl dh,1
+         moveq #0,d0
+         lsl.b #2,d5
+         ;;adc dh,bh
+         addx.b d0,d5
+         ;;mov ch,bl
+         move.b d2,d3
+         ;;and ch,56
+         andi.b #56,d3
+         ;;mov cl,3
+         ;;shr ch,cl
+         lsr.b #3,d3
+         bsr fillrtsl
+         ;;shl ch,1
+         lsl.b #1,d3
+         ;;pushf
+     ;move sr,-(sp)
+         roxr #1,d1
+         ;;mov ch,bl
+         move.b d2,d3
+         ;;and ch,7
+         andi.b #7,d3
+         ;;popf
+         ;;pushf
+     ;move (sp)+,ccr
+     ;move sr,-(sp)
+         move.w d1,d0
+         add.w d0,d0
+         bsr fillrtsr
+         ;;popf
+     ;move (sp)+,ccr
+         add.w d1,d1
+         bsr fillrt2
+         ;;inc bl
+         addq.b #1,d2
+         ;;jz .ep1    ;optimize 8088?
+         ;;jmp .c1
+         bne .c1         
+.ep1:    rts
 
-;;         call @#fillrt2
-;;         mov #16,r0
-;;         mtps r5
-;;         call @#fillrt2
-;;         mov #64,r0
-;;         mov r1,r2
-;;         bic #65535-64,r2
-         call fillrt2
-         mov dl,16
-         popf
-         call fillrt2
-         mov dl,64
-         mov dh,bl
-         and dh,64
+;;setrconst:      ;IN: si - string, di - end of string, bp - live/born
+setrconst:      ;IN: a4 - end of string, d3 - length*8, a2 - live/born
+          clr.w (a2)
+.c2:      tst.b d3
+          beq fillrt\.ep1
+          
+          ;;lodsb
+          move.b -(a4),d0
+          ;;mov dx,1
+          moveq #1,d4
+          ;;sub al,'0'
+          subi.b #'0',d0
+          ;;jz .c11
+          beq .c11
 
-;;         aslb r2
-;;         aslb r2
-;;         adc r2
-;;         mov r1,r3
-;;         bic #65535-56,r3
-;;         asr r3
-;;         asr r3
-;;         asr r3
-;;         call @#fillrtsl
-;;         aslb r3
-;;         mfps r5
-;;         mov r1,r3
-;;         bic #65535-7,r3
-         shl dh,1
-         shl dh,1
-         adc dh,bh
-         mov ch,bl
-         and ch,56
-         mov cl,3
-         shr ch,cl
-         call fillrtsl
-         shl ch,1
-         pushf
-         mov ch,bl
-         and ch,7
-         popf
-         pushf
+;;.c1:      shl dx,1
+.c1:      lsl.w #1,d4
+          ;;dec al
+          subq.b #1,d0
+          ;;jnz .c1
+          bne .c1
 
-;;         call @#fillrtsr
-;;         mtps r5
-;;         call @#fillrt2
-;;         incb r1
-;;         movb r1,r1
-;;         bne 1$
-;;         return   ;ZF=1 required for loadpat
-         call fillrtsr
-         popf
-         call fillrt2
-         inc bl
-         jz .ep1    ;optimize 8088?
-         jmp .c1
-.ep1:    retn
+;;.c11:     or [bx],dx
+.c11:     or.w d4,(a2)
+          subq.b #8,d3
+          bra .c2
 
-;;setrconst:    ;IN: R4 - string, R3 - end of string, R5 - live/born
-setrconst:      ;IN: si - string, di - end of string, bp - live/born
-
-;;          clr @r5
-;;2$:       cmp r4,r3
-;;          bpl exit5
-          mov word [bx],0
-.c2:      cmp si,di
-          jns fillrt.ep1
-
-;;          movb (r4)+,r0
-;;          mov #1,r1
-;;          sub #'0,r0
-;;          beq 11$
-          lodsb
-          mov dx,1
-          sub al,'0'
-          jz .c11
-
-;;1$:       asl r1
-;;          sob r0,1$
-.c1:      shl dx,1
-          dec al
-          jnz .c1
-
-;;11$:      bis r1,@r5
-;;          br 2$
-.c11:     or [bx],dx
-          jmp .c2
-   endif
 showrules:
          move.l GRAPHICS_BASE(a3),a6 
          movea.l RASTER_PORT(a3),a1
@@ -359,7 +342,6 @@ showrules:
         bsr .showr0
         ;;jnz .loop5
         bne .loop5
-        ;;retn
         rts
 
 .cont1: 
@@ -367,7 +349,6 @@ showrules:
         bsr .showr0
         ;;jnz .loop2
         bne .loop2
-        ;;retn
         rts
 
 .showr0:

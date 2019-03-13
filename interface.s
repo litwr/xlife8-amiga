@@ -215,11 +215,11 @@ dispatcher:
          beq .c200
 
          lea.l born(a3),a2
-         ;;call setrconst
+         bsr setrconst
          bsr instay
          lea.l live(a3),a2
-         ;;call setrconst
-         ;;call fillrt
+         bsr setrconst
+         bsr fillrt
 .c200:   bra tograph
 
 .c16:    cmpi.b #' ',d0    ;space
