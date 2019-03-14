@@ -110,7 +110,7 @@ mainloop:
          bsr cleanup
          bra mainloop
 
-         ;include "io.s"
+         include "io.s"
          ;include "ramdisk.s"
          include "video-base.s"
          include "video.s"
@@ -642,14 +642,14 @@ topology  dc.b 0      ;0 - torus
 ;;errst:     dc.b 0   ;0 - do not print i/o-errors message, 1 - print
 ;ppmode    dc.b 1    ;putpixel mode: 0 - tentative, 1 - active
 ;crsrpgmk  dc.b 1   ;0 - do not draw cursor during showscnz, 1 - draw
-;svfn      dc.b 0,0,0,0,0,0,0,0,0,0,0,0
+svfn       blk.b 31
 ;drives    rb 26
 ;curdrv    dc.b 0
 ;patpath   dc.b "\PATTERNS",0
 ;rootpath  dc.b "\",0
 ;cf        dc.b "\COLORS.CFG",0
 ;copyleft  dc.b "\CR.TXT",0
-nofnchar  dc.b "?/:;<>[]|#'()~%*+"
+nofnchar  dc.b "?#[]()|~/:;<>'%*+"
           dc.b '"'
 stringbuf blk.b 21     ;must be after nofnchar
 crsrstate  dc.b 0

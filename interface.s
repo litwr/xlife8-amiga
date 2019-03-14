@@ -289,21 +289,15 @@ dispatcher:
 .c172:   cmpi.b #'l',d0
          bne .c173
 
-         ;;mov al,[zoom]
-         ;;push ax
          move.b zoom(a3),d0
          move.w d0,-(sp)
-         ;;mov [zoom],0
          clr.b zoom(a3)
          bsr loadmenu
          bne .c302
 
 .c303:   bsr tograph
-         ;;call loadpat
-.c302:
-         ;;pop ax
-         ;;mov [zoom],al
-         move.w (sp)+,d0
+         ;bsr loadpat
+.c302:   move.w (sp)+,d0
          move.b d0,zoom(a3)
          bsr calccells
          bra tograph
@@ -312,13 +306,13 @@ dispatcher:
          bne .c174
 
          ;;cmp [fn],0
-         ;;jne .c317
+         bne .c317
 .c100:   rts
 
-;;.c317:   mov al,[zoom]
-         ;;push ax
-         ;;mov [zoom],0
-         ;;jmp .c303
+.c317:   move.b zoom(a3),d0
+         move.w d0,-(sp)
+         clr.b zoom(a3)
+         bra .c303
 
 .c174:   cmpi.b #'+',d0
          bne .c175

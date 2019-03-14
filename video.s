@@ -44,7 +44,7 @@ insteps: bsr totext
 
 .c12:    subq.l #1,a4
          subq.b #8,d3
-         bmi .c3
+         bcs .c3
 
          move.w #192,d0
          moveq #8,d1
@@ -997,7 +997,7 @@ loadmenu:bsr totext
 .c6:     cmpa.l #stringbuf,a0
          bne .c5
 
-         cmpi.b #30*8,d3
+         cmpi.b #(30-4)*8,d3
          bcc .c1
 
          move.l a4,a0
@@ -1030,83 +1030,94 @@ loadmenu:bsr totext
          clr.b (a4)
          bra .c101
 
-menu2:   ;bsr setdirmsk
-     rts
-     if 0
-         cmp al,27     ;esc
-         jz .c100
+menu2:   bsr setdirmsk
+         cmpi.b #27,d0     ;esc
+         beq .c100
 
-         call showdir  ;returns number of directory entries in BP
-.c6:     call printstr
-         db home,clrtoeol,green
-         db 'ENTER FILE# OR ',red,'ESC',green,': ',black,'$'
+         bsr showdir  ;returns number of directory entries in D6
+         movepenq 0,8
+         ;db clrtoeol
+         color 2
+         print 'ENTER FILE# OR '
+         color 1
+         print 'ESC'
+         color 2
+         print ': '
+         color 3
+         bsr TXT_PLACE_CURSOR
 
-.c3:     mov di,stringbuf+1      ;+1?
-         mov si,di
-         xor cx,cx
-.c1:     call getkey
-         cmp al,27     ;esc
-         jnz .c17
+.c3:     ;;mov di,stringbuf+1      ;+1?
+         ;;mov si,di
+         ;;xor cx,cx
+         lea.l stringbuf+1(a3),a4
+         move.l a4,a5
+         moveq #0,d3
+.c1:     movem.l a1/a4/a5/a6/d3/d6,-(sp)
+         bsr getkey
+         movem.l (sp)+,a1/a4/a5/a6/d3/d6
+         cmpi.b #27,d0     ;esc
+         bne .c17
 
 .c100:   ;call curon
-         jmp loadmenu
+         bra loadmenu
 
-.c17:    cmp al,0dh
-         jz .c11
+.c17:    cmpi.b #$d,d0
+         beq .c11
 
-         cmp al,8   ;backspace
-         jz .c12
+         cmpi.b #8,d0   ;backspace
+         beq .c12
 
-         cmp al,'0'
-         jc .c1
+         cmpi.b #'0',d0
+         bcs .c1
 
-         cmp al,'9'+1
-         jnc .c1
+         cmpi.b #'9'+1,d0
+         bcc .c1
 
-         cmp cl,3
-         jz .c1
+         cmpi.b #3*8,d3
+         beq .c1
 
-         mov [di],al
-         inc di
-         inc cl
-         mov ah,2
-         mov dl,al
-         int 21h
-         jmp .c1
+         move.l a4,a0
+         move.b d0,(a4)+
+         addq.b #8,d3
+         moveq #8,d1
+         move.w #152,d4
+	 bsr TXT_ON_CURSOR
+         moveq #1,d0
+         jsr Text(a6)
+.cont4:  bsr TXT_PLACE_CURSOR
+         bra .c1
 
-.c11:    xor ax,ax
-         or cl,cl
-         jz .c3
+.c11:    moveq #0,d0  ;result
+         move.b d3,d4
+         tst.b d3
+         beq .c3
+         move.l a5,-(sp)
+         bra .l4
 
-         lodsb
-         sub al,'0'
-         dec cl
-         jz .c21
+.l2:     mulu #10,d0
+.l4:     add.b (a5)+,d0
+         subi.b #'0',d0
+         subq #8,d4
+         bne .l2
 
-         mov ch,10
-.l2:     mul ch
-         add al,[si]
-         inc si
-         sub al,'0'
-         dec cl
-         jnz .l2
+         move.l (sp)+,a5
+.c21:    cmp d6,d0
+         bcc .c1
 
-.c21:    cmp ax,bp
-         jc .l3
-         jmp .c6      ;optimize 8088
+.l3:     ;;call findfn
+         ;;;call curoff
+         ;;xor ax,ax     ;sets ZF
+         rts
 
-.l3:     call findfn
-         ;call curoff
-         xor ax,ax     ;sets ZF
-         retn
+.c12:    subq.l #1,a4
+         subq.b #8,d3
+         bcs .c3
 
-.c12:    dec di
-         dec cl
-         js .c3
-
-         call delchr
-         jmp .c1
-
+         moveq #8,d1
+         move.w #168,d0
+         bsr TXT_REMOVE_CURSOR
+         bra .cont4
+    if 0
 getsvfn: call totext
          mov al,[loadmenu.c80]
          mov [.c80],al
@@ -1579,74 +1590,92 @@ crsrset1:
          move.b crsrbit(a3),d1
          rts
 
-    if 0
 setdirmsk:
-         call printstr
-         db ansiclrscn,green,'SET DIRECTORY MASK ('
-         db red,'ENTER',green
-         db ' = *)',black,0dh,10,'$'
+         bsr totext
+         move.l GRAPHICS_BASE(a3),a6 
+         ;movea.l RASTER_PORT(a3),a1
+         movepenq 0,8
+         color 2
+         print 'SET DIRECTORY MASK ('
+         color 1
+         print 'ENTER'
+         color 2
+         print ' = ?#)'
+         color 3
+         movepenq 0,16
+         bsr TXT_PLACE_CURSOR
+.c3:     lea svfn(a3),a4
+         moveq #0,d3   ;length
+.c1:     movem.l a1/a4/a6/d3,-(sp)
+         bsr getkey
+         movem.l (sp)+,a1/a4/a6/d3
+         cmpi.b #$d,d0
+         beq .c11
 
-.c3:     mov di,svfn
-         xor cx,cx
-.c1:     call getkey
-         cmp al,0dh
-         jz .c11
+         cmpi.b #8,d0    ;backspace
+         beq .c12
 
-         cmp al,8    ;backspace
-         jz .c12
+         cmpi.b #27,d0     ;esc
+         beq .c13
 
-         cmp al,27     ;esc
-         jz .c13
+         cmpi.b #'!',d0
+         bcs .c1
 
-         cmp al,'!'
-         jc .c1
+         cmpi #126,d0
+         bcc .c1
 
-         cmp al,126
-         jnc .c1
+         cmpi.b #(30-4)*8,d3    ;fn length limit
+         bcc .c1
 
-         cmp cl,8    ;fn length limit
-         jnc .c1
+         lea.l nofnchar+8(a3),a0
+.c50:    move.b (a0)+,d1
+         cmp.b d0,d1
+         beq .c1
 
-         mov si,nofnchar+1
-         mov dl,al
-.c50:    lodsb
-         cmp al,dl
-         jz .c1
+         cmpa.l #stringbuf,a0
+         bne .c50
 
-         cmp si,stringbuf
-         jnz .c50
+         cmpi.b #'a',d0
+         bcs .c6
 
-         cmp dl,'a'
-         jc .c6
+         cmpi.b #'z'+1,d0
+         bcc .c6
 
-         cmp dl,'z'+1
-         jnc .c6
+         sub.b #'a'-'A',d0
+.c6:     move.l a4,a0
+         move.b d0,(a4)+
+         moveq #16,d1
+         moveq #0,d4
+	 bsr TXT_ON_CURSOR
+         addq #8,d3
+         moveq #1,d0
+         jsr Text(a6)
+.cont4:  bsr TXT_PLACE_CURSOR
+         bra .c1
 
-         sub dl,'a'-'A'
-.c6:     mov [di],dl
-         inc di
-         inc cl
-         mov ah,2
-         int 21h
-         jmp .c1
+.c11:    tst.b d3
+         bne .c5
 
-.c11:    or cl,cl
-         jnz .c5
+         move.b #"?",(a4)+
+         move.b #"#",(a4)+
+         bra .cont5
 
-         mov byte [di],'*'
-         inc di
-.c5:     mov word [di],'8'*256+'.'
-         mov word [di+2],'L'*256+'X'
-         mov byte [di+4],ch
-.c13:    retn
+.c5:     move.b #".",(a4)+
+         move.b #"8",(a4)+
+         move.b #"x",(a4)+
+         move.b #"l",(a4)+
+.cont5:  clr.b (a4)
+.c13:    rts
 
-.c12:    dec di
-         dec cl
-         js .c3
+.c12:    subq.l #1,a4
+         subq.b #8,d3
+         bcs .c3
 
-         call delchr
-         jmp .c1
-
+         moveq #16,d1
+         moveq #8,d0
+         bsr TXT_REMOVE_CURSOR
+         bra .cont4
+   if 0
 setviewport:
 ;         ld hl,(crsrtile)
 ;         ld (viewport),hl
