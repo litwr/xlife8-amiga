@@ -53,7 +53,7 @@ insteps: bsr totext
 
 .c11:    move.w #184,d0
          moveq #8,d1
-	 bsr TXT_REMOVE_CURSOR
+         bsr TXT_REMOVE_CURSOR
          tst.b d3
          beq .c20
 
@@ -937,104 +937,104 @@ loadmenu:bsr totext
          movepenq 0,32
 .c80:    print 'DH0: '
          bsr TXT_PLACE_CURSOR
+.c3:     lea stringbuf(a3),a4
+         moveq #0,d3   ;length
+.c1:     movem.l a1/a4/a6/d3,-(sp)
+         bsr getkey
+         movem.l (sp)+,a1/a4/a6/d3
 
-      bsr getkey
-      rts
+         cmpi.b #$d,d0  ;enter
+         beq .c11
 
-      if 0
-.c3:     mov di,fn
-         xor cl,cl    ;length
-.c1:     call getkey
-         cmp al,0dh
-         jz .c11
+         cmpi.b #8,d0    ;backspace
+         beq .c12
 
-         cmp al,8   ;backspace
-         jz .c12
+         cmpi.b #27,d0  ;esc
+         bne .c17
 
-         cmp al,27   ;esc
-         jnz .c17
+.c100:   ;;mov ch,al
+.c101:   ;;;call curoff  ;curoff changes ch?
+         ;;or ch,ch
+         rts
 
-.c100:   mov ch,al
-.c101:   ;call curoff  ;curoff changes ch?
-         or ch,ch
-         retn
+.c17:    cmpi.b #'*',d0
+         bne .c21
 
-.c17:    cmp al,'*'
-         jnz .c21
+         ;;mov ch,al
+         ;;mov si,240
+         ;;call chgdrv
+         ;;jmp .c1
+         bra .c1
 
-         mov ch,al
-         mov si,240
-         call chgdrv
-         jmp .c1
+.c21:    cmpi.b #9,d0  ;TAB
+         bne .c18
 
-.c21:    cmp al,9    ;TAB
-         jnz .c18
+         ;;call curoff
+         ;;call ramdisk
+         ;;mov ch,1
+         ;;jmp .c101
+         bra .c101
 
-         call curoff
-         call ramdisk
-         mov ch,1
-         jmp .c101
+.c18:    cmpi.b #'!',d0
+         bcs .c1
 
-.c18:    cmp al,'!'
-         jc .c1
+         cmpi.b #126,d0
+         bcc .c1
 
-         cmp al,126
-         jnc .c1
+         lea.l nofnchar(a3),a0
+.c5:     move.b (a0)+,d1
 
-         mov si,nofnchar   ;+1? allows ?-char
-         mov dl,al
-.c5:     lodsb
-         cmp dl,al
-         jz .c1
+         cmp.b d0,d1
+         beq .c1
 
-         cmp dl,'a'
-         jc .c6
+         cmpi.b #'a',d0
+         bcs .c6
 
-         cmp dl,'z'+1
-         jnc .c6
+         cmpi.b #'z'+1,d0
+         bcc .c6
 
-         sub dl,'a'-'A'
-.c6:     cmp si,stringbuf
-         jnz .c5
+         subi.b #'a'-'A',d0
+.c6:     cmpa.l #stringbuf,a0
+         bne .c5
 
-         cmp cl,8
-         jnc .c1
+         cmpi.b #30*8,d3
+         bcc .c1
 
-         mov [di],dl
-         inc di
-         inc cl
-         mov ah,2
-         int 21h
-         jmp .c1
+         move.l a4,a0
+         move.b d0,(a4)+
+         addq.b #8,d3
+         moveq #32,d1
+         moveq #32,d4
+	 bsr TXT_ON_CURSOR
+         moveq #1,d0
+         jsr Text(a6)
+.cont4:  bsr TXT_PLACE_CURSOR
+         bra .c1
 
-.c12:    dec di
-         dec cl
-         js .c3
+.c12:    subq.l #1,a4
+         subq.b #8,d3
+         bmi .c3
 
-         call delchr
-         jmp .c1
+         moveq #32,d1
+         moveq #48,d0
+         bsr TXT_REMOVE_CURSOR
+         bra .cont4
 
-.c11:    or cl,cl
-         jz menu2
+.c11:    tst.b d3
+         beq menu2
 
-         mov word [di],'8'*256+'.'
-         mov word [di+2],'L'*256+'X'
-         xor ch,ch
-         mov [di+4],ch
-         jmp .c101
-     
-menu2:   call setdirmsk
+         move.b #".",(a4)+
+         move.b #"8",(a4)+
+         move.b #"x",(a4)+
+         move.b #"l",(a4)+
+         clr.b (a4)
+         bra .c101
+
+menu2:   ;bsr setdirmsk
+     rts
+     if 0
          cmp al,27     ;esc
          jz .c100
-
-;;*         .text "run/stop"
-;;*         .byte 30
-;;*         .text " and "
-;;*         .byte 28
-;;*         .text "cbm key"
-;;*         .byte 30
-;;*         .text " as usual"
-;;*         .byte $d,0
 
          call showdir  ;returns number of directory entries in BP
 .c6:     call printstr

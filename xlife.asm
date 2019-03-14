@@ -627,7 +627,7 @@ clncnt    dc.b 0
 pseudoc   dc.b 0
 mode      dc.b 0      ;0-stop, 1-run, 2-hide, 3-exit
 zoom      dc.b 0
-;fn        dc.b 0,0,0,0,0,0,0,0,0,0,0,0
+fn        blk.b 31    ;30 is max filename length
 density   dc.b 3
 ;czbg      dc.b 0
 ;palette   dc.b 0
@@ -649,7 +649,8 @@ topology  dc.b 0      ;0 - torus
 ;rootpath  dc.b "\",0
 ;cf        dc.b "\COLORS.CFG",0
 ;copyleft  dc.b "\CR.TXT",0
-;nofnchar  dc.b "?,./:;<=>[\]|"
+nofnchar  dc.b "?/:;<>[]|#'()~%*+"
+          dc.b '"'
 stringbuf blk.b 21     ;must be after nofnchar
 crsrstate  dc.b 0
 tbformat   dc.b "TIME: %d.%02ds",0
