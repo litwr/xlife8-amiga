@@ -2,7 +2,8 @@
 console-debugger = 1
 chip_memory = 512
 floppy_drive_0 = /home/micro/Documents/FS-UAE/Kickstarts/amiga-os-134-workbench.adf
+hard_drive_0 = /home/micro/Documents/FS-UAE/Hard Drives/hdd
 floppy_drive_speed = 0
 joystick_port_1_mode = nothing
-hard_drive_0 = fractals
 slow_memory = 512
+#joystick_port_1 = none

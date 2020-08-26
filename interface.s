@@ -28,68 +28,51 @@ stop_timer:
          rts
 
 dispatcher:
-	 ;;call getkey2
          bsr getkey2
          ;tst.b d0
          bne .e0
          rts
-.e0:
-         ;;cmpb #'g,r0
-         ;;cmp al,'g'
-         cmp.b #"g",d0
 
-         ;;bne 3$
-         ;;jnz .c3
+.e0:     cmp.b #"g",d0
          bne .c3
 
          ;;cmp [mode],0
          tst.b mode(a3)
-         ;;jz .c2
          beq .c2
 
-.c53:    
+.c53:
          ;;dec [mode]
          subi.b #1,mode(a3)
-         ;;jmp .c40
          bra .c40
 
-.c2:     
+.c2:
          ;;inc [mode]
          addi.b #1,mode(a3)
 .c40:    bra tograph
 
-.c3:     
-         ;;cmp al,'Q'
+.c3:
          cmpi.b #"Q",d0
-         ;;jnz .c5
          bne .c5
 
-         ;;mov [mode],3
          move.b #3,mode(a3)
-.c101:   
-         ;;retn
+.c101:
          rts
 
 .c5:
-         ;;cmp al,'h'
          cmpi.b #"h",d0
-         ;;jnz .c4
          bne .c4
 
-         ;;cmp [mode],2
          cmpi.b #2,mode(a3)
-         ;;jz .c53
          beq .c53
 
          moveq #2,d0
          move.b d0,mode(a3)
          bra clrscn
-.c4:     
+.c4:
          ;;cmp [mode],2
          cmpi.b #2,mode(a3)
-         ;;je .c101
          beq .c101
-       
+
          cmpi.b #"T",d0
          bne .c6
 
@@ -137,7 +120,7 @@ dispatcher:
 .c201:   jmp clear
 
 .c10:    cmpi.b #'E',d0
-	 bne .c11
+         bne .c11
 
          subq.b #1,pseudoc(a3)
          beq tograph

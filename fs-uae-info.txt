@@ -30,4 +30,4 @@ CLI commands
    dir
    endcli
    avail
-
+   info

@@ -118,7 +118,7 @@ mainloop:
          include "interface.s"
          include "rules.s"
          include "tile.s"
-         ;include "ramdata.s"
+         include "ramdata.s"
 
 rasteri:     btst #6,$dff01e   ;blitter?
              bne rasterie
@@ -657,6 +657,10 @@ tbformat   dc.b "TIME: %d.%02ds",0
 sbformat   dc.b "SPEED: %d.%02d",0
 
 dosname  dc.b "dos.library",0
+curdisk  dc.b "dh0:",0
+curdir1  dc.b "xlife8/",0
+curdir2  dc.b "patterns",0
+curpath  blk.b 34
 
 	CNOP 0,4
 SCREEN_DEFS:

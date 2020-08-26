@@ -2,6 +2,7 @@
 ;zerocnt
 ;zerocc
 ;todec
+;makepath
 
 zerocc:   inibcd cellcnt,3
           rts
@@ -11,6 +12,21 @@ zerogc:   inibcd gencnt,4
 
 stuffChar:  move.b  d0,(a3)+        ;Put data to an output string, used by RawDoFmt
             rts
+
+makepath: lea curdisk,a0
+         lea curpath,a1
+.loop1:  move.b (a0)+,(a1)+
+         bne .loop1
+
+.loop2:  lea curdir1,a0
+         move.b (a0)+,(a1)+
+         bne .loop2
+
+.loop3:  move.b (a0)+,(a1)+
+         bne .loop3
+
+         move.b d0,(a1)
+         rts
 
   if 0
 boxsz:   mov byte [boxsz_ymin],vermax*8
