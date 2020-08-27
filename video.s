@@ -563,25 +563,17 @@ showtinfo:
          ;;mov di,192*40+30
          movea.l BITPLANE2_PTR(a3),a0
          adda.l #192*40+14+3,a0
-         ;;jmp digiout
          bra digiout
 
-   if 0
-calcx:   ;;movb @#crsrbit,r1  ;$80 -> 0, $40 -> 1, ...
-;;         bis #65280,r1      ;$ff00, IN: R1, OUT: R1
-;;1$:      add #256,r1
-;;         aslb r1
-;;         bcc 1$
 
-;;         swab r1
-;;         return
-         mov ah,[crsrbit]
-         mov al,0ffh
-.c1:     inc al
-         shl ah,1
-         jnc .c1
-         retn
+calcx:   move.b crsrbit(a3),d2   ;$80 -> 0, $40 -> 1, ...
+         moveq #-1,d0
+.c1:     addq.b #1,d0
+         add.b d2,d2
+         bcc .c1
+         rts
 
+  if 0
 showscnz:
 ;;xlimit   = $14
 ;;ylimit   = $15
@@ -970,7 +962,7 @@ loadmenu:bsr totext
          bne .c18
 
          ;;call curoff
-         ;;call ramdisk
+         bsr ramdisk
          ;;mov ch,1
          ;;jmp .c101
          bra .c101
@@ -1261,15 +1253,20 @@ showrect:
          pop ax
          call dispatcher.e0
          jmp .c10
+   endif
 
-xchgxy:  or [xchgdir],0
-         jz exit7
+xchgxy:  tst.b xchgdir(a3)
+         beq exit7
 
-         mov al,[x0]
-         xchg al,[y0]
-         mov [x0],al
-exit7:   retn
+         movem.w d0/d1,-(sp)
+         move.b x0,d0
+         move.b y0,d1
+         move.b d1,x0
+         move.b d0,y0
+         movem.w (sp)+,d0/d1
+exit7:   rts
 
+  if 0
 drawrect: call xchgxy
          xor bx,bx
          mov [xcut],bx       ;0 -> xcut,ycut
@@ -2268,27 +2265,27 @@ chgcolors:
          cmp al,'y'
          jne .l8
          jmp savecf
-
+   endif
 putpixel2:
-         mov di,[di+video]
-         mov bl,dl
-         shl bx,1
-         mov bx,[bx+vistab]
-         shr cl,1
-         jnc .l1
+         ;;mov di,[di+video]
+         ;;mov bl,dl
+         ;;shl bx,1
+         ;;mov bx,[bx+vistab]
+         ;;shr cl,1
+         ;;jnc .l1
 
-         add di,2000h
-.l1:     mov al,80
-         mul cl
-         add di,ax
+         ;;add di,2000h
+.l1:     ;;mov al,80
+         ;;mul cl
+         ;;add di,ax
 
-         mov ax,bx
-         not ax
-         and [es:di],ax
-         shl bx,1
-         or [es:di],bx
-.e1:     retn
-
+         ;;mov ax,bx
+         ;;not ax
+         ;;and [es:di],ax
+         ;;shl bx,1
+         ;;or [es:di],bx
+.e1:     rts
+   if 0
 showtent:mov ax,word [x0]
          push ax
          mov [ppmode],0

@@ -585,6 +585,6 @@ benchcalc: bsr stop_timer
          bne .strlen2
 
          lea stringbuf(a3),a0
-         jsr Text(a6)         
+         jsr Text(a6)
          bra getkey
 

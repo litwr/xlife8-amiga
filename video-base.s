@@ -26,7 +26,7 @@ TXT_REMOVE_CURSOR:  ;IN: d3,a6,a1,d1,d0
 
          print ' '
          movem.w (sp)+,d0/d1
-         
+
          subi.w #8,d0
          jmp Move(a6)
 

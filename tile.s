@@ -472,95 +472,151 @@ inctsum:            ;in: d0
          cellsum
 	 rts
 
-   if 0
-putpixel:     ;IN: x0,y0; DON'T USE: SI,BP
-         call xchgxy
-         mov dx,word [x0]
-         call calcx
 
-         mov cl,dl
-         or al,[crsrx]
-         cmp [xdir],0
-         jz .c4
+putpixel:     ;IN: x0,y0; DON'T USE: D1
+         bsr xchgxy
+         ;;mov dx,word [x0]
+         move.b x0(a3),d3
+         move.b y0(a3),d4
+         bsr calcx
 
-         cmp al,cl
-         jc .c100
+         ;;mov cl,dl
+         move.b d3,d5
+         ;;or al,[crsrx]
+         or.b crsrx(a3),d0
+         ;;cmp [xdir],0
+         tst.b xdir(a3)
+         beq .c4
 
-         sub al,cl
-         jmp .c2
+         ;;cmp al,cl
+         cmp.b d5,d0
+         bcs .c100
 
-.c4:     add al,cl
-         cmp al,cl
-         jc .c100
-if hormax<>32
-         cmp al,hormax*8
-         jnc .c100
-endif
-.c2:     mov ch,[crsry]
-         add ch,[crsrbyte]
-         mov cl,dh
-         cmp [ydir],0
-         jz .c3
+         ;sub al,cl
+         sub.b d5,d0
+         bra .c2
 
-         cmp ch,cl
-         jc .c100
-
-         sub ch,cl
-         jmp .c1
-
-.c3:     add ch,cl
-         cmp ch,cl
-         jc .c100
-
-         cmp ch,vermax*8
-         jc .c1
-
-.c100:   retn
-
-.c1:     xor cl,cl
-         xchg cl,ch
-         xor dh,dh
-         mov dl,[crsry]
-         sub cx,dx
-         xor ah,ah
-         mov dl,[crsrx]
-         sub ax,dx
-         mov di,[crsrtile]     ;for chkadd
-.c22:    test cx,0fff8h
-         js .cup           ;12$
-         jne .cdown        ;11$
-
-.c23:    test ax,0fff8h
-         js .cleft         ;13$
-         jne .cright       ;10$
-
-         mov bx,7
-         sub bl,al
-         mov dl,[bittab+bx]
-         ;and ch,7
-         cmp [ppmode],bh
-         jne putpixel3
-         jmp putpixel2
-
-.cright: mov di,[di+right]   ;y=0, x=/=0
-         sub ax,8
-         jmp .c23
-
-.cdown:  mov di,[di+down]   ;y=/=0
-         sub cx,8
-         jmp .c22
-
-.cup:    mov di,[di+up]   ;y=/=0
-         add cx,8
-         jmp .c22
-
-.cleft:  mov di,[di+left]   ;y=0, x=/=0
-         add ax,8
-         jmp .c23
-
-putpixel3:
-         mov bl,cl
-         or [di+bx],dl
-         jmp chkadd
+.c4:     ;;add al,cl
+         add.b d5,d0
+         ;;cmp al,cl
+         cmp.b d5,d0
+         bcs .c100
+  if hormax<>32
+         ;;cmp al,hormax*8
+         cmpi.b #hormax*8,d0
+         bcc .c100
   endif
 
+.c2:     ;;mov ch,[crsry]
+         clr.l d6
+         move.b crsry(a3),d6
+         ;add ch,[crsrbyte]
+         add.b crsrbyte(a3),d6
+         ;;mov cl,dh
+         move.b d4,d5
+         ;;cmp [ydir],0
+         tst.b ydir(a3)
+         beq .c3
+
+         ;;cmp ch,cl
+         cmp.b d5,d6
+         bcs .c100
+
+         ;;sub ch,cl
+         sub.b d5,d6
+         bra .c1
+
+.c3:     ;;add ch,cl
+         add.b d5,d6
+         ;;cmp ch,cl
+         cmp.b d5,d6
+         bcs .c100
+
+         ;;cmp ch,vermax*8
+         cmpi.b #vermax*8,d6
+         bcs .c1
+
+.c100:   rts
+
+.c1:     ;;xor cl,cl
+         clr.l d5
+         ;;xchg cl,ch
+         exg d5,d6
+         ;;xor dh,dh
+         clr.l d4
+         ;;mov dl,[crsry]
+         move.b crsry(a3),d3
+         ;;sub cx,dx
+         sub.b d3,d5
+         sub.b d4,d6
+         ;;xor ah,ah
+         clr d7
+         ;;mov dl,[crsrx]
+         move.b crsrx(a3),d3
+         ;;sub ax,dx
+         sub.b d4,d7
+         sub.b d3,d0
+         ;;mov di,[crsrtile]     ;for chkadd
+         move.l crsrtile(a3),a0
+.c22:    ;;test cx,0fff8h
+         tst.b d6
+         ;;js .cup           ;12$
+         bmi .cup
+         beq .c23
+         ;;jne .cdown        ;11$
+         move d5,d2
+         andi.b #$f8,d2
+         bne .cdown
+
+.c23:    ;;test ax,0fff8h
+         tst.b d7
+         ;;js .cleft         ;13$
+         bmi .cleft
+         beq .c23a
+         ;;jne .cright       ;10$
+         move d0,d2
+         andi.b #$f8,d2
+         bne .cright
+
+.c23a:   ;;mov bx,7
+         ;;sub bl,al
+         neg.b d0
+         addi.b #7,d0
+         lea.l bittab(a3),a1
+         ;;mov dl,[bittab+bx]
+         move.b (a1,d0),d3
+         ;;;and ch,7
+         ;;cmp [ppmode],bh
+         tst.b ppmode(a3)
+         bne putpixel3
+         bra putpixel2
+
+.cright: ;;mov di,[di+right]   ;y=0, x=/=0
+         move.l right(a0),a0
+         ;;sub ax,8
+         subq #8,d0
+         bra .c23
+
+.cdown:  ;;mov di,[di+down]   ;y=/=0
+         move.l down(a0),a0
+         ;;sub cx,8
+         subq #8,d5
+         bra .c22
+
+.cup:    ;;mov di,[di+up]   ;y=/=0
+         move.l up(a0),a0
+         ;;add cx,8
+         addq #8,d5
+         bra .c22
+
+.cleft:  ;;mov di,[di+left]   ;y=0, x=/=0
+         move.l left(a0),a0
+         ;;add ax,8
+         addq #8,d0
+         bra .c23
+
+putpixel3:
+         ;;mov bl,cl
+         ;;or [di+bx],dl
+         or.b d3,(a0,d5)
+         bra chkadd

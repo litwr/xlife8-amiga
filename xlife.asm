@@ -111,14 +111,13 @@ mainloop:
          bra mainloop
 
          include "io.s"
-         ;include "ramdisk.s"
+         include "ramdisk.s"
          include "video-base.s"
          include "video.s"
          include "utils.s"
          include "interface.s"
          include "rules.s"
          include "tile.s"
-         include "ramdata.s"
 
 rasteri:     btst #6,$dff01e   ;blitter?
              bne rasterie
@@ -567,7 +566,7 @@ temp2     dc.w 0
 ;iobseg    dc.w 0
 ;filehl    dc.w 0
 ;filesz    dc.w 0
-;tsz       dc.w 0
+tsz       dc.w 0
 ;saved     dc.w 0
 tobin     dc.w 1,10,100,1000,10000
 x0        dc.b 0   ;word aligned for the speed
@@ -613,16 +612,16 @@ crsrbit   dc.b 128    ;x bit position
 ;i1        dc.b 0,0
 cellcnt   dc.b 0,0,0
 gencnt    dc.b 0,0,0,0
-;crsrx     dc.b 0      ;[x/8]*8
-;crsry     dc.b 0      ;[y/8]*8
+crsrx     dc.b 0      ;[x/8]*8
+crsry     dc.b 0      ;[y/8]*8
 ;vptilecx  dc.b 0      ;must be word aligned
 ;vptilecy  dc.b 0
 xcrsr     dc.b 0,0
 ycrsr     dc.b 0,0  ;must follow xcrsr
 tinfo     dc.b 0,0
-;xchgdir   dc.b 0
-;xdir      dc.b 0      ;linear transformation, word aligned
-;ydir      dc.b 0
+xchgdir   dc.b 0
+xdir      dc.b 0      ;linear transformation, word aligned
+ydir      dc.b 0
 clncnt    dc.b 0
 pseudoc   dc.b 0
 mode      dc.b 0      ;0-stop, 1-run, 2-hide, 3-exit
@@ -640,7 +639,7 @@ density   dc.b 3
 topology  dc.b 0      ;0 - torus
 ;crsrticks dc.b 1
 ;;errst:     dc.b 0   ;0 - do not print i/o-errors message, 1 - print
-;ppmode    dc.b 1    ;putpixel mode: 0 - tentative, 1 - active
+ppmode    dc.b 1    ;putpixel mode: 0 - tentative, 1 - active
 ;crsrpgmk  dc.b 1   ;0 - do not draw cursor during showscnz, 1 - draw
 svfn       blk.b 31
 ;drives    rb 26
@@ -751,7 +750,10 @@ IEADDR:		DC.L	0	; IAddress
 		DC.L	0	; TimeStamp
 WINDOW_HANDLE:	DC.L	0
 
+         include "ramdata.s"
+
 	 CNOP 0,4
 tiles:
          include "initiles.s"
 
+iobseg:      dcb.b   8192,0

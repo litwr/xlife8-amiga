@@ -1,65 +1,98 @@
-if 0
-maketent:   ;in: si
-         lodsw
-         sub ax,8
-         shr ax,1
-         mov [tsz],ax
-         mov cx,ax
-         push es
-         mov es,[iobseg]
-         xor di,di
-         rep movsw
-         pop es
-         retn
+ramdisk: bsr totext
+         move.l GRAPHICS_BASE(a3),a6 
+         ;movea.l RASTER_PORT(a3),a1
+         movepenq 0,8
+         color 2  ;green
+         print 'ENTER FILE# OR HIT '
+         color 1 ;red
+         print 'ESC'
+         movepenq 32,16
+         print '0'
+         color 3
+         print ' GLIDER GUN'
+         movepenq 32,24
+         color 1
+         print '1'
+         color 3
+         print ' SMALL FISH'
+         movepenq 32,32
+         color 1
+         print '2'
+         color 3
+         print ' HEAVYWEIGHT SPACESHIP'
+         movepenq 32,40
+         color 1
+         print '3'
+         color 3
+         print ' R-PENTOMINO'
+         movepenq 32,48
+         color 1
+         print '4'
+         color 3
+         print ' BUNNIES'
+         movepenq 32,56
+         color 1
+         print '5'
+         color 3
+         print ' LIDKA'
+         movepenq 32,64
+         color 1
+         print '6'
+         color 3
+         print ' BIG GLIDER'
+         movepenq 32,72
+         color 1
+         print '7'
+         color 3
+         print ' BI-GUN'
+         movepenq 32,80
+         color 1
+         print '8'
+         color 3
+         print ' ACORN'
+         movepenq 32,88
+         color 1
+         print '9'
+         color 3
+         print ' SWITCH ENGINE PUFFER'
+.c1:     jsr getkey2
+         cmpi.b #27,d0    ;esc
+         beq pexit
 
-ramdisk: call printstr
-         db ansiclrscn,green,'ENTER FILE# OR HIT '
-         db red,'ESC',0dh,10,t9,'0',black
-         db ' GLIDER GUN',0dh,10,red,t9,'1',black
-         db ' SMALL FISH',0dh,10,red,t9,'2',black
-         db ' HEAVYWEIGHT SPACESHIP',0dh,10,red,t9,'3',black
-         db ' R-PENTOMINO',0dh,10,red,t9,'4',black
-         db ' BUNNIES',0dh,10,red,t9,'5',black
-         db ' LIDKA',0dh,10,red,t9,'6',black
-         db ' BIG GLIDER',0dh,10,red,t9,'7',black
-         db ' BI-GUN',0dh,10,red,t9,'8',black
-         db ' ACORN',0dh,10,red,t9,'9',black
-         db ' SWITCH ENGINE PUFFER',0dh,10,'$'
+         cmpi.b #'0',d0
+         bcs .c1
 
-.c1:     call getkey
-         cmp al,27    ;esc
-         je puttent.exit
+         cmpi #'9'+1,d0
+         bcc .c1
 
-         cmp al,'0'
-         jc .c1
+         sub.b #'0',d0
+         lsl #2,d0
+         add.l #ramptrs,d0
+         move.l d0,a1
+         move.l (a1),a1
+         move.w (a1)+,x0(a3)   ;geometry
+         bsr maketent
+         ;;call tograph
+         ;;call showrect
+         ;;jc pexit
 
-         cmp al,'9'+1
-         jnc .c1
+puttent: move.w tsz(a3),d1
+         lea.l iobseg,a2
+.loop:   or.w d1,d1
+         beq pexit
 
-         sub al,'0'
-         xor ah,ah
-         shl al,1
-         mov si,ax
-         mov si,[ramptrs+si]
-         lodsw
-         mov word [x0],ax   ;geometry
-         call maketent
-         call tograph
-         call showrect
-         jc puttent.exit
+         move.w (a2)+,x0(a3)
+         subq.w #1,d1
+         bsr putpixel
+         bra .loop
 
-puttent: mov bp,[tsz]
-         xor si,si
-.loop:   or bp,bp
-         jz .exit
-
-         push es
-         mov es,[iobseg]
-         lods word [es:si]
-         pop es
-         mov word [x0],ax
-         dec bp
-         call putpixel
-         jmp .loop
-.exit:   retn
-end if
+maketent:   ;in: a1
+         move.w (a1)+,d0
+         subq #8,d0
+         lsr.w #1,d0
+         move.w d0,tsz(a3)
+         lea.l iobseg,a2
+.loop:   move.w (a1)+,(a2)+
+         subq.w #1,d0
+         bne .loop
+pexit:   rts
