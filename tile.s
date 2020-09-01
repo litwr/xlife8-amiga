@@ -55,12 +55,11 @@ addnode:
 
          ;;inc [tilecnt]
          addq.w #1,tilecnt(a3)
-exit2:   
-	 ;;retn
+exit2:
 	 rts
 
 chkadd2: ;;cmp word [ds:bp+next],0
-	 tst.l (next,a6)
+         tst.l (next,a6)
          bne exit2
 
 addnode2:                 ;in: A6
@@ -431,16 +430,16 @@ calccells: bsr zerocc
          tst.w tilecnt(a3)
          bne .c12
          rts
-.c12:    
+.c12:
          ;;mov si,[startp]
          movea.l startp(a3),a0
-.c2:     
+.c2:
          ;;mov cx,8
          moveq #7,d2
          ;;xor ax,ax
          moveq #0,d0
          lea tab3(a3),a2
-.c4:     
+.c4:
          ;;lodsb
          move.b (a0)+,d0
          ;;or al,al
@@ -539,52 +538,52 @@ putpixel:     ;IN: x0,y0; DON'T USE: D1
 .c100:   rts
 
 .c1:     ;;xor cl,cl
-         clr.l d5
          ;;xchg cl,ch
-         exg d5,d6
+         clr.l d5
          ;;xor dh,dh
          clr.l d4
          ;;mov dl,[crsry]
-         move.b crsry(a3),d3
          ;;sub cx,dx
-         sub.b d3,d5
-         sub.b d4,d6
+         sub.b crsry(a3),d6
+         subx.b d4,d5
          ;;xor ah,ah
          clr d7
          ;;mov dl,[crsrx]
-         move.b crsrx(a3),d3
          ;;sub ax,dx
-         sub.b d4,d7
-         sub.b d3,d0
+         sub.b crsrx(a3),d0
+         subx.b d4,d7
          ;;mov di,[crsrtile]     ;for chkadd
-         move.l crsrtile(a3),a0
+         move.l crsrtile(a3),a5
 .c22:    ;;test cx,0fff8h
-         tst.b d6
-         ;;js .cup           ;12$
+         tst.b d5
+         ;;js .cup
          bmi .cup
-         beq .c23
-         ;;jne .cdown        ;11$
-         move d5,d2
+         ;;jne .cdown
+         bne .cdown
+
+         move d6,d2
          andi.b #$f8,d2
          bne .cdown
 
 .c23:    ;;test ax,0fff8h
          tst.b d7
-         ;;js .cleft         ;13$
+         ;;js .cleft
          bmi .cleft
-         beq .c23a
-         ;;jne .cright       ;10$
+         ;;jne .cright
+         bne .cright
+
          move d0,d2
          andi.b #$f8,d2
          bne .cright
 
-.c23a:   ;;mov bx,7
+         ;;mov bx,7
          ;;sub bl,al
          neg.b d0
          addi.b #7,d0
+         ext.w d0
          lea.l bittab(a3),a1
          ;;mov dl,[bittab+bx]
-         move.b (a1,d0),d3
+         move.b (a1,d0.w),d3
          ;;;and ch,7
          ;;cmp [ppmode],bh
          tst.b ppmode(a3)
@@ -592,25 +591,25 @@ putpixel:     ;IN: x0,y0; DON'T USE: D1
          bra putpixel2
 
 .cright: ;;mov di,[di+right]   ;y=0, x=/=0
-         move.l right(a0),a0
+         move.l right(a5),a5
          ;;sub ax,8
          subq #8,d0
          bra .c23
 
 .cdown:  ;;mov di,[di+down]   ;y=/=0
-         move.l down(a0),a0
+         move.l down(a5),a5
          ;;sub cx,8
-         subq #8,d5
+         subq #8,d6
          bra .c22
 
 .cup:    ;;mov di,[di+up]   ;y=/=0
-         move.l up(a0),a0
+         move.l up(a5),a5
          ;;add cx,8
-         addq #8,d5
+         addq #8,d6
          bra .c22
 
 .cleft:  ;;mov di,[di+left]   ;y=0, x=/=0
-         move.l left(a0),a0
+         move.l left(a5),a5
          ;;add ax,8
          addq #8,d0
          bra .c23
@@ -618,5 +617,5 @@ putpixel:     ;IN: x0,y0; DON'T USE: D1
 putpixel3:
          ;;mov bl,cl
          ;;or [di+bx],dl
-         or.b d3,(a0,d5)
+         or.b d3,(a5,d6)
          bra chkadd
