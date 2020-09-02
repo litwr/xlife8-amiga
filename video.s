@@ -904,7 +904,7 @@ chgdrv:  mov al,[curdrv]
     endif
 
 loadmenu:bsr totext
-         move.l GRAPHICS_BASE(a3),a6 
+         move.l GRAPHICS_BASE(a3),a6
          ;movea.l RASTER_PORT(a3),a1
          movepenq 0,8
          color 2  ;green
@@ -927,7 +927,7 @@ loadmenu:bsr totext
          print ' TO EXIT'
          color 3
          movepenq 0,32
-.c80:    print 'DH0: '
+.c80:    print 'DH0:'
          bsr TXT_PLACE_CURSOR
 .c3:     lea stringbuf(a3),a4
          moveq #0,d3   ;length
@@ -961,7 +961,6 @@ loadmenu:bsr totext
 .c21:    cmpi.b #9,d0  ;TAB
          bne .c18
 
-         ;;call curoff
          bsr ramdisk
          ;;mov ch,1
          ;;jmp .c101
@@ -974,10 +973,11 @@ loadmenu:bsr totext
          bcc .c1
 
          lea.l nofnchar(a3),a0
-.c5:     move.b (a0)+,d1
-
-         cmp.b d0,d1
+.c5:     cmp.b (a0)+,d0
          beq .c1
+
+         cmpa.l #stringbuf,a0
+         bne .c5
 
          cmpi.b #'a',d0
          bcs .c6
@@ -986,17 +986,14 @@ loadmenu:bsr totext
          bcc .c6
 
          subi.b #'a'-'A',d0
-.c6:     cmpa.l #stringbuf,a0
-         bne .c5
-
-         cmpi.b #(30-4)*8,d3
+.c6:     cmpi.b #FNMAXLEN*8,d3
          bcc .c1
 
          move.l a4,a0
          move.b d0,(a4)+
          addq.b #8,d3
-         moveq #32,d1
-         moveq #32,d4
+         moveq #32,d1  ;vertical pos
+         moveq #24,d4
 	 bsr TXT_ON_CURSOR
          moveq #1,d0
          jsr Text(a6)
@@ -1005,10 +1002,10 @@ loadmenu:bsr totext
 
 .c12:    subq.l #1,a4
          subq.b #8,d3
-         bmi .c3
+         bcs .c3
 
          moveq #32,d1
-         moveq #48,d0
+         moveq #40,d0
          bsr TXT_REMOVE_CURSOR
          bra .cont4
 
