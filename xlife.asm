@@ -20,14 +20,14 @@
 
          include "system1.s"
 start:
-         movea.l 4,a6
-	 lea	dosname(a3),a1
-	 jsr	OldOpenLibrary(a6)
+         movea.l 4.w,a6
+        lea dosname(a3),a1
+        jsr OldOpenLibrary(a6)
 	 ;move.l  d0,a6
          move.l d0,doslib(a3)
 
 	if 0
-	 mov [iobseg],ds
+         mov [iobseg],ds
          add [iobseg],1000h  ;64k/16
 
          mov ah,19h   ;get current disk
@@ -540,10 +540,11 @@ crsrflash:
 
 	section Data
 SOD:
-;oldcopper:	dc.l 0
-doslib:		dc.l 0
-startp:         dc.l 1
-interruptv:	dc.l 0
+startp:       dc.l 1  ;it is the fastest variable, no need offset
+doslib        dc.l 0
+interruptv    dc.l 0
+;oldcopper     dc.l 0
+tmplock       dc.l 0
 
 crsrtick:	dc.w 0
 ;olddmareq:	dc.w 0
@@ -654,9 +655,12 @@ stringbuf blk.b 21     ;must be after nofnchar
 crsrstate  dc.b 0
 tbformat   dc.b "TIME: %d.%02ds",0
 sbformat   dc.b "SPEED: %d.%02d",0
+nformat    dc.b "%3d ",0
+sformat    dc.b "%d",0
+lformat    dc.b "%ld",0
 
 dosname  dc.b "dos.library",0
-curdisk  dc.b "dh0:",0
+curdisk  dc.b "DH0:",0
 curdir1  dc.b "xlife8/",0
 curdir2  dc.b "patterns",0
 curpath  blk.b 34
@@ -752,8 +756,9 @@ WINDOW_HANDLE:	DC.L	0
 
          include "ramdata.s"
 
-	 CNOP 0,4
+     CNOP 0,4
 tiles:
          include "initiles.s"
 
+     CNOP 0,4
 iobseg:      dcb.b   8192,0

@@ -106,11 +106,11 @@ showmode:moveq #12,d2
 
 showtopology:
          move.l GRAPHICS_BASE(a3),a6
-	 movea.l RASTER_PORT(a3),a1
+         movea.l RASTER_PORT(a3),a1
          color 3
          tst.b topology(a3)
          beq .l1
-         
+
          invvideo
 .l1:     movea.l RASTER_PORT(a3),a1
          moveq #0,d0
@@ -133,7 +133,7 @@ printstr:
 .l1:     addq.w #1,d0
          tst.b (a2)+
          bne .l1
-         
+
          move.l a2,d1
          addq.l #1,d1
          andi.b #$fe,d1

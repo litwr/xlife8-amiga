@@ -927,7 +927,11 @@ loadmenu:bsr totext
          print ' TO EXIT'
          color 3
          movepenq 0,32
-.c80:    print 'DH0:'
+.c80:    moveq.l #4,d0
+         lea.l curdisk(a3),a0
+         movea.l RASTER_PORT(a3),a1
+         jsr Text(a6)
+         ;print 'DH0:'
          bsr TXT_PLACE_CURSOR
 .c3:     lea stringbuf(a3),a4
          moveq #0,d3   ;length
@@ -993,7 +997,7 @@ loadmenu:bsr totext
          move.b d0,(a4)+
          addq.b #8,d3
          moveq #32,d1  ;vertical pos
-         moveq #24,d4
+         moveq #24,d4  ;hor pos - it is defined by length of a drive name
 	 bsr TXT_ON_CURSOR
          moveq #1,d0
          jsr Text(a6)
@@ -1024,6 +1028,7 @@ menu2:   bsr setdirmsk
          beq .c100
 
          bsr showdir  ;returns number of directory entries in D6
+         move.l GRAPHICS_BASE(a3),a6
          movepenq 0,8
          ;db clrtoeol
          color 2
@@ -1618,10 +1623,10 @@ setdirmsk:
          cmpi #126,d0
          bcc .c1
 
-         cmpi.b #(30-4)*8,d3    ;fn length limit
+         cmpi.b #FNMAXLEN*8,d3    ;fn length limit
          bcc .c1
 
-         lea.l nofnchar+8(a3),a0
+         lea.l nofnchar+2(a3),a0
 .c50:    move.b (a0)+,d1
          cmp.b d0,d1
          beq .c1

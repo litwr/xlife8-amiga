@@ -131,109 +131,177 @@ loadpat: mov ax,3d00h
 .e1:     mov ah,3eh    ;fclose
          int 21h
          retn
+  endif
+printd0l:lea.l temp(a3),a1
+         move.l d0,(a1)
+         bra printd0_e
 
-printbp: mov dl,' '
-         cmp bp,10
-         jnc .l1
+printd0: lea.l temp(a3),a1
+         move.w d0,(a1)
+printd0_e:
+         lea.l stuffChar(pc),a2
+         move.l a3,-(sp)
+         lea.l stringbuf(a3),a3
+         movea.l 4.w,a6
+         jsr RawDoFmt(a6)
+         move.l (sp)+,a3
+         moveq #-1,d0
+         lea.l stringbuf(a3),a0
+.strlen1:
+         addq.w #1,d0
+         tst.b (a0)+
+         bne .strlen1
 
-         mov ah,2
-         int 21h
-.l1:     cmp bp,100
-         jnc .l2
+         lea.l stringbuf(a3),a0
+         movea.l RASTER_PORT(a3),a1
+         move.l GRAPHICS_BASE(a3),a6
+         jmp Text(a6)
 
-         mov ah,2
-         int 21h
-.l2:     mov ax,bp
-.ee:     xor dx,dx
-.ee1:    call todec
-         lea si,[stringbuf+bx]
-.l3:     mov dl,[si]
-         dec si
-         mov ah,2
-         int 21h
-         dec bx
-         jnz .l3
-         retn
-    endif
-showdir: bsr totext
-    moveq #80,d6
-    rts
+showdir: move.l d1,-(sp)
+         bsr totext
+         clr.l d6
+         bsr makepath
+         move.l #curpath,d1       ;pointer to a pattern path
+         ;move.l #curdisk,d1
+         move.l doslib(a3),a6     ;DOS base address
+         move.l #-2,d2         ;'read' mode
+         jsr Lock(a6)          ;find file
+         tst.l d0              ;found?
+         beq showfree_exit             ;no!
+
+         move.l d0,tmplock(a3)     ;lock-save
+         move.l d0,d1
+         ;move.l doslib(a3),a6  ;REMOVE
+         move.l #iobseg,d2   ;pointer to FilelnfoBlock
+         jsr    Examine(a6)    ;get disk name
+         tst.l d0              ;OK?
+         beq showfree            ;no (rarely occurs)
+         bra .outpuff           ;else output name
+
+.loop:   ;* read filename
+        move.l doslib(a3),a6     ;DOS base address
+        move.l tmplock(a3),d1     ;key in D1
+        move.l #iobseg,d2   ;pointer to FileInfoBlock
+        jsr ExNext(a6)        ;find next file
+        tst.l d0              ;found?
+        beq showfree          ;no: done
+
+.outpuff: tst.l iobseg+4
+        bpl .loop          ;directory?
+
+        movea.l #iobseg+8,a0
+.l1:    tst.b (a0)+
+        bne .l1
+
+        move.l a0,d0
+        sub.l #iobseg+8+1+4,d0
+        bls .loop
+
+        lea.l -4(a0),a1
+        cmp.b #'8',(a1)+
+        bne .loop
+
+         move.b (a1)+,d2
+         and.b #$df,d2
+         cmp.b #'X',d2
+         bne .loop
+
+         move.b (a1)+,d2
+         and.b #$df,d2
+         cmp.b #'L',d2
+         bne .loop
+
+         cmpi.b #11,d0    ;we can show only 10 first chars of fn
+         bcs .l2
+
+         moveq #10,d0
+.l2:    ;check against a pattern in svfn
+         move.l GRAPHICS_BASE(a3),a6
+         movea.l RASTER_PORT(a3),a1
+         move.w d0,-(sp)
+         clr.w d0
+         btst #0,d6
+         beq .l3
+
+         move.w #20*8,d0
+.l3:     move.w d6,d1
+         lsr.w #1,d1
+         addq.w #2,d1
+         lsl.w #3,d1
+         jsr Move(a6)
+         color 1    ;red
+         move.w d6,d0
+         lea.l nformat(a3),a0
+         bsr printd0
+         color 3    ;black
+         move.w (sp)+,d0
+         lea.l iobseg+8,a0
+         movea.l RASTER_PORT(a3),a1  ;remove?
+         ;movea.l GRAPHICS_BASE(a3),a6
+         jsr Text(a6)
+         print ' '
+         invvideo
+         move.w iobseg+124+2,d0
+         lea.l sformat(a3),a0
+         bsr printd0
+         normvideo
+         addq.l #1,d6
+         bra .loop
+
+showfree:move.l tmplock(a3),d1   ;after showdir
+         move.l #iobseg,d2
+         jsr Info(a6)
+         tst.l d0
+         beq .l2
+
+         lea.l iobseg+12,a0
+         moveq.l #0,d0
+         move.l (a0)+,d1  ;total blocks
+         sub.l (a0)+,d1   ;used blocks
+         bcs .l2
+
+         move.l (a0),d0   ;block size in bytes
+         beq .l2
+
+         exg d1,d0
+         moveq.l #0,d2
+.l1:     addq.l #1,d2
+         lsr #1,d1
+         bcc .l1
+
+         sub.l #11,d2
+         beq .l2
+         bmi .l3
+
+         lsl.l d2,d0
+         bra .l2
+
+.l3:     neg.l d2
+         lsr.l d2,d0
+.l2:     move.l GRAPHICS_BASE(a3),a6
+         movea.l RASTER_PORT(a3),a1
+         move.l d0,-(sp)
+         clr.w d0
+         move.w d6,d1
+         addq.w #1,d1
+         lsr.w d1
+         addq.w #2,d1
+         lsl.w #3,d1
+         jsr Move(a6)
+         lea.l lformat(a3),a0
+         move.l (sp)+,d0
+         bsr printd0l
+         print 'K free'
+         color 3  ;black
+
+         move.l tmplock(a3),d1
+         move.l doslib(a3),a6
+         jsr UnLock(a6)
+showfree_exit:
+         move.l (sp)+,d1
+         rts
+
     if 0
-         call printstr   ;OUT: BP
-         db ansiclrscn,10,'$'
-
-         xor bp,bp
-         mov dx,svfn
-         mov cx,20h
-         mov ah,4eh
-         int 21h
-         jc .exit
-
-.l3:     call printstr
-         db red,'$'
-         call printbp
-         call printstr
-         db black,' $'
-         mov di,80h ;dta
-         push di
-.l2:     mov dl,[di+1eh] ;fn offset in DTA
-         inc di
-         cmp dl,'.'
-         jz .l1
-
-         mov ah,2
-         int 21h
-         jmp .l2
-
-.l1:     call printstr
-         db ' ',blue,'$'
-         pop di
-         mov ax,[di+1ah]  ;size offset in DTA
-         call printbp.ee
-         call printstr
-         db green,'$'
-         test bp,1
-         jnz .l4
-
-         mov ah,3
-         xor bx,bx
-         int 10h
-         dec ah
-         mov dl,20
-         int 10h
-         jmp .l5
-
-.l4:     call printstr
-         db 0dh,10,'$'
-.l5:     inc bp
-         cmp bp,1000
-         jz .exit
-
-         mov ah,4fh
-         mov dx,80h   ;dta
-         int 21h
-         jnc .l3
-
-.exit:   test bp,1
-         jz showfree
-
-         call printstr
-         db 0dh,10,'$'
-showfree:mov ah,36h     ;after showdir
-         xor dx,dx
-         int 21h
-         mul cx
-         mov cx,10    ;1024
-.l1:     shr dx,1
-         rcr ax,1
-         loop .l1
-         mul bx
-         call printbp.ee1
-         call printstr
-         db 'K free',black,'$'
-
-         retn
-
 findfn:  xor bp,bp          ;in: ax
          mov di,ax
          mov dx,svfn

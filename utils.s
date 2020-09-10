@@ -13,19 +13,19 @@ zerogc:   inibcd gencnt,4
 stuffChar:  move.b  d0,(a3)+        ;Put data to an output string, used by RawDoFmt
             rts
 
-makepath: lea curdisk,a0
-         lea curpath,a1
+makepath: lea.l curdisk(a3),a0
+         lea.l curpath(a3),a1
 .loop1:  move.b (a0)+,(a1)+
          bne .loop1
 
-.loop2:  lea curdir1,a0
-         move.b (a0)+,(a1)+
+         lea.l curdir1(a3),a0
+         subq.l #1,a1
+.loop2:  move.b (a0)+,(a1)+
          bne .loop2
 
+         subq.l #1,a1
 .loop3:  move.b (a0)+,(a1)+
          bne .loop3
-
-         move.b d0,(a1)
          rts
 
   if 0
