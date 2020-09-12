@@ -517,6 +517,7 @@ benchcalc: bsr stop_timer
          lea temp(a3),a1
          move.l d5,(a1)
          lea stuffChar(pc),a2
+         move.l #-1,charCount(a3)
          move.l a3,-(sp)
          lea stringbuf(a3),a3
          movea.l 4.w,a6
@@ -528,13 +529,7 @@ benchcalc: bsr stop_timer
          movea.l RASTER_PORT(a3),a1
          movepenq 0,8
          color 2
-         moveq #-1,d0
-         lea stringbuf(a3),a0
-.strlen1:
-         addq.w #1,d0
-         tst.b (a0)+
-         bne .strlen1
-
+         move.l charCount(a3),d0
          lea stringbuf(a3),a0
          jsr Text(a6)
 
@@ -563,6 +558,7 @@ benchcalc: bsr stop_timer
 
          divu #100,d5
          swap d5
+         move.l #-1,charCount(a3)
          lea sbformat(a3),a0
          lea temp(a3),a1
          move.l d5,(a1)
@@ -577,14 +573,7 @@ benchcalc: bsr stop_timer
          movea.l RASTER_PORT(a3),a1
          movepenq 0,16
          color 2
-         moveq #-1,d0
-         lea stringbuf(a3),a0
-.strlen2:
-         addq.w #1,d0
-         tst.b (a0)+
-         bne .strlen2
-
+         move.l charCount(a3),d0
          lea stringbuf(a3),a0
          jsr Text(a6)
          bra getkey
-

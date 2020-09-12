@@ -132,26 +132,37 @@ loadpat: mov ax,3d00h
          int 21h
          retn
   endif
-printd0l:lea.l temp(a3),a1
+printd0l:
+         lea.l temp(a3),a1
          move.l d0,(a1)
+         move.b #'4',d1
+         sub.l #4000000000,d0
+         bcc .l2
+
+.l1:     subq.b #1,d1
+         add.l #1000000000,d0
+         bcs .l2
+
+         subq.b #1,d1
+         add.l #1000000000,d0
+         bcc printd0_e
+
+.l2:     move.l d0,(a1)
+         lea.l ulformat(a3),a0
+         move.b d1,(a0)
          bra printd0_e
 
 printd0: lea.l temp(a3),a1
          move.w d0,(a1)
 printd0_e:
          lea.l stuffChar(pc),a2
+         move.l #-1,charCount(a3)
          move.l a3,-(sp)
          lea.l stringbuf(a3),a3
          movea.l 4.w,a6
          jsr RawDoFmt(a6)
          move.l (sp)+,a3
-         moveq #-1,d0
-         lea.l stringbuf(a3),a0
-.strlen1:
-         addq.w #1,d0
-         tst.b (a0)+
-         bne .strlen1
-
+         move.l charCount(a3),d0
          lea.l stringbuf(a3),a0
          movea.l RASTER_PORT(a3),a1
          move.l GRAPHICS_BASE(a3),a6

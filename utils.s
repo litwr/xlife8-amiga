@@ -11,6 +11,7 @@ zerogc:   inibcd gencnt,4
           rts
 
 stuffChar:  move.b  d0,(a3)+        ;Put data to an output string, used by RawDoFmt
+            addq.l #1,charCount
             rts
 
 makepath: lea.l curdisk(a3),a0

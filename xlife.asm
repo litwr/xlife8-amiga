@@ -545,6 +545,7 @@ doslib        dc.l 0
 interruptv    dc.l 0
 ;oldcopper     dc.l 0
 tmplock       dc.l 0
+charCount     dc.l 0
 
 crsrtick:	dc.w 0
 ;olddmareq:	dc.w 0
@@ -658,6 +659,7 @@ sbformat   dc.b "SPEED: %d.%02d",0
 nformat    dc.b "%3d ",0
 sformat    dc.b "%d",0
 lformat    dc.b "%ld",0
+ulformat   dc.b "N%09ld",0
 
 dosname  dc.b "dos.library",0
 curdisk  dc.b "DH0:",0
