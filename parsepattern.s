@@ -46,10 +46,18 @@ multitude:
 .exit:
      rts
 
-.l1: movem.l a2/a4/a5,-(sp)
+.l1: suba.l a3,a2
+     suba.l a3,a4
+     suba.l a3,a5
+     movem.w a2/a4/a5,-(sp)
+     adda.l a3,a2
+     adda.l a3,a5
      move.l a2,a4
      bsr parse
-     movem.l (sp)+,a2/a4/a5
+     movem.w (sp)+,a2/a4/a5
+     adda.l a3,a2
+     adda.l a3,a4
+     adda.l a3,a5
      tst.l d0
      bne .exit
 
@@ -82,11 +90,22 @@ multitude:
      bra .loop5
 
 .l10:lea.l 1(a4,d0.w),a4
-     movem.l a1/a2/a4/a5,-(sp)
+     suba.l a3,a1
+     suba.l a3,a2
+     suba.l a3,a4
+     suba.l a3,a5
+     movem.w a1/a2/a4/a5,-(sp)
+     adda.l a3,a1
+     adda.l a3,a2
+     adda.l a3,a5
      move.l a1,a4
      lea.l (a5,d0.w),a5
      bsr multitude
-     movem.l (sp)+,a1/a2/a4/a5
+     movem.w (sp)+,a1/a2/a4/a5
+     adda.l a3,a1
+     adda.l a3,a2
+     adda.l a3,a4
+     adda.l a3,a5
      tst.l d0
      bne .exit
 
@@ -182,10 +201,18 @@ parse:  ;patpos = a4, datapos = a5, result = d0
      bne .l8
 
      move.w d0,-(sp)
-     movem.l a2/a4/a5,-(sp)
+     suba.l a3,a2
+     suba.l a3,a4
+     suba.l a3,a5
+     movem.w a2/a4/a5,-(sp)
+     adda.l a3,a2
+     adda.l a3,a5
      movea.l a2,a4
      bsr parse
-     movem.l (sp)+,a2/a4/a5
+     movem.w (sp)+,a2/a4/a5
+     adda.l a3,a2
+     adda.l a3,a4
+     adda.l a3,a5
      move.w (sp)+,d1
      tst.l d0
      bne .exit
