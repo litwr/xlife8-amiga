@@ -110,6 +110,7 @@ mainloop:
          bsr cleanup
          bra mainloop
 
+         include "parsepattern.s"
          include "io.s"
          include "ramdisk.s"
          include "video-base.s"

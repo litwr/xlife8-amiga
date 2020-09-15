@@ -7,7 +7,7 @@ ucase:cmpi.b #'a',d2
       sub.b #'a'-'A',d2
 .l1:  rts
 
-next:     ;patpos = a4, result = a2
+nextpat:     ;patpos = a4, result = a2
      move.l a4,-(sp)
      suba.l a2,a2
 .loop:
@@ -155,7 +155,7 @@ parse:  ;patpos = a4, datapos = a5, result = d0
 .l4: cmp.b #'(',(a4)
      bne .loop3
 
-     bsr next      ;lastpos=a2
+     bsr nextpat      ;lastpos=a2
      addq.l #1,a4
      bsr multitude
      bra .exit
@@ -188,7 +188,7 @@ parse:  ;patpos = a4, datapos = a5, result = d0
      bne .l7
 
      addq.l #1,a4
-     bsr next      ;lastpos=a2
+     bsr nextpat      ;lastpos=a2
      clr.l d0
      cmpa.l d0,a2
      beq .exit
