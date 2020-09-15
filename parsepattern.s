@@ -30,22 +30,21 @@ length:   ;patpos = a4, result = d0
      rts
 
 multitude:
-     movea.l 12(sp),a2   ;lastpos
+     move.l a4,a1
      clr.l d0
      cmpa.l d0,a2
      bne .l1
 .exit:
      rts
 
-.l1: movea.l 8(sp),a5   ;datapos
-     move.l a5,-(sp)
-     move.l a2,-(sp)
+.l1: movem.l a2/a4/a5,-(sp)
+     move.l a2,a4
      bsr parse
-     addq.l #8,sp
+     movem.l (sp)+,a2/a4/a5
      tst.l d0
      bne .exit
 
-     movea.l 4(sp),a4   ;t
+     movea.l a4,a1   ;t
 .loop4:
      bsr length
      cmpi.b #1,d0
@@ -67,41 +66,28 @@ multitude:
      bra .loop5
 
 .l10:move.w d0,-(sp)
-
-     move.w d0,-(sp)
-     move.l a4,-(sp)
-     movea.l 4(sp),a0
-     move.l a0,-(sp)
-     lea.l (a5,d0.w),a0
-     move.l a0,-(sp)
-     move.l a2,-(sp)
+     movem.l a1/a2/a4/a5,-(sp)
+     move.l a1,a4
+     lea.l (a5,d0.w),a5
      bsr multitude
-     move.l (sp)+,a2
-     move.l (sp)+,a5
-     move.l (sp)+,a4
-     move.l (sp)+,a4
+     movem.l (sp)+,a1/a2/a4/a5
      move.w (sp)+,a0
-     movea.l 8(sp),a5   ;datapos
      tst.l d0
      bne .exit
 
-     suba.l a0,a5
-.l11:lea.l (a4,d0.w),a4
-     addq.l #1,a4
+     move.l a0,d0
+.l11:lea.l 1(a4,d0.w),a4
      cmpa.l a2,a4
-  if 0
-     beq .exit0
+     beq exit0
      bra .loop4
-  endif
-parse:  ;patpos = [sp-8], datapos = [sp-4], result = d0
-     movea.l 4(sp),a4   ;patpos
-     movea.l 8(sp),a5   ;datapos
+
+parse:  ;patpos = a4, datapos = a5, result = d0
 .loop:
      tst.b (a4)
      bne .l1
 
      tst.b (a5)
-     bne .exit0
+     bne exit0
 
      moveq.l #1,d0
 .exit:
@@ -135,28 +121,23 @@ parse:  ;patpos = [sp-8], datapos = [sp-4], result = d0
      bra .exit
 
 .l4: cmp.b #'(',(a4)
-     bne .l5
+     bne .loop3
 
      bsr next      ;lastpos=a2
-     move.l a2,-(sp)
-     move.l a5,-(sp)
-     lea.l 1(a4),a0
-     move.l a0,-(sp)
-     bsr multitude
-     lea.l 12(sp),sp
-     bra .exit
-.l5:
      addq.l #1,a4
+     bsr multitude
+     bra .exit
 .loop3:
      move.l a5,-(sp)
      move.l a4,-(sp)
+     addq.l #1,a4
      bsr parse
      move.l (sp)+,a4
      move.l (sp)+,a5
      tst.l d0
      bne .exit
 
-     move.b -1(a4),d1
+     move.b (a4),d1
      cmp.b (a5)+,d1
      beq .loop3
      bra .exit
@@ -184,13 +165,10 @@ parse:  ;patpos = [sp-8], datapos = [sp-4], result = d0
      bne .l8
 
      move.w d0,-(sp)
-     move.l a4,-(sp)
-     move.l a5,-(sp)
-     move.l a2,-(sp)
+     movem.l a2/a4/a5,-(sp)
+     movea.l a2,a4
      bsr parse
-     move.l (sp)+,a2
-     move.l (sp)+,a5
-     move.l (sp)+,a4
+     movem.l (sp)+,a2/a4/a5
      move.w (sp)+,d1
      tst.l d0
      bne .exit
@@ -208,25 +186,20 @@ parse:  ;patpos = [sp-8], datapos = [sp-4], result = d0
      addq.l #1,d1
      bra .loop5
 
-.l10:lea.l (a5,d0.w),a0
-     move.w d0,-(sp)
-     move.l a4,-(sp)
-     move.l a0,-(sp)
-     move.l a2,-(sp)
+.l10:move.w d0,-(sp)
+     movem.l a2/a4/a5,-(sp)
+     movea.l a2,a4
+     lea.l (a5,d0.w),a5
      bsr parse
-     move.l (sp)+,a2
-     move.l (sp)+,a5
-     move.l (sp)+,a4
+     movem.l (sp)+,a2/a4/a5
      move.w (sp)+,a0
      tst.l d0
      bne .exit
 
-     suba.l a0,a5
-     move.w a0,d0
-.l11:lea.l (a4,d0.w),a4
-     addq.l #1,a4
+     move.l a0,d0
+.l11:lea.l 1(a4,d0.w),a4
      cmpa.l a2,a4
-     beq .exit0
+     beq exit0
      bra .loop4
 
 .l7: move.b (a5)+,d0
@@ -237,7 +210,7 @@ parse:  ;patpos = [sp-8], datapos = [sp-4], result = d0
      cmp.b d1,d0
      beq .loop
 
-.exit0:
+exit0:
      clr.l d0
      rts
 
