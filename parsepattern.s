@@ -1,3 +1,12 @@
+ucase:cmpi.b #'a',d2
+      bcs .l1
+
+      cmpi.b #'z'+1,d2
+      bcc .l1
+
+      sub.b #'a'-'A',d2
+.l1:  rts
+
 next:     ;patpos = a4, result = a2
      move.l a4,-(sp)
      suba.l a2,a2
@@ -51,7 +60,7 @@ multitude:
      bne .l8
 
      cmp.b #'%',(a4)
-     beq .l11
+     beq .l13
 
 .l8: clr.l d1
 .loop5:
@@ -59,25 +68,29 @@ multitude:
      beq .l10
 
      move.b (a5,d1.w),d2
-     cmp.b (a4,d1.w),d2
-     bne .l11
+     bsr ucase
+     move.b d2,d3
+     move.b (a4,d1.w),d2
+     bsr ucase
+     cmp.b d2,d3
+     beq .l12
 
-     addq.l #1,d1
+.l13:lea.l 1(a4,d0.w),a4
+     bra .l11
+
+.l12:addq.l #1,d1
      bra .loop5
 
-.l10:move.w d0,-(sp)
+.l10:lea.l 1(a4,d0.w),a4
      movem.l a1/a2/a4/a5,-(sp)
      move.l a1,a4
      lea.l (a5,d0.w),a5
      bsr multitude
      movem.l (sp)+,a1/a2/a4/a5
-     move.w (sp)+,a0
      tst.l d0
      bne .exit
 
-     move.l a0,d0
-.l11:lea.l 1(a4,d0.w),a4
-     cmpa.l a2,a4
+.l11:cmpa.l a2,a4
      beq exit0
      bra .loop4
 
@@ -137,8 +150,12 @@ parse:  ;patpos = a4, datapos = a5, result = d0
      tst.l d0
      bne .exit
 
-     move.b (a4),d1
-     cmp.b (a5)+,d1
+     move.b (a4),d2
+     bsr ucase
+     move.b d2,d3
+     move.b (a5)+,d2
+     bsr ucase
+     cmp.b d2,d3
      beq .loop3
      bra .exit
 
@@ -180,34 +197,42 @@ parse:  ;patpos = a4, datapos = a5, result = d0
      beq .l10
 
      move.b (a5,d1.w),d2
-     cmp.b (a4,d1.w),d2
-     bne .l11
+     bsr ucase
+     move.b d2,d3
+     move.b (a4,d1.w),d2
+     bsr ucase
+     cmp.b d2,d3
+     beq .l12
 
-     addq.l #1,d1
+     lea.l 1(a4,d0.w),a4
+     bra .l11
+
+.l12:addq.l #1,d1
      bra .loop5
 
-.l10:move.w d0,-(sp)
+.l10:lea.l 1(a4,d0.w),a4
      movem.l a2/a4/a5,-(sp)
      movea.l a2,a4
      lea.l (a5,d0.w),a5
      bsr parse
      movem.l (sp)+,a2/a4/a5
-     move.w (sp)+,a0
      tst.l d0
      bne .exit
 
-     move.l a0,d0
-.l11:lea.l 1(a4,d0.w),a4
-     cmpa.l a2,a4
+.l11:cmpa.l a2,a4
      beq exit0
      bra .loop4
 
-.l7: move.b (a5)+,d0
+.l7: move.b (a5)+,d2
      move.b (a4)+,d1
      cmp.b #'?',d1
      beq .loop
 
-     cmp.b d1,d0
+     bsr ucase
+     move.b d2,d3
+     move.b d1,d2
+     bsr ucase
+     cmp.b d2,d3
      beq .loop
 
 exit0:
