@@ -222,12 +222,20 @@ showdir: move.l d1,-(sp)
          cmp.b #'L',d2
          bne .loop
 
+         lea.l svfn(a3),a4   ;check against a pattern in svfn
+         lea.l iobseg+8,a5
+         move.w d0,-(sp)
+         bsr parse
+         move.l d0,d1
+         move.w (sp)+,d0
+         tst.b d1
+         beq .loop
+
          cmpi.b #11,d0    ;we can show only 10 first chars of fn
          bcs .l2
 
          moveq #10,d0
-.l2:    ;check against a pattern in svfn
-         move.l GRAPHICS_BASE(a3),a6
+.l2:     move.l GRAPHICS_BASE(a3),a6
          movea.l RASTER_PORT(a3),a1
          move.w d0,-(sp)
          clr.w d0

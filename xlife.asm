@@ -651,7 +651,7 @@ svfn       blk.b 31
 ;rootpath  dc.b "\",0
 ;cf        dc.b "\COLORS.CFG",0
 ;copyleft  dc.b "\CR.TXT",0
-nofnchar  dc.b "?#[]()|~/:;<>'%*+"
+nofnchar  dc.b "?#()|%[]~/:;<>'*+"
           dc.b '"'
 stringbuf blk.b 21     ;must be after nofnchar
 crsrstate  dc.b 0

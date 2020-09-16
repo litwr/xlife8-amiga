@@ -1626,7 +1626,7 @@ setdirmsk:
          cmpi.b #FNMAXLEN*8,d3    ;fn length limit
          bcc .c1
 
-         lea.l nofnchar+2(a3),a0
+         lea.l nofnchar+6(a3),a0
 .c50:    move.b (a0)+,d1
          cmp.b d0,d1
          beq .c1
@@ -1645,7 +1645,7 @@ setdirmsk:
          move.b d0,(a4)+
          moveq #16,d1
          moveq #0,d4
-	 bsr TXT_ON_CURSOR
+         bsr TXT_ON_CURSOR
          addq #8,d3
          moveq #1,d0
          jsr Text(a6)
@@ -1655,15 +1655,13 @@ setdirmsk:
 .c11:    tst.b d3
          bne .c5
 
-         move.b #"?",(a4)+
          move.b #"#",(a4)+
-         bra .cont5
-
+         move.b #"?",(a4)+
 .c5:     move.b #".",(a4)+
          move.b #"8",(a4)+
          move.b #"x",(a4)+
          move.b #"l",(a4)+
-.cont5:  clr.b (a4)
+         clr.b (a4)
 .c13:    rts
 
 .c12:    subq.l #1,a4

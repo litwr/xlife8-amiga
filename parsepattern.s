@@ -129,6 +129,9 @@ parse:  ;patpos = a4, datapos = a5, result = d0
      bne .l2
 
      addq.l #1,a4
+     tst.b (a4)
+     beq exit0
+
      cmp.b #'%',(a4)
      bne .l3
 
