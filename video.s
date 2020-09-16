@@ -1075,7 +1075,7 @@ menu2:   bsr setdirmsk
          addq.b #8,d3
          moveq #8,d1
          move.w #152,d4
-	 bsr TXT_ON_CURSOR
+         bsr TXT_ON_CURSOR
          moveq #1,d0
          jsr Text(a6)
 .cont4:  bsr TXT_PLACE_CURSOR

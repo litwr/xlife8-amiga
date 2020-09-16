@@ -44,10 +44,9 @@ Examine = -102
 ExNext = -108
 Info = -114
 IoErr = -132
+Delay = -198
 ;-$348 ParsePattern
 ;-$34e MatchPattern
-;-$3c6 ParsePatternNoCase  ; were unimplemented until dos 36.147
-;-$3cc MatchPatternNoCase
 
 ;intuition
 OpenScreen =	-198

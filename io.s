@@ -170,7 +170,8 @@ printd0_e:
 
 showdir: move.l d1,-(sp)
          bsr totext
-         clr.l d6
+         clr.l d5   ;relative counter
+         clr.l d6   ;absolute counter
          bsr makepath
          move.l #curpath,d1       ;pointer to a pattern path
          ;move.l #curdisk,d1
@@ -190,27 +191,27 @@ showdir: move.l d1,-(sp)
          bra .outpuff           ;else output name
 
 .loop:   ;* read filename
-        move.l doslib(a3),a6     ;DOS base address
-        move.l tmplock(a3),d1     ;key in D1
-        move.l #iobseg,d2   ;pointer to FileInfoBlock
-        jsr ExNext(a6)        ;find next file
-        tst.l d0              ;found?
-        beq showfree          ;no: done
+         move.l doslib(a3),a6     ;DOS base address
+         move.l tmplock(a3),d1     ;key in D1
+         move.l #iobseg,d2   ;pointer to FileInfoBlock
+         jsr ExNext(a6)        ;find next file
+         tst.l d0              ;found?
+         beq showfree          ;no: done
 
-.outpuff: tst.l iobseg+4
-        bpl .loop          ;directory?
+.outpuff:tst.l iobseg+4
+         bpl .loop          ;directory?
 
-        movea.l #iobseg+8,a0
-.l1:    tst.b (a0)+
-        bne .l1
+         movea.l #iobseg+8,a0
+.l1:     tst.b (a0)+
+         bne .l1
 
-        move.l a0,d0
-        sub.l #iobseg+8+1+4,d0
-        bls .loop
+         move.l a0,d0
+         sub.l #iobseg+8+1+4,d0
+         bls .loop
 
-        lea.l -4(a0),a1
-        cmp.b #'8',(a1)+
-        bne .loop
+         lea.l -4(a0),a1
+         cmp.b #'8',(a1)+
+         bne .loop
 
          move.b (a1)+,d2
          and.b #$df,d2
@@ -239,11 +240,11 @@ showdir: move.l d1,-(sp)
          movea.l RASTER_PORT(a3),a1
          move.w d0,-(sp)
          clr.w d0
-         btst #0,d6
+         btst #0,d5
          beq .l3
 
          move.w #20*8,d0
-.l3:     move.w d6,d1
+.l3:     move.w d5,d1
          lsr.w #1,d1
          addq.w #2,d1
          lsl.w #3,d1
@@ -265,6 +266,15 @@ showdir: move.l d1,-(sp)
          bsr printd0
          normvideo
          addq.l #1,d6
+         addq.l #1,d5
+         cmp.w #2*(25-2),d5
+         bne .loop
+
+         move.l #40,d1      ;40/50 sec (PAL), 40/60 sec (NTSC)
+         move.l doslib(a3),a6     ;DOS base address
+         jsr Delay(a6)
+         bsr clrscn
+         clr.l d5
          bra .loop
 
 showfree:move.l tmplock(a3),d1   ;after showdir
