@@ -15,8 +15,8 @@
 
 	section Code
 
-      basereg SOD,a3
-	 lea SOD,A3
+         basereg SOD,a3
+         lea.l SOD,A3
 
          include "system1.s"
 start:
@@ -85,9 +85,10 @@ mainloop:
          ;mov ax,3
          ;call totext.e1
 .exit:
+         ;move.l stacksave(a3),a7
          move.l doslib(a3),a1
-         movea.l 4,a6
-	 jmp CloseLibrary(a6)
+         movea.l 4.w,a6
+         jmp CloseLibrary(a6)
 
 .c3:     tst.w tilecnt(a3)
          bne .c4
@@ -537,18 +538,19 @@ crsrflash:
          move.w d0,crsrtick(a3)
          rts
 
-	endb a3
+    endb a3
 
-	section Data
+    section Data
 SOD:
-startp:       dc.l 1  ;it is the fastest variable, no need offset
+startp:       dc.l 1  ;it is the fastest variable, no need an offset
 doslib        dc.l 0
 interruptv    dc.l 0
 ;oldcopper     dc.l 0
 tmplock       dc.l 0
 charCount     dc.l 0
+stacksave     dc.l 0
 
-crsrtick:	dc.w 0
+crsrtick      dc.w 0
 ;olddmareq:	dc.w 0
 ;oldintreq:	dc.w 0
 ;oldintena:	dc.w 0

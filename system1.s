@@ -49,6 +49,18 @@ TASK_FIND:
 	MOVE.L	4.W,A6
 	JSR	FindTask(A6)
 	MOVE.L	D0,TASK_PTR(A3)	; Store the pointer for our task
+    move.l d0,a4
+    tst.l $ac(a4)     ;pr_CLI: CLI or Workbench?
+    bne .fromCLI
+
+    lea.l $5c(a4),a0    ;WBench message
+    jsr WaitPort(a6)  ;wait
+    jsr GetMsg(a6)    ;get message
+    move.l d0,a0
+    move.l $24(a0),a0     ;ptr to arguments
+    beq .noargs
+.noargs:
+.fromCLI:
 	RTS
 
 COLORS_SET:

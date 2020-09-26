@@ -21,7 +21,7 @@ nextpat:     ;patpos = a4, result = a2
 .exit:
      move.l (sp)+,a4
      rts
-    
+
 length:   ;patpos = a4, result = d0
      move.l a4,-(sp)
 .loop:

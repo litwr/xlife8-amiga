@@ -1030,7 +1030,6 @@ menu2:   bsr setdirmsk
          bsr showdir  ;returns number of directory entries in D6
          move.l GRAPHICS_BASE(a3),a6
          movepenq 0,8
-         ;db clrtoeol
          color 2
          print 'ENTER FILE# OR '
          color 1

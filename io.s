@@ -168,22 +168,20 @@ printd0_e:
          move.l GRAPHICS_BASE(a3),a6
          jmp Text(a6)
 
-showdir: move.l d1,-(sp)
-         bsr totext
+showdir: bsr totext
          clr.l d5   ;relative counter
          clr.l d6   ;absolute counter
          bsr makepath
          move.l #curpath,d1       ;pointer to a pattern path
-         ;move.l #curdisk,d1
          move.l doslib(a3),a6     ;DOS base address
          move.l #-2,d2         ;'read' mode
          jsr Lock(a6)          ;find file
          tst.l d0              ;found?
-         beq showfree_exit             ;no!
+         bne .cont              ;no!
+         rts
 
-         move.l d0,tmplock(a3)     ;lock-save
+.cont:   move.l d0,tmplock(a3)     ;lock-save
          move.l d0,d1
-         ;move.l doslib(a3),a6  ;REMOVE
          move.l #iobseg,d2   ;pointer to FilelnfoBlock
          jsr    Examine(a6)    ;get disk name
          tst.l d0              ;OK?
@@ -266,6 +264,9 @@ showdir: move.l d1,-(sp)
          bsr printd0
          normvideo
          addq.l #1,d6
+         cmp.w #1000,d6
+         beq showfree
+
          addq.l #1,d5
          cmp.w #2*(25-2),d5
          bne .loop
@@ -325,37 +326,48 @@ showfree:move.l tmplock(a3),d1   ;after showdir
 
          move.l tmplock(a3),d1
          move.l doslib(a3),a6
-         jsr UnLock(a6)
-showfree_exit:
-         move.l (sp)+,d1
+         jmp UnLock(a6)
+
+findfn:  ;fn# in D5
+         clr.l d6   ;absolute counter
+         bsr makepath
+         move.l #curpath,d1       ;pointer to a pattern path
+         move.l doslib(a3),a6     ;DOS base address
+         move.l #-2,d2         ;'read' mode
+         jsr Lock(a6)          ;find file
+         tst.l d0              ;found?
+         bne .l1               ;no!
          rts
 
+.l1:     move.l d0,tmplock(a3)     ;lock-save
+         move.l d0,d1
+         move.l #iobseg,d2   ;pointer to FilelnfoBlock
+         jsr    Examine(a6)    ;get disk name
+         tst.l d0              ;OK?
+         beq .close            ;no (rarely occurs)
+         bra .setout           ;else set name
+
+.loop:   ;* read filename
+         move.l doslib(a3),a6     ;DOS base address
+         move.l tmplock(a3),d1     ;key in D1
+         move.l #iobseg,d2   ;pointer to FileInfoBlock
+         jsr ExNext(a6)        ;find next file
+         tst.l d0              ;found?
+         beq showfree          ;no: done
+
+.setout: addq.l #1,d6
+         cmp.l d6,d5
+         bne .loop
+
+         lea.l fn(a3),a1
+         lea.l iobseg+8,a0
+.copy:   move.l (a0)+,(a1)+
+         bne .copy
+
+.close:  move.l tmplock(a3),d1
+         jmp UnLock(a6)
+
     if 0
-findfn:  xor bp,bp          ;in: ax
-         mov di,ax
-         mov dx,svfn
-         mov cx,20h
-         mov ah,4eh
-         int 21h
-.l3:     cmp di,bp
-         jz .l7
-
-         inc bp
-         mov ah,4fh
-         mov dx,80h
-         int 21h
-         jmp .l3
-
-.l7:     mov di,80h ;dta
-         mov si,fn
-.l2:     mov al,[di+1eh] ;fn offset in DTA
-         inc di
-         mov [si],al
-         inc si
-         or al,al
-         jnz .l2
-         jmp showdir.exit
-
 savepat: mov ah,3ch   ;create a file
          mov dx,svfn
          xor cx,cx
