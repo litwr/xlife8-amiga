@@ -53,6 +53,7 @@ TASK_FIND:
     tst.l $ac(a4)     ;pr_CLI: CLI or Workbench?
     bne .fromCLI
 
+    move.l 58(a4),stacklimit(a3)
     lea.l $5c(a4),a0    ;WBench message
     jsr WaitPort(a6)  ;wait
     jsr GetMsg(a6)    ;get message
@@ -60,16 +61,14 @@ TASK_FIND:
     move.l $24(a0),a0     ;ptr to arguments
     beq .noargs
 .noargs:
+    rts
+
 .fromCLI:
+    move.l  sp,d0               ; current stack pointer
+    add.l  #8+8,d0               ; return address and stack size
+    sub.l   4+8(sp),d0            ; size of stack
+    move.l  d0,stacklimit(a3)
 	RTS
-
-COLORS_SET:
-        movea.l VIEW_PORT(a3),a0
-
-	MOVE.L	GRAPHICS_BASE(A3),A6
-	lea	COLORS(A3),A1		; Pointer to the color list
-	MOVEQ	#8,D0			; 8 colors to set
-	JMP	LoadRGB4(A6)		; Set the colors
 
 KEYB_INIT:
 	MOVE.L	4.W,A6
@@ -85,6 +84,14 @@ KEYB_INIT:
 	MOVE.L	WINDOW_HANDLE(A3),A0
 	MOVE.L	$56(A0),KEY_PORT(A3)	; Get this windows keyport
 	RTS
+
+COLORS_SET:
+        movea.l VIEW_PORT(a3),a0
+
+	MOVE.L	GRAPHICS_BASE(A3),A6
+	lea	COLORS(A3),A1		; Pointer to the color list
+	MOVEQ	#8,D0			; 8 colors to set
+	JMP	LoadRGB4(A6)		; Set the colors
 
 KEYB_EXIT:
 	LEA	IO_REQUEST(A3),A1

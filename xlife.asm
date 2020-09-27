@@ -85,7 +85,6 @@ mainloop:
          ;mov ax,3
          ;call totext.e1
 .exit:
-         ;move.l stacksave(a3),a7
          move.l doslib(a3),a1
          movea.l 4.w,a6
          jmp CloseLibrary(a6)
@@ -548,7 +547,7 @@ interruptv    dc.l 0
 ;oldcopper     dc.l 0
 tmplock       dc.l 0
 charCount     dc.l 0
-stacksave     dc.l 0
+stacklimit    dc.l 0
 
 crsrtick      dc.w 0
 ;olddmareq:	dc.w 0
@@ -726,21 +725,23 @@ CONSOLE_NAME:		DC.B	'console.device',0,0
 ;SCREEN_NAME:		DC.B	'Xlife-8 for Commodore Amiga',0
 INTUITION_NAME:		DC.B	'intuition.library',0
 GRAPHICS_NAME:		DC.B	'graphics.library',0
-	even
-CONSOLE_DEVICE:		DC.L	0
-INTUITION_BASE:		DC.L	0
-GRAPHICS_BASE:		DC.L	0
-TASK_OLDWINDOW:		DC.L	0
 
-BITPLANE1_PTR:		DC.L	0
-BITPLANE2_PTR:		DC.L	0
-TASK_PTR:		DC.L	0
+     CNOP 0,4
+CONSOLE_DEVICE:     DC.L	0
+INTUITION_BASE:     DC.L	0
+GRAPHICS_BASE:      DC.L	0
+TASK_OLDWINDOW:     DC.L	0
+
+BITPLANE1_PTR:      DC.L	0
+BITPLANE2_PTR:      DC.L	0
+TASK_PTR:           DC.L	0
+ERROR_STACK:        DC.L	0
 
 KEYB_BUFFER:		DCB.B	KB2_SIZE,0
 KEYB_OUTBUFFER:		DC.W	0
 KEYB_INBUFFER:		DC.W	0
 
-ERROR_STACK:		DC.W	0
+
 
 IO_REQUEST:		DCB.B	32,0
 KEY_BUFFER:		DCB.B	80,0
