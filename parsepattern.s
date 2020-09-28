@@ -1,3 +1,10 @@
+checkstack macro
+     move.l stacklimit(a3),a0
+     lea.l \1(a0),a0
+     cmpa.l a0,a7
+     bcs exit0
+endm
+
 ucase:cmpi.b #'a',d2
       bcs .l1
 
@@ -46,23 +53,19 @@ multitude:
 .exit:
      rts
 
-.l1: move.l stacklimit(a3),a0
-     lea.l 10(a0),a0
-     cmpa.l a0,a7
-     bcs exit0
-
+.l1: checkstack 10
      suba.l a3,a2
      suba.l a3,a4
-     suba.l a3,a5
+     suba.l #iobseg,a5
      movem.w a2/a4/a5,-(sp)
      adda.l a3,a2
-     adda.l a3,a5
+     adda.l #iobseg,a5
      move.l a2,a4
      bsr parse
      movem.w (sp)+,a2/a4/a5
      adda.l a3,a2
      adda.l a3,a4
-     adda.l a3,a5
+     adda.l #iobseg,a5
      tst.l d0
      bne .exit
 
@@ -94,20 +97,16 @@ multitude:
 .l12:addq.l #1,d1
      bra .loop5
 
-.l10:move.l stacklimit(a3),a0
-     lea.l 12(a0),a0
-     cmpa.l a0,a7
-     bcs exit0
-
+.l10:checkstack 12
      lea.l 1(a4,d0.w),a4
      suba.l a3,a1
      suba.l a3,a2
      suba.l a3,a4
-     suba.l a3,a5
+     suba.l #iobseg,a5
      movem.w a1/a2/a4/a5,-(sp)
      adda.l a3,a1
      adda.l a3,a2
-     adda.l a3,a5
+     adda.l #iobseg,a5
      move.l a1,a4
      lea.l (a5,d0.w),a5
      bsr multitude
@@ -115,7 +114,7 @@ multitude:
      adda.l a3,a1
      adda.l a3,a2
      adda.l a3,a4
-     adda.l a3,a5
+     adda.l #iobseg,a5
      tst.l d0
      bne .exit
 
@@ -153,11 +152,7 @@ parse:  ;patpos = a4, datapos = a5, result = d0
 
      addq.l #1,a4
 .loop2:
-     move.l stacklimit(a3),a0
-     lea.l 12(a0),a0
-     cmpa.l a0,a7
-     bcs exit0
-
+     checkstack 12
      move.l a5,-(sp)
      move.l a4,-(sp)
      bsr parse
@@ -174,20 +169,12 @@ parse:  ;patpos = a4, datapos = a5, result = d0
      bne .loop3
 
      bsr nextpat      ;lastpos=a2
-     move.l stacklimit(a3),a0
-     lea.l 4(a0),a0
-     cmpa.l a0,a7
-     bcs exit0
-
+     checkstack 4
      addq.l #1,a4
      bsr multitude
      bra .exit
 .loop3:
-     move.l stacklimit(a3),a0
-     lea.l 12(a0),a0
-     cmpa.l a0,a7
-     bcs exit0
-
+     checkstack 12
      move.l a5,-(sp)
      move.l a4,-(sp)
      addq.l #1,a4
@@ -228,24 +215,20 @@ parse:  ;patpos = a4, datapos = a5, result = d0
      cmp.b #'%',(a4)
      bne .l8
 
-     move.l stacklimit(a3),a0
-     lea.l 12(a0),a0
-     cmpa.l a0,a7
-     bcs exit0
-
+     checkstack 12
      ;move.w d0,-(sp)
      suba.l a3,a2
      suba.l a3,a4
-     suba.l a3,a5
+     suba.l #iobseg,a5
      movem.w d0/a2/a4/a5,-(sp)
      adda.l a3,a2
-     adda.l a3,a5
+     adda.l #iobseg,a5
      movea.l a2,a4
      bsr parse
      movem.w (sp)+,d1/a2/a4/a5
      adda.l a3,a2
      adda.l a3,a4
-     adda.l a3,a5
+     adda.l #iobseg,a5
      ;move.w (sp)+,d1
      tst.l d0
      bne .exit
@@ -270,11 +253,7 @@ parse:  ;patpos = a4, datapos = a5, result = d0
 .l12:addq.l #1,d1
      bra .loop5
 
-.l10:move.l stacklimit(a3),a0
-     lea.l 16(a0),a0
-     cmpa.l a0,a7
-     bcs exit0
-
+.l10:checkstack 16
      lea.l 1(a4,d0.w),a4
      movem.l a2/a4/a5,-(sp)
      movea.l a2,a4

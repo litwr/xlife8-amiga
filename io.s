@@ -312,7 +312,7 @@ showfree:move.l tmplock(a3),d1   ;after showdir
          movea.l RASTER_PORT(a3),a1
          move.l d0,-(sp)
          clr.w d0
-         move.w d6,d1
+         move.w d5,d1
          addq.w #1,d1
          lsr.w d1
          addq.w #2,d1
