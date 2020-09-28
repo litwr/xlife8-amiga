@@ -152,12 +152,16 @@ parse:  ;patpos = a4, datapos = a5, result = d0
 
      addq.l #1,a4
 .loop2:
-     checkstack 12
-     move.l a5,-(sp)
-     move.l a4,-(sp)
+     checkstack 8
+     suba.l a3,a4
+     suba.l #iobseg,a5
+     movem.w a4/a5,-(sp)
+     adda.l a3,a4
+     adda.l #iobseg,a5
      bsr parse
-     move.l (sp)+,a4
-     move.l (sp)+,a5
+     movem.w (sp)+,a4/a5
+     adda.l a3,a4
+     adda.l #iobseg,a5
      tst.l d0
      bne .exit
 
@@ -169,18 +173,20 @@ parse:  ;patpos = a4, datapos = a5, result = d0
      bne .loop3
 
      bsr nextpat      ;lastpos=a2
-     checkstack 4
      addq.l #1,a4
-     bsr multitude
-     bra .exit
+     bra multitude
 .loop3:
-     checkstack 12
-     move.l a5,-(sp)
-     move.l a4,-(sp)
+     checkstack 8
+     suba.l a3,a4
+     suba.l #iobseg,a5
+     movem.w a4/a5,-(sp)
+     adda.l a3,a4
+     adda.l #iobseg,a5
      addq.l #1,a4
      bsr parse
-     move.l (sp)+,a4
-     move.l (sp)+,a5
+     movem.w (sp)+,a4/a5
+     adda.l a3,a4
+     adda.l #iobseg,a5
      tst.l d0
      bne .exit
 
@@ -216,7 +222,6 @@ parse:  ;patpos = a4, datapos = a5, result = d0
      bne .l8
 
      checkstack 12
-     ;move.w d0,-(sp)
      suba.l a3,a2
      suba.l a3,a4
      suba.l #iobseg,a5
@@ -229,7 +234,6 @@ parse:  ;patpos = a4, datapos = a5, result = d0
      adda.l a3,a2
      adda.l a3,a4
      adda.l #iobseg,a5
-     ;move.w (sp)+,d1
      tst.l d0
      bne .exit
 
@@ -253,13 +257,21 @@ parse:  ;patpos = a4, datapos = a5, result = d0
 .l12:addq.l #1,d1
      bra .loop5
 
-.l10:checkstack 16
+.l10:checkstack 10
      lea.l 1(a4,d0.w),a4
-     movem.l a2/a4/a5,-(sp)
+     suba.l a3,a2
+     suba.l a3,a4
+     suba.l #iobseg,a5
+     movem.w a2/a4/a5,-(sp)
+     adda.l a3,a2
+     adda.l #iobseg,a5
      movea.l a2,a4
      lea.l (a5,d0.w),a5
      bsr parse
-     movem.l (sp)+,a2/a4/a5
+     movem.w (sp)+,a2/a4/a5
+     adda.l a3,a2
+     adda.l a3,a4
+     adda.l #iobseg,a5
      tst.l d0
      bne .exit
 

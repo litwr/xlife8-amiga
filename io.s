@@ -230,10 +230,10 @@ showdir: bsr totext
          tst.b d1
          beq .loop
 
-         cmpi.b #11,d0    ;we can show only 10 first chars of fn
+         cmpi.b #11+1,d0    ;we can show only 11 first chars of fn
          bcs .l2
 
-         moveq #10,d0
+         moveq #11,d0
 .l2:     move.l GRAPHICS_BASE(a3),a6
          movea.l RASTER_PORT(a3),a1
          move.w d0,-(sp)
