@@ -282,7 +282,7 @@ parse:  ;patpos = a4, datapos = a5, result = d0
 .l7: move.b (a5)+,d2
      move.b (a4)+,d1
      cmp.b #'?',d1
-     beq .loop
+     beq .l14
 
      bsr ucase
      move.b d2,d3
@@ -290,7 +290,10 @@ parse:  ;patpos = a4, datapos = a5, result = d0
      bsr ucase
      cmp.b d2,d3
      beq .loop
+     bne .exit0
 
+.l14:tst.b d2
+     bne .loop
 exit0:
      clr.l d0
      rts
