@@ -8,9 +8,9 @@ insteps: bsr totext
 .c3:     lea stringbuf(a3),a4
          moveq #0,d3
          moveq #0,d6
-.c1:     movem.l a1/a4/a6/d3,-(sp)
+.c1:     movem.l a1/a4/a6/d3/d6,-(sp)
          bsr getkey
-         movem.l (sp)+,a1/a4/a6/d3
+         movem.l (sp)+,a1/a4/a6/d3/d6
          cmpi.b #$d,d0  ;enter
          beq .c11
 
@@ -89,16 +89,17 @@ bornstay:
          bsr getkey
          movem.l (sp)+,a1/a4/a6/d2/d3
          cmpi.b #$d,d0  ;enter
-         beq .c11
+         beq.s .c11
 
          cmpi.b #8,d0    ;backspace
          beq .c12
 
          cmpi.b #'0',d2
-         beq .c40
+         beq.s .c40
 
          cmpi.b #27,d0  ;esc
-         beq .c11
+         bne.s .c40
+.c11:    rts
 
 .c40:    cmp.b d2,d0
          bcs .c1
@@ -127,7 +128,6 @@ bornstay:
          jsr Text(a6)
 .cont4:  bsr TXT_PLACE_CURSOR
          bra .c1
-.c11:    rts
 
 .c12:    subq.l #1,a4
          subq.b #8,d3
@@ -137,6 +137,7 @@ bornstay:
          moveq #64,d0
          bsr TXT_REMOVE_CURSOR
          bra .cont4
+
 inborn:  bsr totext
          move.l GRAPHICS_BASE(a3),a6 
          ;movea.l RASTER_PORT(a3),a1
@@ -195,9 +196,12 @@ inborn:  bsr totext
          moveq #54,d7
          moveq #'1',d2
          bsr bornstay
+         move.w d0,-(sp)
          move d7,d1
          moveq #56,d0
-         bra TXT_REMOVE_CURSOR
+         bsr TXT_REMOVE_CURSOR
+         move.w (sp)+,d0
+         rts
 
 instay:  movepenq 0,62
          print 'STAY = '
