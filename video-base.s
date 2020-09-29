@@ -18,6 +18,7 @@ TXT_ON_CURSOR:        ;IN: d3,a6,a1,d4,d1
 TXT_REMOVE_CURSOR:  ;IN: d3,a6,a1,d1,d0
          add.w d3,d0
 
+         ;movea.l RASTER_PORT(a3),a1
          movem.w d0/d1,-(sp)
          jsr Move(a6)
 
@@ -28,6 +29,7 @@ TXT_REMOVE_CURSOR:  ;IN: d3,a6,a1,d1,d0
          movem.w (sp)+,d0/d1
 
          subi.w #8,d0
+         movea.l RASTER_PORT(a3),a1
          jmp Move(a6)
 
   if 0

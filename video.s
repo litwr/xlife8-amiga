@@ -980,7 +980,9 @@ loadmenu:bsr totext
          addq.b #8,d3
          moveq #30,d1  ;vertical pos
          moveq #24,d4  ;hor pos - it is defined by length of a drive name
+         move.l a0,-(sp)
          bsr TXT_ON_CURSOR
+         move.l (sp)+,a0
          moveq #1,d0
          jsr Text(a6)
 .cont4:  bsr TXT_PLACE_CURSOR
@@ -1021,10 +1023,7 @@ menu2:   bsr setdirmsk
          color 3
          bsr TXT_PLACE_CURSOR
 
-.c3:     ;;mov di,stringbuf+1      ;+1?
-         ;;mov si,di
-         ;;xor cx,cx
-         lea.l stringbuf+1(a3),a4
+.c3:     lea.l stringbuf+1(a3),a4
          move.l a4,a5
          moveq #0,d3
 .c1:     movem.l a1/a4/a5/a6/d3/d6,-(sp)
@@ -1056,7 +1055,9 @@ menu2:   bsr setdirmsk
          addq.b #8,d3
          moveq #6,d1
          move.w #152,d4
+         move.l a0,-(sp)
          bsr TXT_ON_CURSOR
+         move.l (sp)+,a0
          moveq #1,d0
          jsr Text(a6)
 .cont4:  bsr TXT_PLACE_CURSOR
@@ -1626,7 +1627,9 @@ setdirmsk:
          move.b d0,(a4)+
          moveq #14,d1
          moveq #0,d4
+         move.l a0,-(sp)
          bsr TXT_ON_CURSOR
+         move.l (sp)+,a0
          addq #8,d3
          moveq #1,d0
          jsr Text(a6)
