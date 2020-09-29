@@ -1,7 +1,7 @@
 checkstack macro
      move.l stacklimit(a3),a0
      lea.l \1(a0),a0
-     cmpa.l a0,a7
+     cmpa.l a0,sp
      bcs exit0
 endm
 

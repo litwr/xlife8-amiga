@@ -45,8 +45,6 @@ ExNext = -108
 Info = -114
 IoErr = -132
 Delay = -198
-;-$348 ParsePattern
-;-$34e MatchPattern
 
 ;intuition
 OpenScreen =	-198
