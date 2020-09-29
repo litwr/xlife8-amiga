@@ -246,6 +246,7 @@ showdir: bsr totext
          lsr.w #1,d1
          addq.w #2,d1
          lsl.w #3,d1
+         subq.w #2,d1
          jsr Move(a6)
          color 1    ;red
          move.w d6,d0
@@ -317,6 +318,7 @@ showfree:move.l tmplock(a3),d1   ;after showdir
          lsr.w d1
          addq.w #2,d1
          lsl.w #3,d1
+         subq.w #2,d1
          jsr Move(a6)
          lea.l lformat(a3),a0
          move.l (sp)+,d0

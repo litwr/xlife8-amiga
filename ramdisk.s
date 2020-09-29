@@ -1,56 +1,56 @@
 ramdisk: bsr totext
          move.l GRAPHICS_BASE(a3),a6 
          ;movea.l RASTER_PORT(a3),a1
-         movepenq 0,8
+         movepenq 0,6
          color 2  ;green
          print 'ENTER FILE# OR HIT '
          color 1 ;red
          print 'ESC'
-         movepenq 32,16
+         movepenq 32,14
          print '0'
          color 3
          print ' GLIDER GUN'
-         movepenq 32,24
+         movepenq 32,22
          color 1
          print '1'
          color 3
          print ' SMALL FISH'
-         movepenq 32,32
+         movepenq 32,30
          color 1
          print '2'
          color 3
          print ' HEAVYWEIGHT SPACESHIP'
-         movepenq 32,40
+         movepenq 32,38
          color 1
          print '3'
          color 3
          print ' R-PENTOMINO'
-         movepenq 32,48
+         movepenq 32,46
          color 1
          print '4'
          color 3
          print ' BUNNIES'
-         movepenq 32,56
+         movepenq 32,54
          color 1
          print '5'
          color 3
          print ' LIDKA'
-         movepenq 32,64
+         movepenq 32,62
          color 1
          print '6'
          color 3
          print ' BIG GLIDER'
-         movepenq 32,72
+         movepenq 32,70
          color 1
          print '7'
          color 3
          print ' BI-GUN'
-         movepenq 32,80
+         movepenq 32,78
          color 1
          print '8'
          color 3
          print ' ACORN'
-         movepenq 32,88
+         movepenq 32,86
          color 1
          print '9'
          color 3

@@ -62,7 +62,7 @@ initxt: moveq #1,d0     ;draw frame vertical borders
 
 initxt2: bsr showtopology    ;must follow initxt
          ;movea.l RASTER_PORT(a3),a1
-	 movepen 18*8,198
+         movepen 18*8,198
          movea.l RASTER_PORT(a3),a1
          lea texts+1(a3),a0  ;%
          moveq #1,d0
@@ -101,7 +101,7 @@ showmode:moveq #12,d2
          moveq #0,d0
          moveq #0,d1
          move.l GRAPHICS_BASE(a3),a6
-         MOVE.L	VIEW_PORT(A3),A0
+         MOVE.L VIEW_PORT(A3),A0
          jmp SetRGB4(a6)
 
 showtopology:
@@ -113,10 +113,7 @@ showtopology:
 
          invvideo
 .l1:     movea.l RASTER_PORT(a3),a1
-         moveq #0,d0
-         move.w #198,d1
-         jsr Move(a6)
-
+         movepen 0,198
          movea.l RASTER_PORT(a3),a1
          lea texts(a3),a0
          moveq #1,d0
@@ -152,7 +149,7 @@ digiout:	;in: d0 - length, a0 - scrpos, a1 - data
          move.l d1,d3
          andi.b #$f,d1
          lsl.b #3,d1
-         
+
 .c1:     move.b (a2,d1),(a0)
 	 adda.l #40,a0
 	 addq #1,d1
@@ -173,4 +170,3 @@ digiout:	;in: d0 - length, a0 - scrpos, a1 - data
 
 	 dbra d0,.c0
 .ce:	 rts
-

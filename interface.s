@@ -527,7 +527,7 @@ benchcalc: bsr stop_timer
          bsr totext
          move.l GRAPHICS_BASE(a3),a6 
          movea.l RASTER_PORT(a3),a1
-         movepenq 0,8
+         movepenq 0,6
          color 2
          move.l charCount(a3),d0
          lea stringbuf(a3),a0
@@ -571,7 +571,7 @@ benchcalc: bsr stop_timer
 
          move.l GRAPHICS_BASE(a3),a6 
          movea.l RASTER_PORT(a3),a1
-         movepenq 0,16
+         movepenq 0,14
          color 2
          move.l charCount(a3),d0
          lea stringbuf(a3),a0

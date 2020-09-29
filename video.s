@@ -1,7 +1,7 @@
 insteps: bsr totext
          move.l GRAPHICS_BASE(a3),a6 
          ;movea.l RASTER_PORT(a3),a1
-.c38:    movepenq 0,8
+.c38:    movepenq 0,6
          color 2
          print "NUMBER OF GENERATIONS: "   ;24 chars = 192 pixels
          bsr TXT_PLACE_CURSOR
@@ -30,7 +30,7 @@ insteps: bsr totext
          cmpi.b #5*8,d3
          beq .c1
 
-         moveq #8,d1
+         moveq #6,d1
          moveq #92,d4
          add.w d4,d4
          bsr TXT_ON_CURSOR
@@ -47,61 +47,43 @@ insteps: bsr totext
          bcs .c3
 
          move.w #192,d0
-         moveq #8,d1
+         moveq #6,d1
          bsr TXT_REMOVE_CURSOR
          bra .cont4
 
 .c11:    move.w #184,d0
-         moveq #8,d1
+         moveq #6,d1
          bsr TXT_REMOVE_CURSOR
          tst.b d3
          beq .c20
 
-;         sub si,bx   ;convert to binary
-          move.w d3,d1
+          move.w d3,d1   ;convert to binary
           lsr #3,d1
           suba.w d1,a4
-;         xor dx,dx
           moveq #0,d1
-;         dec bx
           subq.b #8,d3
-;         shl bx,1
           lsr #2,d3
-.c33:    ;;lodsb
-          move.b (a4)+,d0
+.c33:     move.b (a4)+,d0
           sub.b #'0',d0
-;         or al,al
-;         jz .c34
           beq .c34
 
-;         mov di,[tobin+bx]
           lea tobin(a3),a0
           move.w (a0,d3),d5
-.c32:     ;;add dx,di
-          add.w d5,d1
-;         jnc .c38a
+.c32:     add.w d5,d1
           bcc .c38a
-;         jmp .c38       ;65535=max
-          bra .c38
+          bra .c38       ;65535=max
 
-.c38a:    ;;dec al
-          subq.b #1,d0
-;         jnz .c32
+.c38a:    subq.b #1,d0
           bne .c32
 
-.c34:     ;;sub bx,2
-          sub.w #2,d3
-;         jns .c33
+.c34:     sub.w #2,d3
           bpl .c33
 
          move.w d1,d6
          bra .c20
 
 bornstay:
-;;         mov si,stringbuf
-;;.c3:     mov di,si
-;;.c1:     call getkey
-.c3:     lea stringbuf(a3),a4
+         lea stringbuf(a3),a4
          moveq #0,d3
 .c1:     movem.l a1/a4/a6/d2/d3,-(sp)
          bsr getkey
@@ -137,7 +119,7 @@ bornstay:
 
 .c5:     move d7,d1
          moveq #56,d4
-	 bsr TXT_ON_CURSOR
+         bsr TXT_ON_CURSOR
          move.l a4,a0
          move.b d0,(a4)+
          addq.w #8,d3
@@ -145,22 +127,20 @@ bornstay:
          jsr Text(a6)
 .cont4:  bsr TXT_PLACE_CURSOR
          bra .c1
-
 .c11:    rts
 
 .c12:    subq.l #1,a4
          subq.b #8,d3
-         bmi .c3
+         bmi bornstay
 
          move d7,d1
          moveq #64,d0
          bsr TXT_REMOVE_CURSOR
          bra .cont4
-
 inborn:  bsr totext
          move.l GRAPHICS_BASE(a3),a6 
          ;movea.l RASTER_PORT(a3),a1
-         movepenq 0,8
+         movepenq 0,6
          color 2  ;green
          print 'THE RULES ARE DEFINED BY '
          invvideo ;blue
@@ -173,7 +153,7 @@ inborn:  bsr totext
          normvideo
          color 2
          print ' V'
-         movepenq 0,16
+         movepenq 0,14
          print 'ALUES.  FOR EXAMPLE, '
          color 1
          invvideo ;purple
@@ -181,7 +161,7 @@ inborn:  bsr totext
          normvideo
          color 2
          print ' HAS'
-         movepenq 0,24
+         movepenq 0,22
          print 'BORN=3 AND STAY=23, '
          color  1 ;purple
          invvideo
@@ -189,7 +169,7 @@ inborn:  bsr totext
          normvideo
          color 2
          print ' - BORN=2 AND E'
-         movepenq 0,32
+         movepenq 0,30
          print 'MPTY STAY, '
          color 1
          invvideo ;purple
@@ -197,7 +177,7 @@ inborn:  bsr totext
          normvideo
          color 2
          print ' - BORN=36 AND STAY=2'
-         movepenq 0,40
+         movepenq 0,38
          print '3, '
          color 1
          invvideo ;purple
@@ -205,84 +185,84 @@ inborn:  bsr totext
          normvideo
          color 2
          print ' - BORN=3 AND STAY='
-         movepenq 0,48
+         movepenq 0,46
          print '012345678, ...'
-         movepenq 0,56
+         movepenq 0,54
          color 3
          print 'BORN = '
          bsr TXT_PLACE_CURSOR
 
-         moveq #56,d7
+         moveq #54,d7
          moveq #'1',d2
          bsr bornstay
          move d7,d1
          moveq #56,d0
          bra TXT_REMOVE_CURSOR
 
-instay:  movepenq 0,64
+instay:  movepenq 0,62
          print 'STAY = '
          bsr TXT_PLACE_CURSOR
 
-         moveq #64,d7
+         moveq #62,d7
          moveq #'0',d2
          bra bornstay
 
 indens:  bsr totext
          move.l GRAPHICS_BASE(a3),a6 
          ;movea.l RASTER_PORT(a3),a1
-         movepenq 0,8
+         movepenq 0,6
          color 3
          print "SELECT DENSITY OR PRESS "
          color 1
          print "ESC"
          color 3
          print " TO EXIT"
-         movepenq 36,16
+         movepenq 36,14
          color 1
          print '0'
          color 2
          print ' - 12.5%'
-         movepenq 36,24
+         movepenq 36,22
          color 1
          print '1'
          color 2
          print ' - 28%'
-         movepenq 36,32
+         movepenq 36,30
          color 1
          print '2'
          color 2
          print ' - 42%'
-         movepenq 36,40
+         movepenq 36,38
          color 1
          print '3'
          color 2
          print ' - 54%'
-         movepenq 36,48
+         movepenq 36,46
          color 1
          print '4'
          color 2
          print ' - 64%'
-         movepenq 36,56
+         movepenq 36,54
          color 1
          print '5'
          color 2
          print ' - 73%'
-         movepenq 36,64
+         movepenq 36,62
          color 1
          print '6'
          color 2
          print ' - 81%'
-	 movepenq 36,72
+         movepenq 36,70
          color 1
          print '7'
          color 2
          print ' - 88.5%'
-         movepenq 36,80
+         movepenq 36,78
          color 1
          print '8'
          color 2
          print ' - 95%'
-	 movepenq 36,88
+         movepenq 36,86
          color 1
          print '9'
          color 2
@@ -303,20 +283,20 @@ indens:  bsr totext
 
 inmode:  ;move.l GRAPHICS_BASE(a3),a6 
          ;movea.l RASTER_PORT(a3),a1
-         movepenq 0,24
+         movepenq 0,22
          color 2
          print 'SELECT BENCHMARK MODE'
-         movepenq 8,32
+         movepenq 8,30
          color 1
          print '0'
          color 2
          print ' - CALCULATIONS'
-         movepenq 8,40
+         movepenq 8,38
          color 1
          print '1'
          color 2
          print ' - VIDEO'
-         movepenq 8,48
+         movepenq 8,46
          color 1
          print '2'
          color 2
@@ -335,21 +315,21 @@ help:    bsr totext
          move.l GRAPHICS_BASE(a3),a6 
          ;movea.l RASTER_PORT(a3),a1
          normvideo
-         movepenq 72,8
+         movepenq 72,6
          color 3
          print '*** XLIFE COMMANDS ***'
-         movepenq 0,16
+         movepenq 0,14
          color 1
          print '!'
          color 2
          print ' randomize screen'
-         movepenq 0,24
+         movepenq 0,22
          color 1
          print '%'
          color 2
          print ' set random density - default=42%'
-         movepenq 0,32
-	 color 1
+         movepenq 0,30
+         color 1
          print '+'
          color 2
          print '/'
@@ -357,7 +337,7 @@ help:    bsr totext
          print '-'
          color 2
          print ' zoom in/out'
-         movepenq 0,40
+         movepenq 0,38
 	 color 1
          print '.'
          color 2
@@ -366,82 +346,82 @@ help:    bsr totext
          print 'H'
          color 2
          print ' center/home the cursor'
-         movepenq 0,48
+         movepenq 0,46
 	 color 1
          print '?'
          color 2
          print ' show this help'
-         movepenq 0,56
+         movepenq 0,54
 	 color 1
          print 'B'
          color 2
          print ' benchmark'
-         movepenq 0,64
+         movepenq 0,62
 	 color 1
          print 'C'
          color 2
          print ' clear the screen'
-         movepenq 0,72
+         movepenq 0,70
 	 color 1
          print 'E'
          color 2
          print ' toggle the pseudocolor mode'
-         movepenq 0,80
+         movepenq 0,78
 	 color 1
          print 'g'
          color 2
          print ' toggle the run/stop mode'
-         movepenq 0,88
+         movepenq 0,86
 	 color 1
          print 'h'
          color 2
          print ' toggle the hiding (fastest) mode'
-         movepenq 0,96
+         movepenq 0,94
 	 color 1
          print 'l'
          color 2
          print ' load and transform a pattern'
-         movepenq 0,104
+         movepenq 0,102
 	 color 1
          print 'L'
          color 2
          print ' reload a pattern'
-         movepenq 0,112
+         movepenq 0,110
 	 color 1
          print 'o'
          color 2
          print ' one step'
-         movepenq 0,120
+         movepenq 0,118
 	 color 1
          print 'Q'
          color 2
          print ' quit'
-         movepen 0,128
+         movepenq 0,126
 	 color 1
          print 'R'
          color 2
          print ' set the rules'
-         movepen 0,136
+         movepen 0,134
 	 color 1
          print 'S'
          color 2
          print ' save'
-         movepen 0,144
+         movepen 0,142
 	 color 1
          print 't'
          color 2
          print ' toggle plain/torus topology'
-         movepen 0,152
+         movepen 0,150
 	 color 1
          print 'v'
          color 2
          print ' show some info'
-         movepen 0,160
+         movepen 0,158
 	 color 1
          print 'V'
          color 2
          print ' show comments to a pattern'
-         movepen 0,168
+         movepen 0,166
 	 color 1
          print 'X'
          color 2
@@ -494,7 +474,6 @@ xyout:   tst.b zoom(a3)
          bsr digiout
 
 infoout: ;must be before showtinfo
-  
          ;;cmp [zoom],0
 	 tst.b zoom(a3)
          ;;jnz infoout2
@@ -543,7 +522,7 @@ showtinfo:
          ;;jmp .c2
          bra .c3
 
-.c1:        
+.c1:
 	 ;;mov word [bx],0a0ah
          move.b #$a,(a0)+
          ;;mov al,[si+ttab]
@@ -564,7 +543,6 @@ showtinfo:
          movea.l BITPLANE2_PTR(a3),a0
          adda.l #192*40+14+3,a0
          bra digiout
-
 
 calcx:   move.b crsrbit(a3),d2   ;$80 -> 0, $40 -> 1, ...
          moveq #-1,d0
@@ -906,16 +884,16 @@ chgdrv:  mov al,[curdrv]
 loadmenu:bsr totext
          move.l GRAPHICS_BASE(a3),a6
          ;movea.l RASTER_PORT(a3),a1
-         movepenq 0,8
+         movepenq 0,6
          color 2  ;green
          print 'INPUT FILENAME, AN EMPTY STRING MEANS TO'
-         movepenq 0,16
+         movepenq 0,14
          print ' SHOW DIRECTORY. PRESS '
          color 1 ;red
          print 'TAB'
          color 2
          print ' TO USE RAMDIS'
-         movepenq 0,24
+         movepenq 0,22
          print 'K, '
          color 1
          print '*'
@@ -926,7 +904,7 @@ loadmenu:bsr totext
          color 2
          print ' TO EXIT'
          color 3
-         movepenq 0,32
+         movepenq 0,30
 .c80:    moveq.l #4,d0
          lea.l curdisk(a3),a0
          movea.l RASTER_PORT(a3),a1
@@ -996,9 +974,9 @@ loadmenu:bsr totext
          move.l a4,a0
          move.b d0,(a4)+
          addq.b #8,d3
-         moveq #32,d1  ;vertical pos
+         moveq #30,d1  ;vertical pos
          moveq #24,d4  ;hor pos - it is defined by length of a drive name
-	 bsr TXT_ON_CURSOR
+         bsr TXT_ON_CURSOR
          moveq #1,d0
          jsr Text(a6)
 .cont4:  bsr TXT_PLACE_CURSOR
@@ -1008,7 +986,7 @@ loadmenu:bsr totext
          subq.b #8,d3
          bcs .c3
 
-         moveq #32,d1
+         moveq #30,d1
          moveq #40,d0
          bsr TXT_REMOVE_CURSOR
          bra .cont4
@@ -1029,7 +1007,7 @@ menu2:   bsr setdirmsk
 
          bsr showdir  ;returns number of directory entries in D6
          move.l GRAPHICS_BASE(a3),a6
-         movepenq 0,8
+         movepenq 0,6
          color 2
          print 'ENTER FILE# OR '
          color 1
@@ -1072,7 +1050,7 @@ menu2:   bsr setdirmsk
          move.l a4,a0
          move.b d0,(a4)+
          addq.b #8,d3
-         moveq #8,d1
+         moveq #6,d1
          move.w #152,d4
          bsr TXT_ON_CURSOR
          moveq #1,d0
@@ -1106,7 +1084,7 @@ menu2:   bsr setdirmsk
          subq.b #8,d3
          bcs .c3
 
-         moveq #8,d1
+         moveq #6,d1
          move.w #168,d0
          bsr TXT_REMOVE_CURSOR
          bra .cont4
@@ -1592,7 +1570,7 @@ setdirmsk:
          bsr totext
          move.l GRAPHICS_BASE(a3),a6 
          ;movea.l RASTER_PORT(a3),a1
-         movepenq 0,8
+         movepenq 0,6
          color 2
          print 'SET DIRECTORY MASK ('
          color 1
@@ -1600,7 +1578,7 @@ setdirmsk:
          color 2
          print ' = ?#)'
          color 3
-         movepenq 0,16
+         movepenq 0,14
          bsr TXT_PLACE_CURSOR
 .c3:     lea svfn(a3),a4
          moveq #0,d3   ;length
@@ -1642,7 +1620,7 @@ setdirmsk:
          sub.b #'a'-'A',d0
 .c6:     move.l a4,a0
          move.b d0,(a4)+
-         moveq #16,d1
+         moveq #14,d1
          moveq #0,d4
          bsr TXT_ON_CURSOR
          addq #8,d3
@@ -1667,7 +1645,7 @@ setdirmsk:
          subq.b #8,d3
          bcs .c3
 
-         moveq #16,d1
+         moveq #14,d1
          moveq #8,d0
          bsr TXT_REMOVE_CURSOR
          bra .cont4
