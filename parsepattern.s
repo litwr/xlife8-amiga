@@ -290,7 +290,7 @@ parse:  ;patpos = a4, datapos = a5, result = d0
      bsr ucase
      cmp.b d2,d3
      beq .loop
-     bne .exit0
+     bne exit0
 
 .l14:tst.b d2
      bne .loop
