@@ -74,7 +74,8 @@ ramdisk: bsr totext
          bsr maketent
          bsr tograph
          bsr showrect
-         ;;jc pexit
+         cmpi.b #27,d0
+         beq pexit
 
 puttent: move.w tsz(a3),d1
          lea.l iobseg,a2

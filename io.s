@@ -113,7 +113,8 @@ loadpat: bsr makepath
          bsr showrect
          move.l doslib(a3),a6
          move.l (sp)+,d6
-         ;bcs .l1
+         cmpi.b #27,d0
+         beq .l1
 
          bsr fillrt
          bsr puttent

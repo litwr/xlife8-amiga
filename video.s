@@ -1201,60 +1201,63 @@ showrect:
          bsr xyout
          clr.w xdir(a3)
          clr.b xchgdir(a3)
-;.c10:    call drawrect
+.c10:    ;call drawrect
 ;         call showtent
-;.c11:    call crsrflash
+.c11:    ;call crsrflash
          bsr getkey
-;         cmp ah,4bh    ;cursor left
-;         jz .c100
+         cmpi.b #$9b,d0   ;extended keys
+         bne .cont
 
-;         cmp ah,4dh  ;cursor right
-;         jz .c100
+         bsr getkey2
+         cmpi.b #$44,d0    ;cursor left
+         beq .c100
 
-;         cmp ah,48h  ;cursor up
-;         jz .c100
+         cmpi.b #$43,d0  ;cursor right
+         beq .c100
 
-;         cmp ah,50h   ;cursor down
-;         jz .c100
+         cmpi.b #$41,d0  ;cursor up
+         beq .c100
 
-;         cmp al,'.'     ;to center
-;         jz .c100
+         cmpi.b #$42,d0   ;cursor down
+         beq .c100
 
-;         cmp ah,47h     ;to home
-;         jz .c100
+         cmpi.b #'.',d0     ;to center
+         beq .c100
 
-;         cmp al,'r'
-;         jnz .c1
+         cmpi.b #'H',d0     ;to home
+         beq .c100
+         bra .c11
 
-;         call clrrect
-;         not [xchgdir]
-;         mov ax,word [xdir]
-;         xchg al,ah
-;         not al
-;         mov word [xdir],ax
-;         jmp .c10
-
-;.c1:     cmp al,'f'
-;         jne .c2
+.cont:   cmpi.b #'r',d0
+         bne .c1
 
 ;         call clrrect
-;         not [xdir]
-;         jmp .c10
+         not xchgdir(a3)
+         move.w xdir(a3),d0
+         rol.w #8,d0
+         not.b d0
+         move.w d0,xdir(a3)
+         bra .c10
 
-;.c2:     cmp al,0dh
-;         je exit7
+.c1:     cmpi.b #'f',d0
+         bne .c2
 
-;         cmp al,27      ;esc
-;         stc
-;         je exit7
-;         jmp .c11
-
-;.c100:   push ax
 ;         call clrrect
-;         pop ax
+         not xdir(a3)
+         bra .c10
+
+.c2:     cmpi.b #$d,d0
+         beq exit7
+
+         cmpi.b #27,d0      ;esc
+         beq exit7
+         bra .c11
+
+.c100:   move.w d0,-(sp)
+;         call clrrect
+         move.w (sp)+,d0
 ;         call dispatcher.e0
-;         jmp .c10
-          rts
+         bra .c10
 
 xchgxy:  tst.b xchgdir(a3)
          beq exit7
