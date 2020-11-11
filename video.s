@@ -1080,9 +1080,9 @@ menu2:   bsr setdirmsk
 .c21:    cmp d6,d0
          bcc .c1
 
-.l3:     ;;call findfn
+.l3:     bsr findfn
          ;;;call curoff
-         ;;xor ax,ax     ;sets ZF
+         or.l d6,d6     ;sets SF
          rts
 
 .c12:    subq.l #1,a4

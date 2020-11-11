@@ -276,7 +276,7 @@ dispatcher:
          move.w d0,-(sp)
          clr.b zoom(a3)
          bsr loadmenu
-         bne .c302
+         bmi .c302
 
 .c303:   bsr tograph
          ;bsr loadpat

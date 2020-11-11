@@ -207,20 +207,6 @@ showdir: bsr totext
          sub.l #iobseg+8+1+4,d0
          bls .loop
 
-         lea.l -4(a0),a1
-         cmp.b #'8',(a1)+
-         bne .loop
-
-         move.b (a1)+,d2
-         and.b #$df,d2
-         cmp.b #'X',d2
-         bne .loop
-
-         move.b (a1)+,d2
-         and.b #$df,d2
-         cmp.b #'L',d2
-         bne .loop
-
          lea.l svfn(a3),a4   ;check against a pattern in svfn
          lea.l iobseg+8,a5
          move.w d0,-(sp)
@@ -330,8 +316,9 @@ showfree:move.l tmplock(a3),d1   ;after showdir
          move.l doslib(a3),a6
          jmp UnLock(a6)
 
-findfn:  ;fn# in D5
-         clr.l d6   ;absolute counter
+findfn:  ;fn# in D0
+         move.l d0,d5
+         moveq.l #-1,d6   ;absolute counter
          bsr makepath
          move.l #curpath,d1       ;pointer to a pattern path
          move.l doslib(a3),a6     ;DOS base address
@@ -355,15 +342,24 @@ findfn:  ;fn# in D5
          move.l #iobseg,d2   ;pointer to FileInfoBlock
          jsr ExNext(a6)        ;find next file
          tst.l d0              ;found?
-         beq showfree          ;no: done
+         beq .close         ;no: done
 
-.setout: addq.l #1,d6
+.setout: tst.l iobseg+4
+         bpl .loop          ;directory?
+
+         lea.l svfn(a3),a4   ;check against a pattern in svfn
+         lea.l iobseg+8,a5
+         bsr parse
+         tst.b d0
+         beq .loop
+
+         addq.l #1,d6
          cmp.l d6,d5
          bne .loop
 
          lea.l fn(a3),a1
          lea.l iobseg+8,a0
-.copy:   move.l (a0)+,(a1)+
+.copy:   move.b (a0)+,(a1)+
          bne .copy
 
 .close:  move.l tmplock(a3),d1
