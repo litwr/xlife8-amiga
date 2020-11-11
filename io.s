@@ -110,7 +110,8 @@ loadpat: bsr makepath
          move.w d0,born(a3)
          move.l d6,-(sp)
          bsr readtent   ;should adjust filesz
-         ;bsr showrect
+         bsr showrect
+         move.l doslib(a3),a6
          move.l (sp)+,d6
          ;bcs .l1
 

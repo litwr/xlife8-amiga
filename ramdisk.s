@@ -72,8 +72,8 @@ ramdisk: bsr totext
          move.l (a1),a1
          move.w (a1)+,x0(a3)   ;geometry
          bsr maketent
-         ;;call tograph
-         ;;call showrect
+         bsr tograph
+         bsr showrect
          ;;jc pexit
 
 puttent: move.w tsz(a3),d1

@@ -475,7 +475,7 @@ xyout:   tst.b zoom(a3)
          moveq #2,d0
          movea.l BITPLANE2_PTR(a3),a0
          adda.l #192*40+35,a0
-         bsr digiout
+         jmp digiout
 
 infoout: ;must be before showtinfo
          ;;cmp [zoom],0
@@ -1173,71 +1173,88 @@ getsvfn: call totext
 
          call delchr
          jmp .c1
-
-showrect:
-         call printstr
-         db 27,'[25H'
-         db clrtoeol,gpurple,'MOVE, ',gwhite,'R',gpurple,'OTATE, '
-         db gwhite,'F',gpurple,'LIP, ',gwhite,'ENTER',gpurple,', '
-         db gwhite,'ESC',gcyan,'  X   Y',black,'$'
-         call xyout
-         xor bx,bx
-         mov word [xdir],bx
-         mov [xchgdir],bl
-.c10:    call drawrect
-         call showtent
-.c11:    call crsrflash
-         call getkey2
-         cmp ah,4bh    ;cursor left
-         jz .c100
-
-         cmp ah,4dh  ;cursor right
-         jz .c100
-
-         cmp ah,48h  ;cursor up
-         jz .c100
-
-         cmp ah,50h   ;cursor down
-         jz .c100
-
-         cmp al,'.'     ;to center
-         jz .c100
-
-         cmp ah,47h     ;to home
-         jz .c100
-
-         cmp al,'r'
-         jnz .c1
-
-         call clrrect
-         not [xchgdir]
-         mov ax,word [xdir]
-         xchg al,ah
-         not al
-         mov word [xdir],ax
-         jmp .c10
-
-.c1:     cmp al,'f'
-         jne .c2
-
-         call clrrect
-         not [xdir]
-         jmp .c10
-
-.c2:     cmp al,0dh
-         je exit7
-
-         cmp al,27      ;esc
-         stc
-         je exit7
-         jmp .c11
-
-.c100:   push ax
-         call clrrect
-         pop ax
-         call dispatcher.e0
-         jmp .c10
    endif
+showrect:
+         bsr totext
+         move.l GRAPHICS_BASE(a3),a6 
+         ;movea.l RASTER_PORT(a3),a1
+         movepen 0,198
+         color 1
+         print "MOVE, "
+         invvideo ;purple
+         print "R"
+         normvideo
+         print "OTATE, "
+         invvideo ;purple
+         print "F"
+         normvideo
+         print "LIP, "
+         invvideo ;purple
+         print "ENTER"
+         normvideo
+         print ", "
+         invvideo ;purple
+         print "ESC"
+         normvideo
+         color 3
+         print "  X   Y"
+         bsr xyout
+         clr.w xdir(a3)
+         clr.b xchgdir(a3)
+;.c10:    call drawrect
+;         call showtent
+;.c11:    call crsrflash
+         bsr getkey
+;         cmp ah,4bh    ;cursor left
+;         jz .c100
+
+;         cmp ah,4dh  ;cursor right
+;         jz .c100
+
+;         cmp ah,48h  ;cursor up
+;         jz .c100
+
+;         cmp ah,50h   ;cursor down
+;         jz .c100
+
+;         cmp al,'.'     ;to center
+;         jz .c100
+
+;         cmp ah,47h     ;to home
+;         jz .c100
+
+;         cmp al,'r'
+;         jnz .c1
+
+;         call clrrect
+;         not [xchgdir]
+;         mov ax,word [xdir]
+;         xchg al,ah
+;         not al
+;         mov word [xdir],ax
+;         jmp .c10
+
+;.c1:     cmp al,'f'
+;         jne .c2
+
+;         call clrrect
+;         not [xdir]
+;         jmp .c10
+
+;.c2:     cmp al,0dh
+;         je exit7
+
+;         cmp al,27      ;esc
+;         stc
+;         je exit7
+;         jmp .c11
+
+;.c100:   push ax
+;         call clrrect
+;         pop ax
+;         call dispatcher.e0
+;         jmp .c10
+          rts
 
 xchgxy:  tst.b xchgdir(a3)
          beq exit7

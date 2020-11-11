@@ -612,7 +612,6 @@ digifont dc.b	$3c,$66,$6e,$76,$66,$66,$3c,0   ;8th columns are free
 
 crsrbyte  dc.b 0      ;y%8  word aligned
 crsrbit   dc.b 128    ;x bit position
-;i1        dc.b 0,0
 cellcnt   dc.b 0,0,0
 gencnt    dc.b 0,0,0,0
 crsrx     dc.b 0      ;[x/8]*8
@@ -631,6 +630,7 @@ mode      dc.b 0      ;0-stop, 1-run, 2-hide, 3-exit
 zoom      dc.b 0
 fn        blk.b 31    ;30 is max filename length
 density   dc.b 3
+;i1        dc.b 0,0
 ;czbg      dc.b 0
 ;palette   dc.b 0
 ;bgr       dc.b 0ah
