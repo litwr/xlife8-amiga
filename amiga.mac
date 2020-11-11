@@ -45,6 +45,9 @@ ExNext = -108
 Info = -114
 IoErr = -132
 Delay = -198
+Open = -30
+Close = -36
+MODE_OLD = 1005
 
 ;intuition
 OpenScreen =	-198

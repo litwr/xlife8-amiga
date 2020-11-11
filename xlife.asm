@@ -548,6 +548,8 @@ interruptv    dc.l 0
 tmplock       dc.l 0
 charCount     dc.l 0
 stacklimit    dc.l 0
+filesz    dc.l 0
+filehl    dc.l 0
 
 crsrtick      dc.w 0
 ;olddmareq:	dc.w 0
@@ -567,9 +569,6 @@ crsrtile  dc.l tiles
 timercnt     dc.l 0
 temp      dc.w 0
 temp2     dc.w 0
-;iobseg    dc.w 0
-;filehl    dc.w 0
-;filesz    dc.w 0
 tsz       dc.w 0
 ;saved     dc.w 0
 tobin     dc.w 1,10,100,1000,10000

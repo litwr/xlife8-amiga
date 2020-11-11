@@ -64,74 +64,65 @@ readtent:mov ah,3fh   ;read file
          mov [tsz],ax
          sub [filesz],ax
 .e1:     retn
-
-loadpat: mov ax,3d00h
-         mov dx,fn
-         int 21h
-         jc readtent.e1
-
-         mov [filehl],ax
-         mov bx,ax
-         mov ax,4202h   ;fseek
-         xor cx,cx
-         xor dx,dx
-         int 21h
-         shr dx,1
-         rcr ax,1
-         or dx,dx
-         jnz .exit2
-
-         sub ax,3
-         jbe .exit2
-
-         mov [filesz],ax
-         mov ax,4200h
-         int 21h
-         mov si,[live]
-         mov di,[born]
-         mov ah,3fh   ;read file
-         mov cx,6
-         mov dx,x0
-         int 21h
-         mov al,byte [live+1]
-         or al,byte [born+1]
-         cmp al,2
-         jnc .l1
-
-         test byte [born],1
-         jz .l2
-
-.l1:     mov [live],si
-         mov [born],di
-         jmp .exit2
-
-.l2:     push si
-         push di
-         call readtent   ;should adjust filesz
-         call showrect
-         pop di
-         pop si
-         jc .l1
-
-         call fillrt
-         call puttent
-         cmp [filesz],0
-         je .exit2
-
-.l3:     mov ah,3fh
-         mov bx,[filehl]
-         mov cx,2
-         mov dx,x0
-         int 21h
-         call putpixel
-         dec [filesz]
-         jnz .l3
-
-.exit2:  mov bx,[filehl]
-.e1:     mov ah,3eh    ;fclose
-         int 21h
-         retn
   endif
+loadpat: move.l #MODE_OLD,d2
+         move.l #fn,d1
+         move.l doslib(a3),a6
+         jsr Open(a6)
+         tst.l d0
+         ;bne readtent.e1
+
+         move.l filehl(a3),d0
+         move.l filesz(a3),d1
+         swap d1
+         tst.w d1
+         bne .exit2
+
+         swap d1
+         subq.l #3,d1
+         bls .exit2
+
+         move.l d1,filesz(a3)
+         move.l live(a3),d6  ;save live&born
+         move.l filehl(a3),d1
+         move.l x0(a3),d2
+         moveq.l #6,d3
+         jsr Read(a6)
+
+         move.b live+1(a3),d0
+         or.b born+1(a3),d0
+         cmpi.b #2,d0
+         bcc .l1
+
+         move.w born(a3),d0
+         andi.w #$100,d0
+         beq .l2
+
+.l1:     move.l d6,live(a3)
+         bra .exit2
+
+.l2:     move.l d6,-(sp)
+         ;bsr readtent   ;should adjust filesz
+         ;bsr showrect
+         move.l (sp)+,d6
+         ;bcs .l1
+
+         ;bsr fillrt
+         ;bsr puttent
+         tst filesz(a3)
+         beq .exit2
+
+.l3:     move.l filehl(a3),d1
+         moveq.l #2,d3
+         move.l #x0,d2
+         jsr Read(a6)
+         ;bsr putpixel
+         subq.l #1,filesz(a3)
+         bne .l3
+
+.exit2:  move.l filehl(a3),d1
+         jmp Close(a6)
+
 printd0l:
          lea.l temp(a3),a1
          move.l d0,(a1)
@@ -357,6 +348,7 @@ findfn:  ;fn# in D0
          cmp.l d6,d5
          bne .loop
 
+         move.l iobseg+124,filesz(a3)
          lea.l fn(a3),a1
          lea.l iobseg+8,a0
 .copy:   move.b (a0)+,(a1)+
