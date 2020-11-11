@@ -279,7 +279,7 @@ dispatcher:
          bmi .c302
 
 .c303:   bsr tograph
-         ;bsr loadpat
+         bsr loadpat
 .c302:   move.w (sp)+,d0
          move.b d0,zoom(a3)
          bsr calccells

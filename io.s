@@ -51,29 +51,28 @@ savecf:  mov ah,3ch   ;create a file
          mov dx,palette
          int 21h
          jmp loadpat.e1
-
-readtent:mov ah,3fh   ;read file
-         mov bx,[filehl]
-         mov cx,3072
-         xor dx,dx
-         push ds
-         mov ds,[iobseg]
-         int 21h
-         pop ds
-         shr ax,1
-         mov [tsz],ax
-         sub [filesz],ax
-.e1:     retn
   endif
-loadpat: move.l #MODE_OLD,d2
-         move.l #fn,d1
+readtent:move.l filehl(a3),d1
+         move.l #iobseg,d2
+         move.l #iobseg_end-iobseg,d3
+         jsr Read(a6)
+         lsr.l d0
+         move.w d0,tsz(a3)
+         sub.w d0,filesz(a3)
+.e1:     rts
+
+loadpat: bsr makepath
+         bsr fn2path
+         move.l #curpath,d1
+         move.l #MODE_OLD,d2
          move.l doslib(a3),a6
          jsr Open(a6)
          tst.l d0
-         ;bne readtent.e1
+         beq readtent\.e1
 
-         move.l filehl(a3),d0
+         move.l d0,filehl(a3)
          move.l filesz(a3),d1
+         lsr.l d1
          swap d1
          tst.w d1
          bne .exit2
@@ -85,40 +84,51 @@ loadpat: move.l #MODE_OLD,d2
          move.l d1,filesz(a3)
          move.l live(a3),d6  ;save live&born
          move.l filehl(a3),d1
-         move.l x0(a3),d2
+         move.l #x0,d2
          moveq.l #6,d3
          jsr Read(a6)
+         cmpi.l #6,d0
+         bne .l1
 
          move.b live+1(a3),d0
          or.b born+1(a3),d0
          cmpi.b #2,d0
          bcc .l1
 
-         move.w born(a3),d0
-         andi.w #$100,d0
+         move.b born(a3),d0
+         andi.b #1,d0
          beq .l2
 
 .l1:     move.l d6,live(a3)
          bra .exit2
 
-.l2:     move.l d6,-(sp)
-         ;bsr readtent   ;should adjust filesz
+.l2:     move.w live(a3),d0    ;LSB -> MSB
+         rol.w #8,d0
+         move.w d0,live(a3)
+         move.w born(a3),d0
+         rol.w #8,d0
+         move.w d0,born(a3)
+         move.l d6,-(sp)
+         bsr readtent   ;should adjust filesz
          ;bsr showrect
          move.l (sp)+,d6
          ;bcs .l1
 
-         ;bsr fillrt
-         ;bsr puttent
+         bsr fillrt
+         bsr puttent
          tst filesz(a3)
          beq .exit2
 
-.l3:     move.l filehl(a3),d1
+.loop:   move.l filehl(a3),d1
          moveq.l #2,d3
          move.l #x0,d2
          jsr Read(a6)
-         ;bsr putpixel
+         cmpi.l #2,d0
+         bne .l1
+
+         bsr putpixel
          subq.l #1,filesz(a3)
-         bne .l3
+         bne .loop
 
 .exit2:  move.l filehl(a3),d1
          jmp Close(a6)

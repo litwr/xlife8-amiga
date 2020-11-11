@@ -3,6 +3,7 @@
 ;zerocc
 ;todec
 ;makepath
+;fn2path
 
 zerocc:   inibcd cellcnt,3
           rts
@@ -27,6 +28,13 @@ makepath: lea.l curdisk(a3),a0
          subq.l #1,a1
 .loop3:  move.b (a0)+,(a1)+
          bne .loop3
+         rts
+
+fn2path: lea.l fn(a3),a0
+         subq.l #1,a1
+         move.b #'/',(a1)+
+.loop:   move.b (a0)+,(a1)+
+         bne .loop
          rts
 
   if 0
