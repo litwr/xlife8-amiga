@@ -719,7 +719,6 @@ showscnzp:
 gexit:    jmp crsrset
 
 showscn:
-	 ;;call infoout
 	 bsr infoout
          ;;or [zoom],0
 	 tst.b zoom(a3)
@@ -784,17 +783,15 @@ showscn2:
 	 cmpa.w #1,a4
 	 bne .l1
 
-	 jmp crsrset
+     bra crsrset
 
 showscnp:
-	 ;;mov @#startp,r0
          ;;mov si,[startp]
 	 movea.l startp(a3),a4
 
 .l1:
-;;       mov video(r0),r5
 	 ;;mov di,[video+si]
-	 movea.l (video,a4),a0
+         movea.l (video,a4),a0
          movea.l a0,a1
          adda.l BITPLANE1_PTR(a3),a0
 	 adda.l BITPLANE2_PTR(a3),a1
@@ -856,7 +853,7 @@ showscnp:
 	 cmpa.w #1,a4
 	 bne .l1
 
-	 jmp crsrset
+	 bra crsrset
 
    if 0
 chgdrv:  mov al,[curdrv]
@@ -1175,7 +1172,7 @@ getsvfn: call totext
          jmp .c1
    endif
 showrect:
-         bsr totext
+         bsr clrrow25
          move.l GRAPHICS_BASE(a3),a6 
          ;movea.l RASTER_PORT(a3),a1
          movepen 0,198
@@ -1490,7 +1487,7 @@ clrrect:  ;in: x8poscp, y8poscp
          not.b d0
 .c3:     ;add al,[x8poscp]
          add.b x8poscp(a3),d0
-         lsr #3,d0
+         lsr.b #3,d0
          ;mov dl,al
          move.b d0,d4
          ;inc dl
@@ -1503,10 +1500,6 @@ clrrect:  ;in: x8poscp, y8poscp
          move.b crsrbyte(a3),d3
          ;mov [y8byte],cl
          move.b d3,y8byte(a3)
-         ;cmp [pseudoc],ah
-         tst.b pseudoc(a3)
-         ;;bne clrectpc
-
          ;mov si,[crsrtile]
          movea.l crsrtile(a3),a5
          ;cmp [ydir],ah
@@ -1554,75 +1547,27 @@ xclrect2:;push si
          subq.b #1,d5
 exitclrect2: rts
 
-clrect12:clr.l d3
-         move.b y8byte(a3),d3
-         move.b (a5,d3),d1
-         move.l video(a5),d0
-         mulu #40,d3
-         add.l d3,d0
+clrect12:clr.l d6
+         move.b y8byte(a3),d6
+         move.b (a5,d6),d1
+         clr.l d0
+         tst.b pseudoc(a3)
+         beq .cont2
+
+         move.b d1,d0
+         move.l d6,d3
+         lsl.l #2,d3
+         move.l count0(a5,d3),d1
+         vidmacp
+.cont2:  mulu #nextline,d6
+         add.l video(a5),d6
          movea.l BITPLANE1_PTR(a3),a0
-         move.b d1,(a0,d0)
+         move.b d1,(a0,d6)
          movea.l BITPLANE2_PTR(a3),a0
-         move.b #0,(a0,d0)
+         move.b d0,(a0,d6)
          rts
-  if 0
-clrectpc:mov dh,[crsrbyte]
-         cmp [ydir],0
-         je .c3
-
-         sub dh,8
-         not dh
-.c3:     mov dl,[y8poscp]
-         add dh,dl
-         shr dh,1
-         shr dh,1
-         shr dh,1
-         inc dh
-         mov si,[crsrtile]
-         cmp [ydir],0
-         jne loopuppc
-
-loopdnpc:call xclrectpc
-         je exitclrectpc
-
-         mov si,[si+down]
-         jmp loopdnpc
-
-loopuppc:call xclrectpc
-         je exitclrectpc
-
-         mov si,[si+up]
-         jmp loopuppc
-
-xclrectpc: push si
-         cmp [xdir],0
-         jne .c2
-
-.c1:     call clrect1pc
-         mov si,[si+right]
-         dec dl
-         jnz .c1
-         jmp .c3
-
-.c2:     call clrect1pc
-         mov si,[si+left]
-         dec dl
-         jnz .c2
-.c3:     pop si
-         mov dl,[x8poscp]
-         dec dh
-exitclrectpc: retn
-
-clrect1pc: push si
-         push dx
-         call showscnp1
-         pop dx
-         pop si
-         retn
-  endif
 
 crsrset1:
-;;         mov @#crsrtile,r0
          ;;mov si,[crsrtile]
 	 movea.l crsrtile(a3),a0
 	 moveq #0,d0
@@ -2352,10 +2297,16 @@ showtent:mov ax,word [x0]
 
 clrscn:  movea.l BITPLANE1_PTR(a3),a0
 	 movea.l BITPLANE2_PTR(a3),a2
-	 moveq #0,d0
 	 move.w #nextline*50-1,d1
+.e0: moveq #0,d0
 .l1:	 move.l d0,(a0)+
 	 move.l d0,(a2)+
 	 dbra d1,.l1
 	 rts
 
+clrrow25:movea.l BITPLANE1_PTR(a3),a0
+	 movea.l BITPLANE2_PTR(a3),a2
+     lea.l 40*192(a0),a0
+     lea.l 40*192(a2),a2
+     move.w #nextline*2-1,d1
+     bra clrscn\.e0
