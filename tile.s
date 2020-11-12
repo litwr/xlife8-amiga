@@ -452,7 +452,7 @@ calccells: bsr zerocc
          ;;call inctsum
          bsr inctsum
          ;;mov ah,cl
-.c5:     
+.c5:
          ;;loop .c4
          dbra d2,.c4
 

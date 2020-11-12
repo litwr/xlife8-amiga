@@ -54,11 +54,11 @@ endm
 ;boxsz_ymin = i1+1
 ;boxsz_curx = x0          ;boxsz_sizex
 ;boxsz_cury = y0          ;boxsz_sizey
-;xcut       = temp2
-;ycut       = temp2+1
-;x8poscp    = temp
-;y8poscp    = temp+1
-;y8byte     = saved
+xcut       = temp2
+ycut       = temp2+1
+x8poscp    = temp
+y8poscp    = temp+1
+y8byte     = saved
 
 vidmacp macro
          andi.w #$1803,d1

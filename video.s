@@ -475,7 +475,7 @@ xyout:   tst.b zoom(a3)
          moveq #2,d0
          movea.l BITPLANE2_PTR(a3),a0
          adda.l #192*40+35,a0
-         jmp digiout
+         bra digiout
 
 infoout: ;must be before showtinfo
          ;;cmp [zoom],0
@@ -1201,38 +1201,24 @@ showrect:
          bsr xyout
          clr.w xdir(a3)
          clr.b xchgdir(a3)
-.c10:    ;call drawrect
+.c10:    bsr drawrect
 ;         call showtent
 .c11:    ;call crsrflash
          bsr getkey
          cmpi.b #$9b,d0   ;extended keys
-         bne .cont
-
-         bsr getkey2
-         cmpi.b #$44,d0    ;cursor left
-         beq .c100
-
-         cmpi.b #$43,d0  ;cursor right
-         beq .c100
-
-         cmpi.b #$41,d0  ;cursor up
-         beq .c100
-
-         cmpi.b #$42,d0   ;cursor down
-         beq .c100
+         beq .c101
 
          cmpi.b #'.',d0     ;to center
          beq .c100
 
          cmpi.b #'H',d0     ;to home
          beq .c100
-         bra .c11
 
-.cont:   cmpi.b #'r',d0
+         cmpi.b #'r',d0
          bne .c1
 
-;         call clrrect
-         not xchgdir(a3)
+         bsr clrrect
+         not.b xchgdir(a3)
          move.w xdir(a3),d0
          rol.w #8,d0
          not.b d0
@@ -1242,8 +1228,8 @@ showrect:
 .c1:     cmpi.b #'f',d0
          bne .c2
 
-;         call clrrect
-         not xdir(a3)
+         bsr clrrect
+         not.b xdir(a3)
          bra .c10
 
 .c2:     cmpi.b #$d,d0
@@ -1254,9 +1240,15 @@ showrect:
          bra .c11
 
 .c100:   move.w d0,-(sp)
-;         call clrrect
+         bsr clrrect
          move.w (sp)+,d0
-;         call dispatcher.e0
+         bsr dispatcher\.e0
+         bra .c10
+
+.c101:   move.w d0,-(sp)
+         bsr clrrect
+         move.w (sp)+,d0
+         bsr dispatcher\.e1
          bra .c10
 
 xchgxy:  tst.b xchgdir(a3)
@@ -1270,256 +1262,310 @@ xchgxy:  tst.b xchgdir(a3)
          movem.w (sp)+,d0/d1
 exit7:   rts
 
-  if 0
-drawrect: call xchgxy
-         xor bx,bx
-         mov [xcut],bx       ;0 -> xcut,ycut
-         mov al,[crsrbyte]
-         mov [y8byte],al
-         call calcx
-         or al,[crsrx]
-         mov dl,al   ;r1 - rectulx
-         cmp bh,[xdir]
-         je .c4
+drawrect: bsr xchgxy
+         clr.w xcut(a3)
+         move.b crsrbyte(a3),y8byte(a3)
 
-         sub dl,[x0]
-         cmp al,dl
-         jnc .c2
+         bsr calcx
+         or.b crsrx(a3),d0
+         move.b d0,d4   ;rectulx
+         tst.b xdir(a3)
+         beq .c4
 
-         not dl
-         or dl,dl
-         je .c10
+         sub.b x0(a3),d4
+         cmp.b d4,d0
+         ;cmp al,dl
+         bcc .c2
 
-         inc byte [xcut]
-.c10:    mov dl,al
-         inc dl
-         jmp .c7
+         not.b d4
+         or.b d4,d4
+         beq .c10
 
-.c4:     add dl,[x0]
-         cmp dl,al
-         jc .c5
+         addq.b #1,xcut(a3)
+.c10:    move.b d4,d0
+         ;mov dl,al
+         addq.b #1,d4
+         bra .c7
 
-         cmp dl,hormax*8+1
-         jc .c2
+.c4:     add.b x0(a3),d4
+         cmp.b d0,d4
+         ;cmp dl,al
+         bcs .c5
 
-.c5:     mov dl,hormax*8
-         inc byte [xcut]
+         cmpi.b #hormax*8+1,d4
+         bcs .c2
 
-.c2:     mov bl,dl
-         sub dl,al
-         cmp bl,dl
-         jnc .c7
+.c5:     move.b #hormax*8,d4
+         addq.b #1,xcut(a3)
 
-         neg dl
-.c7:     mov [x8poscp],dl
-         mov dh,[crsry]
-         or dh,[crsrbyte]
-         mov al,dh
-         mov bl,[y0]
-         cmp [ydir],bh
-         je .c3
+.c2:     ;mov bl,dl
+         move.b d4,d1
+         ;sub dl,al
+         sub.b d0,d4
+         ;cmp bl,dl
+         cmp.b d4,d1
+         bcc .c7
 
-         mov cl,dh
-         sub dh,bl
-         cmp cl,dh
-         jnc .c1
+         neg.b dl
+.c7:     ;mov [x8poscp],dl
+         move.b d4,x8poscp(a3)
+         ;mov dh,[crsry]
+         move.b crsry(a3),d5
+         ;or dh,[crsrbyte]
+         or.b crsrbyte(a3),d5
+         ;mov al,dh
+         move.b d5,d0
+         ;mov bl,[y0]
+         move.b y0(a3),d1
+         ;cmp [ydir],bh
+         tst.b ydir(a3)
+         beq .c3
 
-         not dh
-         or dh,dh
-         je .c12
+         ;mov cl,dh
+         move.b d5,d3
+         ;sub dh,bl
+         sub.b d1,d5
+         ;cmp cl,dh
+         cmp.b d5,d3
+         bcc .c1
 
-         inc byte [ycut]
-.c12:    mov dh,al
-         inc dh
-         jmp .c8
+         not.b d5
+         or.b d5,d5
+         beq .c12
 
-.c3:     add dh,bl
-         cmp dh,bl
-         jc .c6
+         addq.b #1,ycut(a3)
+.c12:    ;mov dh,al
+         move.b d0,d5
+         ;inc dh
+         addq.b #1,d5
+         bra .c8
 
-         cmp dh,vermax*8+1
-         jc .c1
+.c3:     ;add dh,bl
+         add.b d1,d5
+         ;cmp dh,bl
+         cmp.b d1,d5
+         bcs .c6
 
-.c6:     mov dh,vermax*8
-         inc byte [ycut]
+         ;cmp dh,vermax*8+1
+         cmpi.b #vermax*8+1,d5
+         bcs .c1
 
-.c1:     mov bl,dh
-         sub dh,al
-         cmp bl,dh
-         jnc .c8
+.c6:     ;mov dh,vermax*8
+         move.b #vermax*8,d5
+         addq.b #1,ycut(a3)
 
-         neg dh
-.c8:     mov [y8poscp],dh
+.c1:     ;mov bl,dh
+         move.b d5,d1
+         ;sub dh,al
+         sub.b d0,d5
+         ;cmp bl,dh
+         cmp.b d5,d1
+         bcc .c8
 
-         mov si,[crsrtile]
-         mov bl,[crsrbit]
-         call ymove
-         cmp bh,[ycut]
-         jne .c11
+         neg.b d5
+.c8:     ;mov [y8poscp],dh
+         move.b d5,y8poscp(a3)
 
-         call xmove
-.c11:    mov dl,[x8poscp]
-         mov dh,[y8poscp]
-         mov cl,[crsrbyte]
-         mov [y8byte],cl
-         mov bl,[crsrbit]
-         mov si,[crsrtile]
-         call xmove
-         cmp bh,[xcut]
-         ;jne exitdrawrect   ;optimize 8088
-         je ymove
-         jmp exitdrawrect
+         ;mov si,[crsrtile]
+         move.l crsrtile(a3),a5
+         ;mov bl,[crsrbit]
+         move.b crsrbit(a3),d1
+         bsr ymove
+         ;cmp bh,[ycut]
+         tst.b ycut(a3)
+         bne .c11
 
-ymove:   cmp [ydir],0
-         jne loopup
+         bsr xmove
+.c11:    ;mov dl,[x8poscp]
+         move.b x8poscp(a3),d4
+         ;mov dh,[y8poscp]
+         move.b y8poscp(a3),d5
+         ;mov cl,[crsrbyte]
+         move.b crsrbyte(a3),d3
+         ;mov [y8byte],cl
+         move.b d3,y8byte(a3)
+         ;mov bl,[crsrbit]
+         move.b crsrbit(a3),d1
+         ;mov si,[crsrtile]
+         move.l crsrtile(a3),a5
+         bsr xmove
+         ;cmp bh,[xcut]
+         tst.b xcut(a3)
+         bne exitdrawrect
 
-loopdn:  call drrect1
-.c10:    call pixel11p
-         dec dh
-         je exitdrawrect
+ymove:   ;cmp [ydir],0
+         tst.b ydir(a3)
+         bne loopup
 
-         inc byte [y8byte]
-         cmp byte [y8byte],8
-         jne loopdn
+loopdn:  bsr drrect1
+.c10:    bsr pixel11
+         ;dec dh
+         subq.b #1,d5
+         beq exitdrawrect
 
-         mov si,[down+si]
-         mov [y8byte],bh
-         jmp loopdn
+         addq.b #1,y8byte(a3)
+         ;cmp byte [y8byte],8
+         cmpi.b #8,y8byte(a3)
+         bne loopdn
 
-loopup:  call drrect1
-.c11:    call pixel11p
-         dec dh
-         je exitdrawrect
+         ;mov si,[down+si]
+         movea.l down(a5),a5
+         ;mov [y8byte],bh
+         clr.b y8byte(a3)
+         bra loopdn
 
-         dec byte [y8byte]
-         jns loopup
+loopup:  bsr drrect1
+.c11:    bsr pixel11
+         subq.b #1,d5
+         beq exitdrawrect
 
-         mov si,[up+si]
-         mov byte [y8byte],7
-         jmp loopup
+         subq.b #1,y8byte(a3)
+         bpl loopup
 
-xmove:   cmp [xdir],bh
-         jne looplt
+         ;mov si,[up+si]
+         move.l up(a5),a5
+         ;mov byte [y8byte],7
+         move.b #7,y8byte(a3)
+         bra loopup
 
-looprt:  call drrect1
-.c12:    call pixel11p
-         dec dl
-         je exitdrawrect
+xmove:   ;cmp [xdir],bh
+         tst.b xdir(a3)
+         bne looplt
 
-         shr bl,1
-         jnc .c12
+looprt:  bsr drrect1
+.c12:    bsr pixel11
+         subq.b #1,d4
+         beq exitdrawrect
 
-         mov si,[right+si]
-         mov bl,128
-         jmp looprt
+         ;shr bl,1
+         lsr.b d1
+         bcc .c12
 
-looplt:  call drrect1
-.c15:    call pixel11p
-         dec dl
-         je exitdrawrect
+         ;mov si,[right+si]
+         movea.l right(a5),a5
+         ;mov bl,128
+         move.b #128,d1
+         bra looprt
 
-         shl bl,1
-         ;;movb r0,r0
-         jnc .c15
+looplt:  bsr drrect1
+.c15:    bsr pixel11
+         subq.b #1,d4
+         beq exitdrawrect
 
-         mov si,[si+left]
-         mov bl,1
-         jmp looplt
+         ;shl bl,1
+         lsl.b d1
+         bcc .c15
 
-drrect1: mov di,[si+video]
-         mov cl,[y8byte]
-         shr cl,1
-         jnc .l1
+         ;mov si,[si+left]
+         movea.l left(a5),a5
+         ;mov bl,1
+         move.b #1,d1
+         bra looplt
 
-         add di,2000h
-.l1:     mov al,80
-         mul cl
-         add di,ax
-exitdrawrect: retn
+drrect1: move.l video(a5),d0
+         clr.l d3
+         move.b y8byte(a3),d3
+         mulu #40,d3
+         add.l d3,d0
+exitdrawrect: rts
 
-loopup2: call xclrect2
-         je exitdrawrect
 
-         dec byte [y8byte]
-         jns loopup2
+loopup2: bsr xclrect2
+         beq exitdrawrect
 
-         mov si,[si+up]
-         mov byte [y8byte],7
-         jmp loopup2
+         subq.b #1,y8byte(a3)
+         bpl loopup2
+
+         movea.l up(a5),a5
+         move.b #7,y8byte(a3)
+         bra loopup2
 
 clrrect:  ;in: x8poscp, y8poscp
-         call xchgxy
-         call calcx   ;sets ah=0
-         cmp [xdir],ah
-         je .c3
+         bsr xchgxy
+         bsr calcx   ;sets ah=0
+         tst.b xdir(a3)
+         beq .c3
 
-         sub al,8
-         not al
-.c3:     add al,[x8poscp]
-         shr al,1
-         shr al,1
-         shr al,1
-         mov dl,al
-         inc dl
-         mov [x8poscp],dl
-         mov dh,[y8poscp]
-         mov cl,[crsrbyte]
-         mov [y8byte],cl
-         cmp [pseudoc],ah
-         jne clrectpc
+         subq.b #8,d0
+         not.b d0
+.c3:     ;add al,[x8poscp]
+         add.b x8poscp(a3),d0
+         lsr #3,d0
+         ;mov dl,al
+         move.b d0,d4
+         ;inc dl
+         addq.b #1,d4
+         ;mov [x8poscp],dl
+         move.b d4,x8poscp(a3)
+         ;mov dh,[y8poscp]
+         move.b y8poscp(a3),d5
+         ;mov cl,[crsrbyte]
+         move.b crsrbyte(a3),d3
+         ;mov [y8byte],cl
+         move.b d3,y8byte(a3)
+         ;cmp [pseudoc],ah
+         tst.b pseudoc(a3)
+         ;;bne clrectpc
 
-         mov si,[crsrtile]
-         cmp [ydir],ah
-         jne loopup2
+         ;mov si,[crsrtile]
+         movea.l crsrtile(a3),a5
+         ;cmp [ydir],ah
+         tst.b ydir(a3)
+         bne loopup2
 
-loopdn2: call xclrect2
-         je exitclrect2
+loopdn2: bsr xclrect2
+         beq exitclrect2
 
-         inc byte [y8byte]
-         cmp byte [y8byte],8
-         jne loopdn2
+         addq.b #1,y8byte(a3)
+         ;cmp byte [y8byte],8
+         cmpi.b #8,y8byte(a3)
+         bne loopdn2
 
-         mov si,[si+down]
-         mov byte [y8byte],0
-         jmp loopdn2
+         ;mov si,[si+down]
+         movea.l down(a5),a5
+         ;mov byte [y8byte],0
+         clr.b y8byte(a3)
+         bra loopdn2
 
-xclrect2:push si
-         cmp [xdir],0
-         jne .c2
+xclrect2:;push si
+         move.l a5,-(sp)
+         ;cmp [xdir],0
+         tst.b xdir(a3)
+         bne .c2
 
-.c1:     call clrect12
-         mov si,[si+right]
-         dec dl
-         jnz .c1
-         jmp .c3
+.c1:     bsr clrect12
+         ;mov si,[si+right]
+         movea.l right(a5),a5
+         ;dec dl
+         subq.b #1,d4
+         bne .c1
+         bra .c3
 
-.c2:     call clrect12
-         mov si,[si+left]
-         dec dl
-         jnz .c2
+.c2:     bsr clrect12
+         ;mov si,[si+left]
+         movea.l left(a5),a5
+         subq.b #1,d4
+         bne .c2
 
-.c3:     pop si
-         mov dl,[x8poscp]
-         dec dh
-exitclrect2: retn
+.c3:     movea.l (sp)+,a5
+         ;mov dl,[x8poscp]
+         move.b x8poscp(a3),d4
+         ;dec dh
+         subq.b #1,d5
+exitclrect2: rts
 
-clrect12:xor bx,bx
-         mov al,[y8byte]
-         mov bl,al
-         mov di,[si+video]
-         shr al,1
-         jnc .l1
-
-         add di,2000h
-.l1:     mov cl,80
-         mul cl
-         add di,ax
-         mov bl,[si+bx]
-         shl bx,1
-         mov ax,[bx+vistab]
-         stosw
-         retn
-
+clrect12:clr.l d3
+         move.b y8byte(a3),d3
+         move.b (a5,d3),d1
+         move.l video(a5),d0
+         mulu #40,d3
+         add.l d3,d0
+         movea.l BITPLANE1_PTR(a3),a0
+         move.b d1,(a0,d0)
+         movea.l BITPLANE2_PTR(a3),a0
+         move.b #0,(a0,d0)
+         rts
+  if 0
 clrectpc:mov dh,[crsrbyte]
          cmp [ydir],0
          je .c3
@@ -1905,15 +1951,6 @@ pixel11: movea.l BITPLANE1_PTR(a3),a0   ;it should be after crsrset, IN: d1 - cr
          movea.l BITPLANE2_PTR(a3),a0
          or.b d1,(a0,d0)
 gexit2:  rts         ;this is also gexit3
-
-   if 0
-pixel11p:push si
-         push bx
-         call pixel11
-         pop bx
-         pop si
-         retn
-    endif
 
 crsrclr: tst.b zoom(a3)
          bne gexit2

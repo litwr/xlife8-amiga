@@ -354,7 +354,7 @@ dispatcher:
 .c20:    cmpi.b #$9b,d0   ;extended keys
          bne .c100
 
-         bsr getkey2
+.e1:     bsr getkey2
          cmpi.b #$43,d0   ;cursor right
          beq .c20cr
 

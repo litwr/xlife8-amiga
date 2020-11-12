@@ -570,7 +570,7 @@ timercnt     dc.l 0
 temp      dc.w 0
 temp2     dc.w 0
 tsz       dc.w 0
-;saved     dc.w 0
+saved     dc.w 0
 tobin     dc.w 1,10,100,1000,10000
 x0        dc.b 0   ;word aligned for the speed
 y0        dc.b 0
@@ -612,6 +612,8 @@ digifont dc.b	$3c,$66,$6e,$76,$66,$66,$3c,0   ;8th columns are free
 
 crsrbyte  dc.b 0      ;y%8  word aligned
 crsrbit   dc.b 128    ;x bit position
+xdir      dc.b 0      ;linear transformation, word aligned
+ydir      dc.b 0
 cellcnt   dc.b 0,0,0
 gencnt    dc.b 0,0,0,0
 crsrx     dc.b 0      ;[x/8]*8
@@ -622,8 +624,6 @@ xcrsr     dc.b 0,0
 ycrsr     dc.b 0,0  ;must follow xcrsr
 tinfo     dc.b 0,0
 xchgdir   dc.b 0
-xdir      dc.b 0      ;linear transformation, word aligned
-ydir      dc.b 0
 clncnt    dc.b 0
 pseudoc   dc.b 0
 mode      dc.b 0      ;0-stop, 1-run, 2-hide, 3-exit
