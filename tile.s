@@ -534,7 +534,6 @@ putpixel:     ;IN: x0,y0; DON'T USE: D1
          ;;cmp ch,vermax*8
          cmpi.b #vermax*8,d6
          bcs .c1
-
 .c100:   rts
 
 .c1:     ;;xor cl,cl
@@ -593,25 +592,29 @@ putpixel:     ;IN: x0,y0; DON'T USE: D1
 .cright: ;;mov di,[di+right]   ;y=0, x=/=0
          move.l right(a5),a5
          ;;sub ax,8
-         subq #8,d0
+         subq.b #8,d0
+         subx.b d4,d7
          bra .c23
 
 .cdown:  ;;mov di,[di+down]   ;y=/=0
          move.l down(a5),a5
          ;;sub cx,8
-         subq #8,d6
+         subq.b #8,d6
+         subx.b d4,d5
          bra .c22
 
 .cup:    ;;mov di,[di+up]   ;y=/=0
          move.l up(a5),a5
          ;;add cx,8
-         addq #8,d6
+         addq.b #8,d6
+         addx.b d4,d5
          bra .c22
 
 .cleft:  ;;mov di,[di+left]   ;y=0, x=/=0
          move.l left(a5),a5
          ;;add ax,8
-         addq #8,d0
+         addq.b #8,d0
+         addx.b d4,d7
          bra .c23
 
 putpixel3:

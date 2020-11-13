@@ -1303,7 +1303,7 @@ drawrect: bsr xchgxy
          cmp.b d4,d1
          bcc .c7
 
-         neg.b dl
+         neg.b d4
 .c7:     ;mov [x8poscp],dl
          move.b d4,x8poscp(a3)
          ;mov dh,[crsry]
@@ -1930,14 +1930,14 @@ crsrcalc:
          ;;mov bx,[bx+video]
          move.l (video,a1),d1
          subq.w #4,d1   ;(40-hormax)/2
-         divu #40,d1
-         ;move.b d1,crsry(a3)
+         divu #40,d1    ;nextline
+         move.b d1,crsry(a3)
          move.w d1,d0
          add.b crsrbyte(a3),d0
          move.w #0,d1
          swap d1
          lsl.w #3,d1
-         ;move.b d1,crsrx(a3)
+         move.b d1,crsrx(a3)
 
          move.b crsrbit(a3),d2
 .c10:    add.b d2,d2
@@ -1958,7 +1958,7 @@ crsrcalc:
          move.b d1,xcrsr+1(a3)
 
          divu #100,d0
-	 move.b d0,ycrsr(a3)
+         move.b d0,ycrsr(a3)
          move.w #0,d0
          swap d0
          divu #10,d0
