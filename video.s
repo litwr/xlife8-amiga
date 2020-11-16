@@ -1279,8 +1279,8 @@ drawrect: bsr xchgxy
          beq .c10
 
          addq.b #1,xcut(a3)
-.c10:    move.b d4,d0
-         ;mov dl,al
+.c10:    ;mov dl,al
+         move.b d0,d4
          addq.b #1,d4
          bra .c7
 
