@@ -550,6 +550,7 @@ charCount     dc.l 0
 stacklimit    dc.l 0
 filesz    dc.l 0
 filehl    dc.l 0
+fileszs   dc.l 0
 
 crsrtick      dc.w 0
 ;olddmareq:	dc.w 0

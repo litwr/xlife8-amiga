@@ -361,6 +361,7 @@ findfn:  ;fn# in D0
          bne .loop
 
          move.l iobseg+124,filesz(a3)
+         move.l iobseg+124,fileszs(a3)
          lea.l fn(a3),a1
          lea.l iobseg+8,a0
 .copy:   move.b (a0)+,(a1)+
