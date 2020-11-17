@@ -1199,7 +1199,7 @@ showrect:
          clr.w xdir(a3)
          clr.b xchgdir(a3)
 .c10:    bsr drawrect
-;         call showtent
+         bsr showtent
 .c11:    ;call crsrflash
          bsr getkey
          cmpi.b #$9b,d0   ;extended keys
@@ -2254,46 +2254,37 @@ chgcolors:
    endif
 putpixel2:
          ;;mov di,[di+video]
-         ;;mov bl,dl
-         ;;shl bx,1
-         ;;mov bx,[bx+vistab]
-         ;;shr cl,1
-         ;;jnc .l1
-
-         ;;add di,2000h
-.l1:     ;;mov al,80
-         ;;mul cl
-         ;;add di,ax
-
-         ;;mov ax,bx
-         ;;not ax
-         ;;and [es:di],ax
-         ;;shl bx,1
-         ;;or [es:di],bx
+         move.l video(a5),d0
+         mulu #40,d6
+         add.l d6,d0
+         movea.l BITPLANE2_PTR(a3),a0
+         or.b d3,(a0,d0)
+         movea.l BITPLANE1_PTR(a3),a0
+         not.b d3
+         and.b d3,(a0,d0)
 .e1:     rts
-   if 0
-showtent:mov ax,word [x0]
-         push ax
-         mov [ppmode],0
-         mov bp,[tsz]
-         xor si,si
-.loop:   or bp,bp
-         je .fin
 
-         push es
-         mov es,[iobseg]
-         lods word [es:si]
-         pop es
-         dec bp
-         mov word [x0],ax
-         call putpixel
-         jmp .loop
+showtent:
+         ;mov ax,word [x0]
+         ;push ax
+         move.w x0(a3),-(sp)
+         clr.b ppmode(a3)
+         lea.l iobseg,a4
+         move.w tsz(a3),d6
+.loop:   beq .fin
 
-.fin:    pop ax
-         mov word [x0],ax
-         inc [ppmode]
-         retn
-  endif
+         move.w (a4)+,x0(a3)
+         move.w d6,-(sp)
+         bsr putpixel
+         move.w (sp)+,d6
+         subq.w #1,d6
+         bra .loop
+
+.fin:    ;pop ax
+         ;mov word [x0],ax
+         move.w (sp)+,x0(a3)
+         addq.b #1,ppmode(a3)
+         rts
 
 clrscn:  movea.l BITPLANE1_PTR(a3),a0
 	 movea.l BITPLANE2_PTR(a3),a2
