@@ -55,11 +55,9 @@ dispatcher:
          bne .c5
 
          move.b #3,mode(a3)
-.c101:
-         rts
+.c101:   rts
 
-.c5:
-         cmpi.b #"h",d0
+.c5:     cmpi.b #"h",d0
          bne .c4
 
          cmpi.b #2,mode(a3)
@@ -330,7 +328,7 @@ dispatcher:
 
          ;;call totext
          ;;call chgcolors
-;;.c220:   jmp tograph
+.c220:   jmp tograph
 
 .c179:   cmpi.b #'X',d0
          bne .c18
@@ -342,8 +340,8 @@ dispatcher:
 .c18:    cmpi.b #'S',d0
          bne .c20
 
-         ;;call boxsz
-         ;;je .c20
+         ;bsr boxsz
+         ;beq .c101
 
          ;;call getsvfn
          ;;jnz .c220
