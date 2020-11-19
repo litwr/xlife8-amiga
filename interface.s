@@ -288,12 +288,11 @@ dispatcher:
 .c173:   cmpi.b #'L',d0
          bne .c174
 
-         move.l fileszs(a3),d0
+         tst.b fn(a3)
          bne .c317
 .c100:   rts
 
-.c317:   move.l d0,filesz(a3)
-         move.b zoom(a3),d0
+.c317:   move.b zoom(a3),d0
          move.w d0,-(sp)
          clr.b zoom(a3)
          bra .c303

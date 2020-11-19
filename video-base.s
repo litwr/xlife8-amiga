@@ -32,22 +32,21 @@ TXT_REMOVE_CURSOR:  ;IN: d3,a6,a1,d1,d0
          movea.l RASTER_PORT(a3),a1
          jmp Move(a6)
 
-  if 0
-curon:  mov ah,1
-        mov cx,607h
-        int 10h
-        retn
-
-curoff: mov ah,1
-        mov cx,201fh
-        int 10h
-        retn
-
-curonz: mov ah,1
-        mov cx,7
-        int 10h
-        retn
-  endif
+TXT_DRV_UPD:  ;CHANGE: d0,d1,a0,a1,a2,a6
+         moveq #30,d1
+         clr.w d0
+         move.l GRAPHICS_BASE(a3),a6
+         movea.l RASTER_PORT(a3),a1
+         jsr Move(a6)
+         moveq #1,d0
+         jsr SetDrMd(a6)
+         print '   '
+         moveq #30,d1
+         clr.w d0
+         jsr Move(a6)
+         moveq.l #4,d0
+         lea.l curdisk(a3),a0
+         jmp Text(a6)           ;print diskid
 
 initxt: moveq #1,d0     ;draw frame vertical borders
         move.b #$80,d1

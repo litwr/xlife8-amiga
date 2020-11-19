@@ -21,54 +21,11 @@
          include "system1.s"
 start:
          movea.l 4.w,a6
-        lea dosname(a3),a1
-        jsr OldOpenLibrary(a6)
-	 ;move.l  d0,a6
+         lea dosname(a3),a1
+         jsr OldOpenLibrary(a6)
          move.l d0,doslib(a3)
-
-	if 0
-         mov [iobseg],ds
-         add [iobseg],1000h  ;64k/16
-
-         mov ah,19h   ;get current disk
-         int 21h
-         add al,"A"
-         mov [loadmenu.c80],al
-
-         xor bx,bx
-.l2:     mov dl,bl
-         mov ah,0eh   ;set current drive
-         int 21h
-         mov ah,19h
-         int 21h
-         mov [drives+bx],bh
-         cmp al,bl
-         jnz .l1
-
-         add al,"A"
-         cmp al,[loadmenu.c80]
-         jnz .l3
-
-         mov [curdrv],bl
-.l3:     mov [drives+bx],al
-.l1:     inc bx
-         cmp bl,26
-         jnz .l2
-
-         mov dl,[loadmenu.c80]
-         sub dl,"A"
-         mov ah,0eh
-         int 21h
-
-         call chgdrv.ee1
-         mov ax,0b800h
-         mov es,ax
-         call copyr
-         call setcolors
-         ;incb @#errst
-       endif
+         bsr chgdrv
          bsr help
-
 mainloop:
          bsr crsrflash
 .e1:     bsr dispatcher
@@ -88,6 +45,8 @@ mainloop:
          move.l doslib(a3),a1
          movea.l 4.w,a6
          jmp CloseLibrary(a6)
+         ;clr.l d1
+         ;jmp Exit(a6)
 
 .c3:     tst.w tilecnt(a3)
          bne .c4
@@ -539,7 +498,6 @@ crsrflash:
 
     endb a3
 
-    section Data
 SOD:
 startp:       dc.l 1  ;it is the fastest variable, no need an offset
 doslib        dc.l 0
@@ -550,7 +508,7 @@ charCount     dc.l 0
 stacklimit    dc.l 0
 filesz    dc.l 0
 filehl    dc.l 0
-fileszs   dc.l 0
+saveWPTR  dc.l 0
 
 crsrtick      dc.w 0
 ;olddmareq:	dc.w 0
@@ -629,7 +587,7 @@ clncnt    dc.b 0
 pseudoc   dc.b 0
 mode      dc.b 0      ;0-stop, 1-run, 2-hide, 3-exit
 zoom      dc.b 0
-fn        blk.b 31    ;30 is max filename length
+fn        blk.b 31,0    ;30 is max filename length
 density   dc.b 3
 ;i1        dc.b 0,0
 ;czbg      dc.b 0
@@ -668,6 +626,19 @@ curdisk  dc.b "DH0:",0
 curdir1  dc.b "xlife8/",0
 curdir2  dc.b "patterns",0
 curpath  blk.b 34
+
+nudrives = 10
+drives: dc.b 'DF0:'
+        dc.b 'DF1:'
+        dc.b 'DF2:'
+        dc.b 'DF3:'
+        dc.b 'DH0:'
+        dc.b 'DH1:'
+        dc.b 'DH2:'
+        dc.b 'DH3:'
+        dc.b 'RAM:'
+        dc.b 'RAD:'
+drvidx: dc.b 0
 
 	CNOP 0,4
 SCREEN_DEFS:

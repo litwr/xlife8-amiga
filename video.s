@@ -855,32 +855,34 @@ showscnp:
 
 	 bra crsrset
 
-   if 0
-chgdrv:  mov al,[curdrv]
-         mov bx,drives
-.l2:     inc ax
-         cmp al,26
-         jnz .l1
+chgdrv:  moveq #nudrives+1,d5
+.loop:   subq.l #1,d5
+         beq .exit
 
-         xor ax,ax
-.l1:     mov [curdrv],al
-         xlatb
-         or al,al
-         mov dl,al
-         mov al,[curdrv]
-         jz .l2
+         clr.l d0
+         move.b drvidx(a3),d0
+         addq.b #4,d0
+         cmpi.b #nudrives*4,d0
+         bne .cont
 
-         mov [loadmenu.c80],dl
-         mov [es:si],dl
-         sub dl,'A'
-         mov ah,0eh
-         int 21h
+         clr.b d0
+.cont:   move.b d0,drvidx(a3)
+         lea.l drives(a3),a4
+         move.l (a4,d0),curdisk(a3)
+         bsr makepath
+         move.l TASK_PTR(A3),a4
+         move.l $b8(a4),saveWPTR(a3)   ;pr_Windowptr
+         move.l #-1,$b8(a4)
+         move.l #curpath,d1
+         move.l doslib(a3),a6 
+         move.l #-2,d2         ;'read' mode
+         jsr Lock(a6)          ;find file
+         move.l d0,d1
+         beq .loop
 
-.ee1:    mov ah,3bh
-         mov dx,patpath
-         int 21h
-         retn
-    endif
+         jsr UnLock(a6)
+         move.l saveWPTR(a3),$b8(a4)
+.exit:   rts
 
 loadmenu:bsr totext
          move.l GRAPHICS_BASE(a3),a6
@@ -909,13 +911,12 @@ loadmenu:bsr totext
 .c80:    moveq.l #4,d0
          lea.l curdisk(a3),a0
          movea.l RASTER_PORT(a3),a1
-         jsr Text(a6)
-         ;print 'DH0:'
+         jsr Text(a6)           ;print diskid
          bsr TXT_PLACE_CURSOR
 .c3:     lea stringbuf(a3),a4
          moveq #0,d3   ;length
 .c1:     movem.l a1/a4/a6/d3,-(sp)
-         bsr getkey
+.c1d:    bsr getkey
          movem.l (sp)+,a1/a4/a6/d3
 
          cmpi.b #$d,d0  ;enter
@@ -927,27 +928,25 @@ loadmenu:bsr totext
          cmpi.b #27,d0  ;esc
          bne .c17
 
-.c100:   ;;mov ch,al
-.c101:   ;;;call curoff  ;curoff changes ch?
-         ;;or ch,ch
+.c100:   move.b #-1,d0
+         rts
+
+.c101:   move.b #1,d0
          rts
 
 .c17:    cmpi.b #'*',d0
          bne .c21
 
-         ;;mov ch,al
-         ;;mov si,240
-         ;;call chgdrv
-         ;;jmp .c1
-         bra .c1
+         movem.l a1/a4/a6/d3,-(sp)
+         bsr chgdrv
+         bsr TXT_DRV_UPD
+         bra .c1d
 
 .c21:    cmpi.b #9,d0  ;TAB
          bne .c18
 
          bsr ramdisk
-         ;;mov ch,1
-         ;;jmp .c101
-         bra .c101
+         bra .c100
 
 .c18:    cmpi.b #'!',d0
          bcs .c1
@@ -1002,6 +1001,10 @@ loadmenu:bsr totext
          move.b #"x",(a4)+
          move.b #"l",(a4)+
          clr.b (a4)
+         lea.l fn(a3),a1
+         lea.l stringbuf(a3),a0
+.copy:   move.b (a0)+,(a1)+
+         bne .copy
          bra .c101
 
 menu2:   bsr setdirmsk

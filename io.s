@@ -63,6 +63,19 @@ readtent:move.l filehl(a3),d1
 
 loadpat: bsr makepath
          bsr fn2path
+         move.l #curpath,d1       ;pointer to a pattern path
+         move.l doslib(a3),a6     ;DOS base address
+         move.l #-2,d2         ;'read' mode
+         jsr Lock(a6)          ;find file
+         beq readtent\.e1
+
+         move.l d0,tmplock(a3)     ;lock-save
+         move.l d0,d1
+         move.l #iobseg,d2   ;pointer to FilelnfoBlock
+         jsr    Examine(a6)
+         move.l iobseg+124,filesz(a3)
+         move.l tmplock(a3),d1
+         jsr UnLock(a6)
          move.l #curpath,d1
          move.l #MODE_OLD,d2
          move.l doslib(a3),a6
@@ -360,8 +373,6 @@ findfn:  ;fn# in D0
          cmp.l d6,d5
          bne .loop
 
-         move.l iobseg+124,filesz(a3)
-         move.l iobseg+124,fileszs(a3)
          lea.l fn(a3),a1
          lea.l iobseg+8,a0
 .copy:   move.b (a0)+,(a1)+

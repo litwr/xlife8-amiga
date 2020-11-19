@@ -38,6 +38,7 @@ Output = -60
 Input = -54
 Write = -48
 Read = -42
+MODE_OLD = 1005
 Lock = -84
 UnLock = -90
 Examine = -102
@@ -47,7 +48,7 @@ IoErr = -132
 Delay = -198
 Open = -30
 Close = -36
-MODE_OLD = 1005
+Exit = -144
 
 ;intuition
 OpenScreen =	-198
