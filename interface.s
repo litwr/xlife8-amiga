@@ -342,11 +342,11 @@ dispatcher:
          bsr boxsz
          beq .c101         ;-> rts
 
-         ;bsr getsvfn
-         ;bne .c220
+         bsr getsvfn
+         beq .c220
 
          ;bsr savepat
-         ;bra .c220
+         bra .c220
 
 .c20:    cmpi.b #$9b,d0   ;extended keys
          bne .c100

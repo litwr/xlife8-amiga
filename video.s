@@ -1093,87 +1093,109 @@ menu2:   bsr setdirmsk
          move.w #168,d0
          bsr TXT_REMOVE_CURSOR
          bra .cont4
-    if 0
-getsvfn: call totext
-         mov al,[loadmenu.c80]
-         mov [.c80],al
-         call printstr
-         db green,'Enter filename (',red,'ESC',green,' - exit, '
-         db red,'*',green,' - drive)',black,0dh,10
-.c80:    db 'A:$'
 
-.c3:     mov di,svfn
-         xor cl,cl
-.c1:     call getkey
-         cmp al,0dh
-         je .c11
+getsvfn: bsr totext
+         move.l GRAPHICS_BASE(a3),a6
+         ;movea.l RASTER_PORT(a3),a1
+         movepenq 0,6
+         color 2  ;green
+         print 'Enter filename ('
+         color 1  ;red,
+         print 'ESC'
+         color 2
+         print ' - exit, '
+         color 1
+         print '*'
+         color 2
+         print ' - drive)'
+         color 3  ;black
+         movepenq 0,30
+.c80:    moveq.l #4,d0
+         lea.l curdisk(a3),a0
+         movea.l RASTER_PORT(a3),a1
+         jsr Text(a6)           ;print diskid
+         bsr TXT_PLACE_CURSOR
+.c3:     lea.l svfn(a3),a4
+         moveq #0,d3   ;length
+.c1:     movem.l a1/a4/a6/d3,-(sp)
+.c1d:    bsr getkey
+         movem.l (sp)+,a1/a4/a6/d3
+         cmpi.b #$d,d0
+         beq .c11
 
-         cmp al,8  ;backspace
-         je .c12
+         cmpi.b #8,d0  ;backspace
+         beq .c12
 
-         cmp al,27   ;esc
-         jne .c17
+         cmpi.b #27,d0   ;esc
+         bne .c17
+.c100:   rts
 
-.c100:   mov ch,al
-.c101:   or ch,ch
-         retn
+.c101:   move.b #1,d0
+         rts
 
-.c17:    cmp al,'*'
-         jne .c18
+.c17:    cmpi.b #'*',d0
+         bne .c18
 
-         mov ch,al
-         mov si,80
-         call chgdrv
-         jmp .c1
+         movem.l a1/a4/a6/d3,-(sp)
+         bsr chgdrv
+         bsr TXT_DRV_UPD
+         bra .c1d
 
-.c18:    cmp al,'!'
-         jc .c1
+.c18:    cmpi.b #'!',d0
+         bcs .c1
 
-         cmp al,126
-         jnc .c1
+         cmpi.b #126,d0
+         bcc .c1
 
-         mov si,nofnchar
-         mov dl,al
-.c5:     lodsb
-         cmp al,dl
-         je .c1
+         lea.l nofnchar(a3),a0
+.c5:     cmp.b (a0)+,d0
+         beq .c1
 
-         cmp dl,'a'
-         jc .c6
+         cmpa.l #stringbuf,a0
+         bne .c5
 
-         cmp dl,'z'+1
-         jnc .c6
+         cmpi.b #'a',d0
+         bcs .c6
 
-         sub dl,'a'-'A'
-.c6:     cmp si,stringbuf
-         jne .c5
+         cmpi.b #'z'+1,d0
+         bcc .c6
 
-         cmp cl,8
-         jnc .c1
+         subi.b #'a'-'A',d0
+.c6:     cmpi.b #FNMAXLEN*8,d3
+         bcc .c1
 
-         mov [di],dl
-         inc di
-         inc cl
-         mov ah,2
-         int 21h
-         jmp .c1
+         move.l a4,a0
+         move.b d0,(a4)+
+         addq.b #8,d3
+         moveq #30,d1  ;vertical pos
+         moveq #24,d4  ;hor pos - it is defined by length of a drive name
+         move.l a0,-(sp)
+         bsr TXT_ON_CURSOR
+         move.l (sp)+,a0
+         moveq #1,d0
+         jsr Text(a6)
+.cont4:  bsr TXT_PLACE_CURSOR
+         bra .c1
 
-.c11:    or cl,cl
-         je .c100
+.c11:    tst.b d3
+         beq menu2
 
-         mov word [di],'.'+'8'*256
-         mov word [di+2],'X'+'L'*256
-         xor ch,ch
-         mov [di+4],ch
-         jmp .c101
+         move.b #".",(a4)+
+         move.b #"8",(a4)+
+         move.b #"x",(a4)+
+         move.b #"l",(a4)+
+         clr.b (a4)
+         bra .c101
 
-.c12:    dec di
-         dec cl
-         js .c3
+.c12:    subq.l #1,a4
+         subq.b #8,d3
+         bcs .c3
 
-         call delchr
-         jmp .c1
-   endif
+         moveq #30,d1
+         moveq #40,d0
+         bsr TXT_REMOVE_CURSOR
+         bra .cont4
+
 showrect:
          bsr clrrow25
          move.l GRAPHICS_BASE(a3),a6 
