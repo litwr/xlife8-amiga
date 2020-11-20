@@ -66,9 +66,8 @@ dispatcher:
          moveq #2,d0
          move.b d0,mode(a3)
          bra clrscn
-.c4:
-         ;;cmp [mode],2
-         cmpi.b #2,mode(a3)
+
+.c4:     cmpi.b #2,mode(a3)
          beq .c101
 
          cmpi.b #"T",d0
@@ -340,14 +339,14 @@ dispatcher:
 .c18:    cmpi.b #'S',d0
          bne .c20
 
-         ;bsr boxsz
-         ;beq .c101
+         bsr boxsz
+         beq .c101         ;-> rts
 
-         ;;call getsvfn
-         ;;jnz .c220
+         ;bsr getsvfn
+         ;bne .c220
 
-         ;;call savepat
-         ;;jmp .c220
+         ;bsr savepat
+         ;bra .c220
 
 .c20:    cmpi.b #$9b,d0   ;extended keys
          bne .c100
@@ -364,7 +363,7 @@ dispatcher:
          bne .c160x
 
          ;;add [vptilecx],8
-	 bsr crsrclr
+         bsr crsrclr
          movea.l crsrtile(a3),a0
          movea.l (right,a0),a1
 .csct2:  cmpa.l #plainbox,a1

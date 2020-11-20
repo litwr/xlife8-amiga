@@ -37,106 +37,166 @@ fn2path: lea.l fn(a3),a0
          bne .loop
          rts
 
-  if 0
-boxsz:   mov byte [boxsz_ymin],vermax*8
-         mov byte [boxsz_xmin],hormax*8
-         xor cx,cx               ;dl=boxsz_ymax, ch=boxsz_xmax
-         xor dx,dx
-         mov [boxsz_curx],cx
-         mov si,tiles
-.c0:     mov cl,8
-         xor bx,bx
-         xor ax,ax
-.c9:     or ah,[si]
-         inc si
-         dec cl
-         jnz .c9
+boxsz:   move.b #vermax*8,boxsz_ymin(a3)
+         move.b #hormax*8,boxsz_xmin(a3)
+         ;xor cx,cx               ;dl=boxsz_ymax, ch=boxsz_xmax
+         clr.l d5    ;cl
+         clr.l d6    ;ch
+         ;xor dx,dx
+         clr.l d3    ;dl
+         clr.l d4    ;dh
+         ;mov [boxsz_curx],cx
+         clr.w boxsz_curx(a3)
+         ;mov si,tiles
+         lea.l tiles(a3),a4
+.c0:     ;mov cl,8
+         move.b #8,d5
+         ;xor bx,bx
+         clr.l d1   ;bx, bl
+         ;xor ax,ax
+         clr.l d0   ;al
+         clr.l d7   ;ah
+.c9:     ;or ah,[si]
+         or.b (a4)+,d7
+         ;inc si
+         ;dec cl
+         subq.b #1,d5
+         bne .c9
 
-         sub si,8
-         or ah,ah
-         je .c17
+         subq.l #8,a4
+         ;or ah,ah
+         tst.b d7
+         beq .c17
 
-         mov cl,ah
-         mov dh,0ffh
-.c2:     inc dh
-         shl cl,1
-         jnc .c2
+         ;mov cl,ah
+         move.b d7,d5
+         ;mov dh,0ffh
+         move.b #$ff,d4
+.c2:     ;inc dh
+         addq.b #1,d4
+         ;shl cl,1
+         lsl.b d5
+         bcc .c2
 
-         mov al,[boxsz_curx]
-         shl al,1
-         shl al,1
-         shl al,1
-         mov bl,al
-         add dh,al
-         cmp dh,[boxsz_xmin]
-         jnc .c12
+         ;mov al,[boxsz_curx]
+         move.b boxsz_curx(a3),d0
+         ;shl al,1
+         ;shl al,1
+         ;shl al,1
+         lsl.b #3,d0
+         ;mov bl,al
+         move.b d0,d1
+         ;add dh,al
+         add.b d0,d4
+         ;cmp dh,[boxsz_xmin]
+         cmp.b boxsz_xmin(a3),d4
+         bcc .c12
 
-         mov [boxsz_xmin],dh
-.c12:    mov dh,8
-.c3:     dec dh
-         shr ah,1
-         jnc .c3
+         ;mov [boxsz_xmin],dh
+         move.b d4,boxsz_xmin(a3)
+.c12:    ;mov dh,8
+         move.b #8,d4
+.c3:     ;dec dh
+         subq.b #1,d4
+         ;shr ah,1
+         lsr.b d7
+         bcc .c3
 
-         add dh,bl
-         cmp dh,ch
-         jc .c13
+         ;add dh,bl
+         add.b d1,d4
+         ;cmp dh,ch
+         cmp.b d6,d4
+         bcs .c13
 
-         mov ch,dh
-.c13:    mov di,si
-.c4:     lodsb
-         or al,al
-         je .c4
+         ;mov ch,dh
+         move.b d4,d6
+.c13:    ;mov di,si
+         movea.l a4,a5
+.c4:     ;lodsb
+         move.b (a4)+,d0
+         ;or al,al
+         beq .c4
 
-         sub si,di
-         dec si
-         mov al,[boxsz_cury]
-         shl al,1
-         shl al,1
-         shl al,1
-         mov bl,al
-         add ax,si
-         cmp al,[boxsz_ymin]
-         jnc .c15
+         ;sub si,di
+         suba.l a5,a4
+         ;dec si
+         subq.l #1,a4
+         ;mov al,[boxsz_cury]
+         move.b boxsz_cury(a3),d0
+         ;shl al,1
+         ;shl al,1
+         ;shl al,1
+         lsl.b #3,d0
+         ;mov bl,al
+         move.b d0,d1
+         ;add ax,si
+         add.l a4,d0
+         ;cmp al,[boxsz_ymin]
+         cmp.b boxsz_ymin(a3),d0
+         bcc .c15
 
-         mov [boxsz_ymin],al
-.c15:    mov si,di
-         add di,8
-.c5:     dec di
-         cmp [di],bh
-         je .c5
+         ;mov [boxsz_ymin],al
+         move.b d0,boxsz_ymin(a3)
+.c15:    ;mov si,di
+         movea.l a5,a4
+         ;add di,8
+         addq.l #8,a5
+.c5:     ;dec di
+         ;cmp [di],bh
+         tst.b -(a5)
+         beq .c5
 
-         sub di,si
-         add di,bx
-         xor dh,dh
-         cmp di,dx
-         jc .c17
+         ;sub di,si
+         suba.l a4,a5
+         ;add di,bx
+         adda.l d1,a5
+         ;xor dh,dh
+         clr.l d4
+         ;cmp di,dx
+         cmpa.l d3,a5
+         bcs .c17
 
-         mov dx,di
-.c17:    add si,tilesize
-         inc byte [boxsz_curx]
-         cmp byte [boxsz_curx],hormax
-         ;jne .c0   ;optimize 8088
-         je .c8
-.c01:    jmp .c0
+         ;mov dx,di
+         move.l a5,d3
+.c17:    ;add si,tilesize
+         adda.l #tilesize,a4
+         ;inc byte [boxsz_curx]
+         addq.b #1,boxsz_curx(a3)
+         ;cmp byte [boxsz_curx],hormax
+         cmpi.b #hormax,boxsz_curx(a3)
+         bne .c0
 
-.c8:     mov [boxsz_curx],bh
-         inc byte [boxsz_cury]
-         cmp byte [boxsz_cury],vermax
-         jne .c01
+.c8:     ;mov [boxsz_curx],bh
+         clr.b boxsz_curx(a3)
+         ;inc byte [boxsz_cury]
+         addq.b #1,boxsz_cury(a3)
+         ;cmp byte [boxsz_cury],vermax
+         cmpi.b #vermax,boxsz_cury(a3)
+         bne .c0
 
-.c7:     mov bl,dl
-         sub bl,[boxsz_ymin]
-         inc bx
-         mov [boxsz_cury],bl
-         mov al,ch
-         sub al,[boxsz_xmin]
-         inc ax       ;returns xsize in al
-         mov [boxsz_curx],al
-         mov ah,[tiles]
-         or ah,dl
-         or ah,ch  ;ch = boxsz_xmax, dl = boxsz_ymax
-         retn
-  endif
+.c7:     ;mov bl,dl
+         move.b d3,d1
+         ;sub bl,[boxsz_ymin]
+         sub.b boxsz_ymin(a3),d1
+         ;inc bx
+         addq.b #1,d1
+         ;mov [boxsz_cury],bl
+         move.b d1,boxsz_cury(a3)
+         ;mov al,ch
+         move.b d6,d0
+         ;sub al,[boxsz_xmin]
+         sub.b boxsz_xmin(a3),d0
+         ;inc ax       ;returns xsize in al
+         addq.b #1,d0   ;returns xsize in d0
+         ;mov [boxsz_curx],al
+         move.b d0,boxsz_curx(a3)
+         ;mov ah,[tiles]
+         move.b tiles(a3),d7
+         ;or ah,dl
+         or.b d3,d7
+         ;or ah,ch  ;ch = boxsz_xmax, dl = boxsz_ymax
+         or.b d6,d7 ;d6 = boxsz_xmax, d3 = boxsz_ymax
+         rts
 
 randomize:
          clr d5

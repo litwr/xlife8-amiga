@@ -589,7 +589,7 @@ mode      dc.b 0      ;0-stop, 1-run, 2-hide, 3-exit
 zoom      dc.b 0
 fn        blk.b 31,0    ;30 is max filename length
 density   dc.b 3
-;i1        dc.b 0,0
+i1        dc.b 0,0
 ;czbg      dc.b 0
 ;palette   dc.b 0
 ;bgr       dc.b 0ah

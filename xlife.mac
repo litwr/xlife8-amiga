@@ -1,4 +1,4 @@
-t9 equ '    '
+;t9 equ '    '
 vermax   = 24     ;192
 hormax   = 31     ;248
 total    = hormax*vermax+1
@@ -50,10 +50,10 @@ sum      dc.b 0        ;+80
          dc.b 0        ;free
 endm
 
-;boxsz_xmin = i1
-;boxsz_ymin = i1+1
-;boxsz_curx = x0          ;boxsz_sizex
-;boxsz_cury = y0          ;boxsz_sizey
+boxsz_xmin = i1
+boxsz_ymin = i1+1
+boxsz_curx = x0          ;boxsz_sizex
+boxsz_cury = y0          ;boxsz_sizey
 xcut       = temp2
 ycut       = temp2+1
 x8poscp    = temp
