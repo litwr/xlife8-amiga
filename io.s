@@ -381,92 +381,136 @@ findfn:  ;fn# in D0
 .close:  move.l tmplock(a3),d1
          jmp UnLock(a6)
 
-    if 0
-savepat: mov ah,3ch   ;create a file
-         mov dx,svfn
-         xor cx,cx
-         int 21h
-         jc .error
+savepat: lea.l curpathsv(a3),a1
+         bsr makepath\.sv
+         lea.l svfn(a3),a0
+         subq.l #1,a1
+         move.b #'/',(a1)+
+.loop:   move.b (a0)+,(a1)+
+         bne .loop
 
-         mov bx,ax
-         mov [filehl],ax
-         mov ah,40h   ;write
-         mov cx,6
-         mov dx,x0
-         int 21h
+         move.l #curpathsv,d1
+         move.l #MODE_NEWFILE,d2
+         move.l doslib(a3),a6
+         jsr Open(a6)
+         tst.l d0
+         beq .error
 
-         mov si,tiles
-         mov dx,[boxsz_xmin]  ;dl - xmin, dh - ymin
-         xor cx,cx  ;cl - currow, ch - curcol
-.loop0:  xor bx,bx
-.loop2:  mov al,[si+bx]
-         or al,al
-         jnz .cont1
+         move.l d0,filehl(a3)
+         move.l d0,d1
+         move.l #x0,d2   ;TODO: check MSB!
+         moveq #6,d3
+         jsr Write(a6)
 
-.loop4:  inc bx
-         cmp bl,8
-         jnz .loop2
+         lea.l tiles(a3),a4
+         ;mov dx,[boxsz_xmin]  ;dl - xmin, dh - ymin
+         move.b boxsz_xmin(a3),d3
+         move.b boxsz_ymin(a3),d4
+         ;xor cx,cx  ;cl - currow, ch - curcol
+         clr.l d5
+         clr.l d6
+.loop0:  ;xor bx,bx
+         clr.l d1
+.loop2:  ;mov al,[si+bx]
+         move.b (a4,d1),d0
+         bne .cont1
 
-         add si,tilesize
-         inc ch
-         cmp ch,hormax
-         jnz .loop0
+.loop4:  ;inc bx
+         addq.l #1,d1
+         ;cmp bl,8
+         cmpi.b #8,d1
+         bne .loop2
 
-         xor ch,ch
-         inc cx
-         cmp cl,vermax
-         jnz .loop0
-         jmp loadpat.exit2
+         ;add si,tilesize
+         lea.l tilesize(a4),a4
+         ;inc ch
+         addq.b #1,d6
+         ;cmp ch,hormax
+         cmpi.b #hormax,d6
+         bne .loop0
 
-.error:  call printstr
-         db 'can''t save$'
-         jmp getkey
+         ;xor ch,ch
+         clr.l d6
+         ;inc cx
+         addq.l #1,d5
+         ;cmp cl,vermax
+         cmpi.b #vermax,d5
+         bne .loop0
+         bra loadpat\.exit2
 
-.cont1:  mov ah,0ffh
-.loop3:  inc ah
-         shl al,1
-         jc .cont4
-         jz .loop4
-         jmp .loop3
+.error:  jsr IoErr(a6)
+         move.l d0,temp(a3)
+         lea.l ioerrmsg(a3),a0
+         lea.l temp(a3),a1
+         lea.l stuffChar(pc),a2
+         move.l #-1,charCount(a3)
+         move.l a3,-(sp)
+         lea.l stringbuf(a3),a3
+         movea.l 4.w,a6
+         jsr RawDoFmt(a6)
+         move.l (sp)+,a3
+         movea.l RASTER_PORT(a3),a1
+         move.l GRAPHICS_BASE(a3),a6
+         color 1
+         move.l charCount(a3),d0
+         lea.l stringbuf(a3),a0
+         jsr Text(a6)
+         bra getkey
 
-.cont4:  push ax
-         mov al,ch
-         shl al,1
-         shl al,1
-         shl al,1
-         add al,ah
-         sub al,dl
-         mov [x0],al
-         mov al,cl
-         shl al,1
-         shl al,1
-         shl al,1
-         add al,bl
-         sub al,dh
-         mov [y0],al
-         push bx
-         push cx
-         push dx
-         mov ah,40h
-         mov bx,[filehl]
-         mov cx,2
-         mov dx,x0
-         int 21h
-         pop dx
-         pop cx
-         pop bx
-         pop ax
-         jmp .loop3
+.cont1:  ;mov ah,0ffh
+         move.b #$ff,d7
+.loop3:  ;inc ah
+         addq.b #1,d7
+         ;shl al,1
+         lsl.b d0
+         bcs .cont4
+         beq .loop4
+         bra .loop3
 
-;;ioerror: tstb @#errst           ;must be after iocf
-;;         beq exit20
+.cont4:  movem.w d0/d1/d3/d4/d5/d6/d7,-(sp)
+         ;mov al,ch
+         move.b d6,d0
+         ;shl al,1
+         ;shl al,1
+         ;shl al,1
+         lsl.b #3,d0
+         ;add al,ah
+         add.b d7,d0
+         ;sub al,dl
+         sub.b d3,d0
+         ;mov [x0],al
+         move.b d0,x0(a3)
+         ;mov al,cl
+         move.b d5,d0
+         ;shl al,1
+         ;shl al,1
+         ;shl al,1
+         lsl.b #3,d0
+         ;add al,bl
+         add.b d1,d0
+         ;sub al,dh
+         sub.b d4,d0
+         ;mov [y0],al
+         move.b d0,y0(a3)
+         ;push bx
+         ;push cx
+         ;push dx
+         ;mov ah,40h
+         ;mov bx,[filehl]
+         ;mov cx,2
+         ;mov dx,x0
+         ;int 21h
+         move.l filehl(a3),d1
+         move.l #x0,d2   ;TODO: check MSB!
+         moveq #2,d3
+         jsr Write(a6)
+         ;pop dx
+         ;pop cx
+         ;pop bx
+         movem.w (sp)+,d0/d1/d3/d4/d5/d6/d7
+         bra .loop3
 
-;;ioerr1:
-;;         jsr r3,@#printstr
-;;         .byte 12
-;;         .asciz "IO ERROR"
-;;         jmp @#getkey
-
+  if 0
 showcomm:cmp byte [fn],0
          je .exit
 

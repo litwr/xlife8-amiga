@@ -39,6 +39,7 @@ Input = -54
 Write = -48
 Read = -42
 MODE_OLD = 1005
+MODE_NEWFILE = 1006
 Lock = -84
 UnLock = -90
 Examine = -102

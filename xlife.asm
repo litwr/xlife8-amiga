@@ -525,8 +525,8 @@ ttab:     rept hormax*vermax/4
 tilecnt   dc.w 0
 ;viewport  dc.l tiles
 crsrtile  dc.l tiles
-timercnt     dc.l 0
-temp      dc.w 0
+timercnt  dc.l 0
+temp      dc.w 0    ;32-bit alignment
 temp2     dc.w 0
 tsz       dc.w 0
 saved     dc.w 0
@@ -626,7 +626,11 @@ curdisk  dc.b "DH0:",0
 curdir1  dc.b "xlife8/",0
 curdir2  dc.b "patterns",0
 curpath  blk.b 34
+curpathsv blk.b 34
+ioerrmsg dc.b " i/o err #%d",0
+drvidx: dc.b 0
 
+        CNOP 0,4
 nudrives = 10
 drives: dc.b 'DF0:'
         dc.b 'DF1:'
@@ -638,9 +642,7 @@ drives: dc.b 'DF0:'
         dc.b 'DH3:'
         dc.b 'RAM:'
         dc.b 'RAD:'
-drvidx: dc.b 0
 
-	CNOP 0,4
 SCREEN_DEFS:
 	DC.W	0,0		; X-Y position
 	DC.W	320		; Width
@@ -654,6 +656,7 @@ SCREEN_DEFS:
 	DC.L	0
 	DC.L	0
 
+	
 ;***  Window structure  ***
 
 WINDOW_DEFS:

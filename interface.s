@@ -345,7 +345,7 @@ dispatcher:
          bsr getsvfn
          beq .c220
 
-         ;bsr savepat
+         bsr savepat
          bra .c220
 
 .c20:    cmpi.b #$9b,d0   ;extended keys

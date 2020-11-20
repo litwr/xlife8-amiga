@@ -15,8 +15,9 @@ stuffChar:  move.b  d0,(a3)+        ;Put data to an output string, used by RawDo
             addq.l #1,charCount
             rts
 
-makepath: lea.l curdisk(a3),a0
+makepath:
          lea.l curpath(a3),a1
+.sv:     lea.l curdisk(a3),a0
 .loop1:  move.b (a0)+,(a1)+
          bne .loop1
 
