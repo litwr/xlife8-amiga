@@ -398,9 +398,17 @@ savepat: lea.l curpathsv(a3),a1
 
          move.l d0,filehl(a3)
          move.l d0,d1
-         move.l #x0,d2   ;TODO: check MSB!
+         move.l #x0,d2
          moveq #6,d3
+         move.l live(a3),d0  ;msb -> lsb
+         move.l d0,d7
+         rol.w #8,d0
+         swap d0
+         rol.w #8,d0
+         swap d0
+         move.l d0,live(a3)
          jsr Write(a6)
+         move.l d7,live(a3)
 
          lea.l tiles(a3),a4
          ;mov dx,[boxsz_xmin]  ;dl - xmin, dh - ymin
