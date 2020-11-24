@@ -13,7 +13,7 @@ BP - D6/A6
 
 + memory leaks when it starts from WB
 * mouse support
-* implement: SVv+-XZ
+* implement: Vv+-XZ
 * manpage
 * optimize work with sides: get 4 rows (??), mix left and right cases (check if it is applyable for other architectures)
 * work with word as 2 bytes maybe slow, check a use of 2 bytes instead

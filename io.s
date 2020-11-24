@@ -57,8 +57,8 @@ readtent:move.l filehl(a3),d1
          move.l #iobseg_end-iobseg,d3
          jsr Read(a6)
          lsr.l d0
-         move.w d0,tsz(a3)
-         sub.w d0,filesz(a3)
+         move.l d0,tsz(a3)
+         sub.l d0,filesz(a3)
 .e1:     rts
 
 loadpat: bsr makepath
@@ -72,8 +72,18 @@ loadpat: bsr makepath
          move.l d0,tmplock(a3)     ;lock-save
          move.l d0,d1
          move.l #iobseg,d2   ;pointer to FilelnfoBlock
-         jsr    Examine(a6)
-         move.l iobseg+124,filesz(a3)
+         jsr Examine(a6)
+         move.l iobseg+124,d1
+         lsr.l d1
+         swap d1
+         tst.w d1
+         bne readtent\.e1
+
+         swap d1
+         subq.l #3,d1
+         bls readtent\.e1
+
+         move.l d1,filesz(a3)
          move.l tmplock(a3),d1
          jsr UnLock(a6)
          move.l #curpath,d1
@@ -84,17 +94,6 @@ loadpat: bsr makepath
          beq readtent\.e1
 
          move.l d0,filehl(a3)
-         move.l filesz(a3),d1
-         lsr.l d1
-         swap d1
-         tst.w d1
-         bne .exit2
-
-         swap d1
-         subq.l #3,d1
-         bls .exit2
-
-         move.l d1,filesz(a3)
          move.l live(a3),d6  ;save live&born
          move.l filehl(a3),d1
          move.l #x0,d2
@@ -131,7 +130,7 @@ loadpat: bsr makepath
 
          bsr fillrt
          bsr puttent
-         tst filesz(a3)
+         tst.l filesz(a3)
          beq .exit2
 
 .loop:   move.l filehl(a3),d1

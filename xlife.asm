@@ -507,6 +507,7 @@ tmplock       dc.l 0
 charCount     dc.l 0
 stacklimit    dc.l 0
 filesz    dc.l 0
+tsz       dc.l 0
 filehl    dc.l 0
 saveWPTR  dc.l 0
 
@@ -528,7 +529,6 @@ crsrtile  dc.l tiles
 timercnt  dc.l 0
 temp      dc.w 0    ;32-bit alignment
 temp2     dc.w 0
-tsz       dc.w 0
 saved     dc.w 0
 tobin     dc.w 1,10,100,1000,10000
 x0        dc.b 0   ;word aligned for the speed

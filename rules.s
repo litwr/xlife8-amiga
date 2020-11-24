@@ -220,8 +220,7 @@ fillrt:
          bsr fillrt2
          ;;inc bl
          addq.b #1,d2
-         ;;jz .ep1    ;optimize 8088?
-         ;;jmp .c1
+         ;;jnz .c1
          bne .c1         
 .ep1:    rts
 

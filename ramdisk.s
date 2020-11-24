@@ -77,23 +77,24 @@ ramdisk: bsr totext
          cmpi.b #27,d0
          beq pexit
 
-puttent: move.w tsz(a3),d1
+puttent: move.l tsz(a3),d1
          lea.l iobseg,a2
-.loop:   or.w d1,d1
+.loop:   or.l d1,d1
          beq pexit
 
          move.w (a2)+,x0(a3)
-         subq.w #1,d1
+         subq.l #1,d1
          bsr putpixel
          bra .loop
 
 maketent:   ;in: a1
+         clr.l d0
          move.w (a1)+,d0
-         subq #8,d0
-         lsr.w #1,d0
-         move.w d0,tsz(a3)
+         subq.l #8,d0
+         lsr.l #1,d0
+         move.l d0,tsz(a3)
          lea.l iobseg,a2
 .loop:   move.w (a1)+,(a2)+
-         subq.w #1,d0
+         subq.l #1,d0
          bne .loop
 pexit:   rts

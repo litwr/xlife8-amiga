@@ -2295,14 +2295,14 @@ showtent:
          move.w x0(a3),-(sp)
          clr.b ppmode(a3)
          lea.l iobseg,a4
-         move.w tsz(a3),d6
+         move.l tsz(a3),d6
 .loop:   beq .fin
 
          move.w (a4)+,x0(a3)
-         move.w d6,-(sp)
+         move.l d6,-(sp)
          bsr putpixel
-         move.w (sp)+,d6
-         subq.w #1,d6
+         move.l (sp)+,d6
+         subq.l #1,d6
          bra .loop
 
 .fin:    ;pop ax
