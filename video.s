@@ -2059,11 +2059,11 @@ outdec:  lea.l temp(a3),a1        ;in: d0
          move.l charCount(a3),d0
          lea.l stringbuf(a3),a0
          movea.l RASTER_PORT(a3),a1
-         move.l GRAPHICS_BASE(a3),a6
+         movea.l GRAPHICS_BASE(a3),a6
          jmp Text(a6)
 
 infov:   bsr totext
-         move.l GRAPHICS_BASE(a3),a6
+         movea.l GRAPHICS_BASE(a3),a6
          ;movea.l RASTER_PORT(a3),a1
          movepenq 0,6
          ;color 2
@@ -2120,7 +2120,7 @@ infov:   bsr totext
          bsr showrules2
          ;call curoff
          bsr getkey
-         jmp tograph
+         bra tograph
    if 0
 outinnum:mov cl,10
          xor ah,ah
@@ -2303,13 +2303,13 @@ showtent:
          rts
 
 clrscn:  movea.l BITPLANE1_PTR(a3),a0
-	 movea.l BITPLANE2_PTR(a3),a2
-	 move.w #nextline*50-1,d1
-.e0: moveq #0,d0
-.l1:	 move.l d0,(a0)+
-	 move.l d0,(a2)+
-	 dbra d1,.l1
-	 rts
+         movea.l BITPLANE2_PTR(a3),a2
+         move.w #nextline*50-1,d1
+.e0:     moveq #0,d0
+.l1:     move.l d0,(a0)+
+         move.l d0,(a2)+
+         dbra d1,.l1
+         rts
 
 clrrow25:movea.l BITPLANE1_PTR(a3),a0
 	 movea.l BITPLANE2_PTR(a3),a2

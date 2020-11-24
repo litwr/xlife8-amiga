@@ -519,48 +519,100 @@ savepat: lea.l curpathsv(a3),a1
 
 
 showcomm:tst.b fn(a3)
-         beq .exit
+         beq tograph
 
+         bsr makepath
+         bsr fn2path
+         lea.l -4(a1),a1
+         move.b #'T',(a1)+
+         move.b #'X',(a1)+
+         move.b #'T',(a1)
+         move.l #curpath,d1       ;pointer to a pattern path
+         movea.l doslib(a3),a6     ;DOS base address
+         move.l #MODE_OLD,d2
+         jsr Open(a6)
+         tst.l d0
+         beq .error
+
+         move.l d0,filehl(a3)
          bsr totext
-         ;mov si,fn
-         ;mov di,svfn
-         ;mov dx,di
-.c1:     ;lodsb
-         ;mov [di],al
-         ;inc di
-         ;cmp al,'.'
-         ;jne .c1
+         movea.l GRAPHICS_BASE(a3),a6
+         ;movea.l RASTER_PORT(a3),a1
+         movepenq 0,6
+         color 2
+         moveq #0,d6   ;x-pos
+         moveq #6,d7   ;y-pos
 
-         ;mov word [di],'T'+'X'*256
-         ;mov word [di+2],'T'
-         ;mov ax,3d00h
-         ;int 21h
-         ;jc .error
+.loop:   move.l filehl(a3),d1
+         move.l #stringbuf,d2
+         moveq.l #1,d3
+         move.l doslib(a3),a6
+         jsr Read(a6)
+         tst.l d0
+         bmi .fin
 
-         ;mov bx,ax
-         ;mov ax,3
-         ;int 10h
+         cmpi.l #1,d0
+         bne .fin
 
-.loop:   ;mov ah,3fh   ;read file
-         ;mov cx,1
-         ;mov dx,x0
-         ;int 21h
-         ;jc .fin
+         move.b stringbuf(a3),d0
+         cmpi.b #$d,d0
+         beq .loop
 
-         ;or ax,ax
-         ;jz .fin
+         cmpi.b #$a,d0
+         bne .c1
 
-         ;mov dl,[x0]
-         ;mov ah,2
-         ;int 21h
-         ;jmp .loop
+.nl:     cmpi.w #25*8-2,d7
+         bne .pr
 
-.fin:    ;mov ah,3eh    ;fclose
-         ;int 21h
+         subq.w #8,d7
+         movea.l BITPLANE1_PTR(a3),a0
+         movea.l BITPLANE2_PTR(a3),a2
+         move.w #nextline*48-1,d1
+         lea.l nextline*8(a0),a1
+         lea.l nextline*8(a2),a4
+.l1:     move.l (a1)+,(a0)+
+         move.l (a4)+,(a2)+
+         dbra d1,.l1
+
+         move.w #nextline*2-1,d1
+.l2:     clr.l (a0)+
+         clr.l (a2)+
+         dbra d1,.l2
+
+.pr:     clr.l d6
+         addq.w #8,d7
+         move.w d7,d1
+         clr.w d0
+         movea.l GRAPHICS_BASE(a3),a6
+         movea.l RASTER_PORT(a3),a1
+         jsr Move(a6)
+         bra .loop
+
+.c1:     cmpi.b #8,d0   ;tab
+         bne .c2
+
+         move.b #32,stringbuf(a3)
+.c2:     lea.l stringbuf(a3),a0
+         moveq #1,d0
+         movea.l GRAPHICS_BASE(a3),a6
+         movea.l RASTER_PORT(a3),a1
+         jsr Text(a6)
+         addq.w #8,d6
+         cmpi.l #40*8,d6
+         beq .nl
+         bra .loop
+
+.fin:    move.l filehl(a3),d1
+         move.l doslib(a3),a6
+         jsr Close(a6)
 .exit:   ;call curoff
          bsr getkey
          bra tograph
 
-.error:  ;call printstr
-         ;db 'no comments$'
+.error:  bsr totext
+         movea.l GRAPHICS_BASE(a3),a6
+         ;movea.l RASTER_PORT(a3),a1
+         movepenq 0,6
+         color 1
+         print "no comments"
          bra .exit

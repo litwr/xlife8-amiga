@@ -69,9 +69,8 @@ initxt2: bsr showtopology    ;must follow initxt
          moveq #1,d0
          jsr Text(a6)
 
-         ;movea.l RASTER_PORT(a3),a1
          movepen 32*8,198
-         movea.l RASTER_PORT(a3),a1
+         ;movea.l RASTER_PORT(a3),a1
          lea texts+2(a3),a0  ;X
          moveq #1,d0
          jsr Text(a6)

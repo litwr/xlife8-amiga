@@ -317,7 +317,7 @@ dispatcher:
 
          ;;call totext
          ;;call chgcolors
-.c220:   jmp tograph
+.c220:   bra tograph
 
 .c179:   cmpi.b #'X',d0
          bne .c18
