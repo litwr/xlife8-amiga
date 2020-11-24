@@ -290,21 +290,21 @@ dispatcher:
 .c174:   cmpi.b #'+',d0
          bne .c175
 
-         ;;cmp [zoom],0
-         ;;jnz .c100
+         tst.b zoom(a3)
+         bne .c100
 
-         ;;inc [zoom]
-         ;;call tograph
-         ;;jmp .c270
+         addq.b #1,zoom(a3)
+         bsr tograph
+         bra .c270
 
 .c175:   cmpi.b #'-',d0
          bne .c176
 
-         ;;cmp [zoom],0
-         ;;jz .c100
+         tst.b zoom(a3)
+         beq .c100
 
-         ;;mov [zoom],0
-         ;;jmp tograph
+         clr.b zoom(a3)
+         bra tograph
 
 .c176:   cmpi.b #'V',d0
          beq showcomm
