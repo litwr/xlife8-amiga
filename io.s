@@ -517,52 +517,50 @@ savepat: lea.l curpathsv(a3),a1
          movem.w (sp)+,d0/d1/d3/d4/d5/d6/d7
          bra .loop3
 
-  if 0
-showcomm:cmp byte [fn],0
-         je .exit
 
-         call totext
-         mov si,fn
-         mov di,svfn
-         mov dx,di
-.c1:     lodsb
-         mov [di],al
-         inc di
-         cmp al,'.'
-         jne .c1
+showcomm:tst.b fn(a3)
+         beq .exit
 
-         mov word [di],'T'+'X'*256
-         mov word [di+2],'T'
-         mov ax,3d00h
-         int 21h
-         jc .error
+         bsr totext
+         ;mov si,fn
+         ;mov di,svfn
+         ;mov dx,di
+.c1:     ;lodsb
+         ;mov [di],al
+         ;inc di
+         ;cmp al,'.'
+         ;jne .c1
 
-         mov bx,ax
-         mov ax,3
-         int 10h
+         ;mov word [di],'T'+'X'*256
+         ;mov word [di+2],'T'
+         ;mov ax,3d00h
+         ;int 21h
+         ;jc .error
 
-.loop:   mov ah,3fh   ;read file
-         mov cx,1
-         mov dx,x0
-         int 21h
-         jc .fin
+         ;mov bx,ax
+         ;mov ax,3
+         ;int 10h
 
-         or ax,ax
-         jz .fin
+.loop:   ;mov ah,3fh   ;read file
+         ;mov cx,1
+         ;mov dx,x0
+         ;int 21h
+         ;jc .fin
 
-         mov dl,[x0]
-         mov ah,2
-         int 21h
-         jmp .loop
+         ;or ax,ax
+         ;jz .fin
 
-.fin:    mov ah,3eh    ;fclose
-         int 21h
-.exit:   call curoff
-         call getkey
-         jmp tograph
+         ;mov dl,[x0]
+         ;mov ah,2
+         ;int 21h
+         ;jmp .loop
 
-.error:  call printstr
-         db 'no comments$'
-         jmp .exit
-   endif
+.fin:    ;mov ah,3eh    ;fclose
+         ;int 21h
+.exit:   ;call curoff
+         bsr getkey
+         bra tograph
 
+.error:  ;call printstr
+         ;db 'no comments$'
+         bra .exit

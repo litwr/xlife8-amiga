@@ -36,18 +36,13 @@ dispatcher:
 .e0:     cmp.b #"g",d0
          bne .c3
 
-         ;;cmp [mode],0
          tst.b mode(a3)
          beq .c2
 
-.c53:
-         ;;dec [mode]
-         subi.b #1,mode(a3)
+.c53:    subi.b #1,mode(a3)
          bra .c40
 
-.c2:
-         ;;inc [mode]
-         addi.b #1,mode(a3)
+.c2:     addi.b #1,mode(a3)
 .c40:    bra tograph
 
 .c3:
@@ -102,11 +97,9 @@ dispatcher:
          bra cleanup
 
 .c7:     cmpi.b #'?',d0
-         bne .c8
+         beq help
 
-         bra help
-
-.c8:     cmpi.b #'C',d0
+         cmpi.b #'C',d0
          bne .c10
 
          tst.w tilecnt(a3)
@@ -114,7 +107,7 @@ dispatcher:
 
          bsr zerogc
 .c202:   bra infoout
-.c201:   jmp clear
+.c201:   bra clear
 
 .c10:    cmpi.b #'E',d0
          bne .c11
@@ -133,7 +126,7 @@ dispatcher:
 
 .c12:    cmpi.b #'%',d0
          bne .c14
-         jmp indens
+         bra indens
 
 .c14:    cmpi.b #'B',d0
          bne .c15
@@ -238,7 +231,7 @@ dispatcher:
          bra .c270
 
 .c79:    bsr calccells
-         jmp .c270
+         bra .c270
 
 .c170:   cmpi.b #'.',d0
          bne .c171
@@ -255,7 +248,7 @@ dispatcher:
          ;;call setviewport
          ;;call showscnz
 .c270:   bsr crsrset
-         jmp crsrcalc
+         bra crsrcalc
 
 .c171:   cmpi.b #"H",d0    ;home
          bne .c172
@@ -314,15 +307,12 @@ dispatcher:
          ;;jmp tograph
 
 .c176:   cmpi.b #'V',d0
-         bne .c177
+         beq showcomm
 
-         ;;jmp showcomm
+         cmpi.b #'v',d0
+         beq infov
 
-.c177:   cmpi.b #'v',d0
-         bne .c178
-         jmp infov
-
-.c178:   cmpi.b #'Z',d0
+         cmpi.b #'Z',d0
          bne .c179
 
          ;;call totext
@@ -400,7 +390,7 @@ dispatcher:
          bne .c101
 
          ;;sub [vptilecx],8
-	 bsr crsrclr
+         bsr crsrclr
          movea.l crsrtile(a3),a0
          movea.l (left,a0),a1
          bra .csct2
@@ -431,13 +421,13 @@ dispatcher:
          bne .c162
 
 	 ;;sub [vptilecy],8
-	 bsr crsrclr
+         bsr crsrclr
          movea.l crsrtile(a3),a0
          movea.l (up,a0),a1
          bra .csct2
 
 .c161cu: ;;dec [vptilecy]
-	 bsr crsrclr
+         bsr crsrclr
          move.b crsrbyte(a3),d0
          beq .c71cu
 
@@ -459,7 +449,7 @@ dispatcher:
          bne .c101
 
 	 ;;add [vptilecy],8
-	 bsr crsrclr
+         bsr crsrclr
          movea.l crsrtile(a3),a0
          movea.l (down,a0),a1
          bra .csct2
