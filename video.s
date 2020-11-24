@@ -2045,92 +2045,83 @@ crsrcalc:
         ;;int 10h
         ;;retn
         rts
-    if 0
-outdec:  xor dx,dx            ;in: ax
-         call todec
-         mov si,stringbuf
-         xor cx,cx
-         mov cl,[si]
-         add si,cx
-         mov ah,2
-.loop:   cmp si,stringbuf
-         jz .exit
 
-         mov dl,[si]
-         dec si
-         int 21h
-         jmp .loop
+outdec:  lea.l temp(a3),a1        ;in: d0
+         move.w d0,(a1)
+         lea.l sformat(a3),a0
+         lea.l stuffChar(pc),a2
+         move.l #-1,charCount(a3)
+         move.l a3,-(sp)
+         lea.l stringbuf(a3),a3
+         movea.l 4.w,a6
+         jsr RawDoFmt(a6)
+         move.l (sp)+,a3
+         move.l charCount(a3),d0
+         lea.l stringbuf(a3),a0
+         movea.l RASTER_PORT(a3),a1
+         move.l GRAPHICS_BASE(a3),a6
+         jmp Text(a6)
 
-.exit:   retn
+infov:   bsr totext
+         move.l GRAPHICS_BASE(a3),a6
+         ;movea.l RASTER_PORT(a3),a1
+         movepenq 0,6
+         ;color 2
+         tst.b fn(a3)
+         beq .c11
 
-infov:   call totext
-         cmp [fn],0
-         je .c11
+         print "Last loaded filename: "
+         lea.l fn(a3),a4
+         movea.l a4,a0
+.c1:     cmpi.b #'.',(a4)+
+         bne .c1
 
-         call printstr
-         db 'Last loaded filename: $'
+         suba.l a0,a4
+         move.l a4,d0
+         subq.l #1,d0
+         jsr Text(a6)
+.c11:    bsr boxsz
+         beq .c12
 
-         mov si,fn
-.c1:     lodsb
-         cmp al,'.'
-         jz .c11
+         move.w d3,-(sp)
+         move.w d6,-(sp)
+         move.w d0,-(sp)
+         movepenq 0,14
+         print "Active pattern size: "
 
-         mov dl,al
-         mov ah,2
-         int 21h
-         jmp .c1
+         move.w (sp)+,d0
+         bsr outdec
+         print "x"
 
-.c11:    call boxsz
-         je .c12
+         clr.l d0
+         move.b boxsz_cury(a3),d0
+         bsr outdec
+         movepenq 0,22
+         print "Box life bounds: "
 
-         push dx
-         push cx
-         push ax
-         call printstr
-         db 0dh,10,'Active pattern size: $'
+         clr.l d0
+         move.b boxsz_xmin(a3),d0
+         bsr outdec
+         print "<=x<="
 
-         pop ax
-         xor ah,ah
-         call outdec
-         mov dl,'x'
-         int 21h
+         move.w (sp)+,d0
+         bsr outdec
+         print " "
 
-         xor ax,ax
-         mov al,[boxsz_cury]
-         call outdec
-         call printstr
-         db 0dh,10,'Box life bounds: $'
+         clr.l d0
+         move.b boxsz_ymin(a3),d0
+         bsr outdec
+         print "<=y<="
 
-         xor ax,ax
-         mov al,[boxsz_xmin]
-         call outdec
-         call printstr
-         db '<=x<=$'
-
-         pop cx
-         xor ax,ax
-         mov al,ch
-         call outdec
-         mov dl,' '
-         int 21h
-
-         xor ax,ax
-         mov al,[boxsz_ymin]
-         call outdec
-         call printstr
-         db '<=y<=$'
-
-         pop ax
-         xor ah,ah
-         call outdec
-.c12:    call printstr
-         db 0dh,10,'Rules: $'
-
-         call showrules2
-         call curoff
-         call getkey
+         move.w (sp)+,d0
+         bsr outdec
+.c12:    movepenq 0,30
+         print "Rules: "
+         bsr showrules2
+         ;call curoff
+         bsr getkey
          jmp tograph
-
+   if 0
 outinnum:mov cl,10
          xor ah,ah
          div cl

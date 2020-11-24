@@ -398,69 +398,54 @@ showrules:
         cmpi.b #11,d2
         ;;retn
         rts
-   if 0
+
 showrules2:
-;;        mov #stringbuf,r3
-;;        mov r3,r4
-;;        mov #1,r1
-;;        clr r2
-;;1$:     bit r1,@#live
-;;        beq 2$
-        mov si,stringbuf
-        mov dx,si
-        mov di,1
-        xor ax,ax
-.c1:    test [live],di
-        jz .c2
+        ;mov si,stringbuf
+        lea.l stringbuf(a3),a4
+        ;mov dx,si
+        move.l a4,d4
+        ;mov di,1
+        move.w live(a3),d4
+        ;xor ax,ax
+        clr.l d0
+.c1:    ;test [live],di
+        lsr.w d4
+        ;jz .c2
+        bcc .c2
 
-;;        call @#20$
-;;2$:     inc r2
-;;        asl r1
-;;        bpl 1$
-        call .c20
-.c2:    inc ax
-        shl di,1
-        jns .c1
+        bsr .c20
+.c2:    ;inc ax
+        addq.b #1,d0
+        ;shl di,1
+        tst.w d4
+        bne .c1
 
-;;        movb #'/,(r4)+
-;;        mov #1,r1
-;;        clr r2
-;;4$:     bit r1,@#born
-;;        beq 5$
-        mov byte [si],'/'
-        inc si
-        mov di,1
-        xor ax,ax
-.c4:    test [born],di
-        jz .c5
+        ;mov byte [si],'/'
+        ;inc si
+        move.b #'/',(a4)+
+        ;mov di,1
+        move.w born(a3),d4
+        ;xor ax,ax
+        clr.l d0
+.c4:    lsr.w d4
+        bcc .c5
 
-;;        call @#20$
-;;5$:     inc r2
-;;        asl r1
-;;        bpl 4$
-        call .c20
-.c5:    inc ax
-        shl di,1
-        jns .c4
+        bsr .c20
+.c5:    addq.b #1,d0
+        tst.w d4
+        bne .c4
 
-;;        clrb @r4
-;;        sub r3,r4
-;;        mov #32,r1
-;;        sub r4,r1
-;;        asr r1
-;;        mov #19,r2
-;;        jmp @#showptxt
-         mov byte [si],'$'
-         mov ah,9
-         int 21h
-         retn
+         lea.l stringbuf(a3),a0
+         suba.l a0,a4
+         move.l a4,d0
+         jmp Text(a6)
 
-;;20$:    mov r2,r0
-;;        add #'0,r0
-;;        movb r0,(r4)+
-.c20:   mov bl,al
-        add bl,'0'
-        mov [si],bl
-        inc si
-.exit:  retn
-   endif
+.c20:   ;mov bl,al
+        move.b d0,d1
+        ;add bl,'0'
+        addi.b #'0',d1
+        ;mov [si],bl
+        ;inc si
+        move.b d1,(a4)+
+.exit:  rts
+

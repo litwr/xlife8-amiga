@@ -320,7 +320,7 @@ dispatcher:
 
 .c177:   cmpi.b #'v',d0
          bne .c178
-         ;;jmp infov
+         jmp infov
 
 .c178:   cmpi.b #'Z',d0
          bne .c179
