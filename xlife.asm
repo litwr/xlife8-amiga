@@ -524,7 +524,7 @@ ttab:     rept hormax*vermax/4
           endr
 
 tilecnt   dc.w 0
-;viewport  dc.l tiles
+viewport  dc.l tiles
 crsrtile  dc.l tiles
 timercnt  dc.l 0
 temp      dc.w 0    ;32-bit alignment

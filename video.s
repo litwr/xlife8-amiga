@@ -526,8 +526,7 @@ showtinfo:
          ;;jmp .c2
          bra .c3
 
-.c1:
-	 ;;mov word [bx],0a0ah
+.c1:     ;;mov word [bx],0a0ah
          move.b #$a,(a0)+
          ;;mov al,[si+ttab]
          lea ttab(a3),a2
@@ -555,110 +554,61 @@ calcx:   move.b crsrbit(a3),d2   ;$80 -> 0, $40 -> 1, ...
          bcc .c1
          rts
 
-  if 0
-showscnz:
-;;xlimit   = $14
-;;ylimit   = $15
-;;         #assign16 i1,viewport
-         mov si,[viewport]
+showscnz:movea.l BITPLANE1_PTR(a3),a5
+         movea.l viewport(a3),a4
+         moveq #5,d1
+         tst.b pseudoc(a3)
+         bne showscnzp
 
-;;         lda #5
-;;         sta xlimit
-         mov bl,5
+.loop3:  moveq #3,d2
+.loop4:  moveq #7,d5
+.loop2:  move.b (a4)+,d0
+         moveq #7,d3
+.loop1:  lsl.b d0
+         bcs .cont2
 
-         cmp [pseudoc],0
-         jnz showscnzp
+         ;output an empty space
+         clr.b nextline(a5)     ;replace by move.b?
+         clr.b 2*nextline(a5)
+         clr.b 3*nextline(a5)
+         clr.b 4*nextline(a5)
+         clr.b 5*nextline(a5)
+         clr.b 6*nextline(a5)
+         clr.b 7*nextline(a5)
+         clr.b (a5)+
+         dbra d3,.loop1
+         bra .c1
 
-;;         lda #$c
-;;         sta cont2+2
-;;         lda #0
-;;         sta cont2+1
-         xor di,di
+.cont2:  ;output a cell
+         move.b #$3c,nextline(a5)
+         move.b #$7e,2*nextline(a5)
+         move.b #$7e,3*nextline(a5)
+         move.b #$7e,4*nextline(a5)
+         move.b #$7e,5*nextline(a5)
+         move.b #$3c,6*nextline(a5)
+         clr.b 7*nextline(a5)
+         clr.b (a5)+
+         dbra d3,.loop1
 
-;;loop3    lda #3
-;;         sta ylimit
-.loop3:  mov bh,3
+.c1:     lea.l 8*nextline-8(a5),a5
+         dbra d5,.loop2
 
-;;loop4    ldy #0              ;check sum?
-;;loop2    lda (i1),y
-;;         ldx #0
-;;loop1    asl
-;;         sta 7
-;;         lda #32
-;;         bcc cont2
-.loop4:  mov cx,8
-.loop2:  lodsb
-         mov dl,8
-         mov dh,al
-.loop1:  mov al,20h   ;space char
-         mov ah,[czbg]
-         or ah,[zfg]
-         shl dh,1
-         jnc .cont2
+         subq.b #1,d2
+         beq .cont3
 
-;;         lda #81         ;live cell char
-;;cont2    sta $c00,x
-;;         lda 7
-;;         inx
-;;         cpx #8
-;;         bne loop1
-         mov al,9   ;live cell char and attribute
-.cont2:  stosw
-         dec dl
-         jnz .loop1
+         lea.l tilesize*hormax-8(a4),a4
+         bra .loop4
 
-;;         lda #39    ;CY=1
-;;         adc cont2+1
-;;         sta cont2+1
-;;         bcc nocy1
-         add di,80-16
+.cont3:  subq.b #1,d1    ;xlimit
+         bne .cont11
+         rts
 
-;;         inc cont2+2
-;;nocy1    iny
-;;         cpy #8
-;;         bne loop2
-         loop .loop2
-
-;;         dec ylimit
-;;         beq cont3
-         dec bh
-         jz .cont3
-
-;;         lda #<tilesize*20-1 ;CY=1
-;;         adc i1
-;;         sta i1
-;;         lda i1+1
-;;         adc #>tilesize*20
-;;         sta i1+1
-;;         bcc loop4
-         add si,tilesize*hormax-8
-         jmp .loop4
-
-;;cont3    dec xlimit
-;;         bne cont11
-;;         rts
-.cont3:  dec bl         ;xlimit
-         jnz .cont11
-         retn
-
-;;cont11   lda cont2+1    ;CY=1
-;;         sbc #<952
-;;         sta cont2+1
-;;         lda cont2+2
-;;         sbc #>952
-;;         sta cont2+2
-;;         lda i1   ;CY=1
-;;         sbc #<tilesize*39
-;;         sta i1
-;;         lda i1+1
-;;         sbc #>tilesize*39
-;;         sta i1+1
-;;         bne loop3
-.cont11: sub di,24*80-16
-         sub si,tilesize*(hormax*2-1)+8
-         jmp .loop3
+.cont11: suba.l #192*nextline-8,a5
+         suba.l #tilesize*(hormax*2-1)+8,a4
+         bra .loop3
 
 showscnzp:
+   if 0
          mov si,[viewport]
          mov dl,5  ;xlimit
          xor di,di
@@ -718,25 +668,14 @@ showscnzp:
 
 gexit:    jmp crsrset
 
-showscn:
-	 bsr infoout
-         ;;or [zoom],0
-	 tst.b zoom(a3)
-         ;;jz .l1
-         ;;jmp showscnz
-	 ;**bne showscnz
+showscn: bsr infoout
+         tst.b zoom(a3)
+         bne showscnz
 
-.l1:
-;;         tst @#tilecnt
-         ;;cmp [tilecnt],0
-	 tst.w tilecnt(a3)
-;;         beq gexit
-         ;;jz gexit
-	 beq gexit
+         tst.w tilecnt(a3)
+         beq gexit
 
-;;         tstb @#pseudoc
-         ;;or [pseudoc],0
-	 tst.b pseudoc(a3)
+         tst.b pseudoc(a3)
          bne showscnp
 
 showscn2:

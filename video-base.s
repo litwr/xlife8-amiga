@@ -53,7 +53,10 @@ TXT_DRV_UPD:  ;CHANGE: d0,d1,a0,a1,a2,a6
          movea.l RASTER_PORT(a3),a1
          jmp Text(a6)           ;print diskid
 
-initxt: moveq #1,d0     ;draw frame vertical borders
+initxt: tst.b zoom(a3)
+        bne initxt2
+
+        moveq #1,d0     ;draw frame vertical borders
         move.b #$80,d1
         move.w #191,d2
         movea.l BITPLANE1_PTR(a3),a1
