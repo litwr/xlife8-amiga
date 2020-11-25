@@ -1,5 +1,5 @@
 TXT_PLACE_CURSOR:
-	 invvideo
+         invvideo
          print ' '
          normvideo
          rts
@@ -8,21 +8,23 @@ TXT_ON_CURSOR:        ;IN: d3,a6,a1,d4,d1
          move.w d0,-(sp)
          move.w d3,d0
          add.w d4,d0
+         movea.l RASTER_PORT(a3),a1
          jsr Move(a6)
 
          moveq #1,d0
+         movea.l RASTER_PORT(a3),a1
          jsr SetDrMd(a6)
          move.w (sp)+,d0
          rts
 
 TXT_REMOVE_CURSOR:  ;IN: d3,a6,a1,d1,d0
          add.w d3,d0
-
-         ;movea.l RASTER_PORT(a3),a1
+         movea.l RASTER_PORT(a3),a1
          movem.w d0/d1,-(sp)
          jsr Move(a6)
 
          moveq #1,d0
+         movea.l RASTER_PORT(a3),a1
          jsr SetDrMd(a6)
 
          print ' '
@@ -39,13 +41,16 @@ TXT_DRV_UPD:  ;CHANGE: d0,d1,a0,a1,a2,a6
          movea.l RASTER_PORT(a3),a1
          jsr Move(a6)
          moveq #1,d0
+         movea.l RASTER_PORT(a3),a1
          jsr SetDrMd(a6)
          print '   '
          moveq #30,d1
          clr.w d0
+         movea.l RASTER_PORT(a3),a1
          jsr Move(a6)
          moveq.l #4,d0
          lea.l curdisk(a3),a0
+         movea.l RASTER_PORT(a3),a1
          jmp Text(a6)           ;print diskid
 
 initxt: moveq #1,d0     ;draw frame vertical borders
@@ -62,7 +67,6 @@ initxt: moveq #1,d0     ;draw frame vertical borders
         dbra d2,.c1
 
 initxt2: bsr showtopology    ;must follow initxt
-         ;movea.l RASTER_PORT(a3),a1
          movepen 18*8,198
          movea.l RASTER_PORT(a3),a1
          lea texts+1(a3),a0  ;%
@@ -70,20 +74,18 @@ initxt2: bsr showtopology    ;must follow initxt
          jsr Text(a6)
 
          movepen 32*8,198
-         ;movea.l RASTER_PORT(a3),a1
+         movea.l RASTER_PORT(a3),a1
          lea texts+2(a3),a0  ;X
          moveq #1,d0
          jsr Text(a6)
 
-         ;movea.l RASTER_PORT(a3),a1
          movepen 36*8,198
          movea.l RASTER_PORT(a3),a1
          lea texts+3(a3),a0  ;Y
          moveq #1,d0
          jmp Text(a6)
 
-totext:
-        bra clrscn
+totext:  bra clrscn
 
 tograph:bsr clrscn
         bsr showmode
@@ -112,13 +114,11 @@ showtopology:
          beq .l1
 
          invvideo
-.l1:     movea.l RASTER_PORT(a3),a1
-         movepen 0,198
+.l1:     movepen 0,198
          movea.l RASTER_PORT(a3),a1
          lea texts(a3),a0
          moveq #1,d0
          jsr Text(a6)
-
          movea.l RASTER_PORT(a3),a1
          moveq #0,d0
          jmp SetDrMd(a6)  ;normvideo
@@ -141,9 +141,9 @@ printstr:
          subq.w #1,d0
          jmp Text(a6)
 
-digiout:	;in: d0 - length, a0 - scrpos, a1 - data
-	 moveq #0,d1          ;use blitter?
-	 lea digifont(a3),a2
+digiout:   ;in: d0 - length, a0 - scrpos, a1 - data
+         moveq #0,d1          ;use blitter?
+         lea digifont(a3),a2
 .c0:     moveq #6,d2
          move.b -(a1),d1
          move.l d1,d3
@@ -151,12 +151,12 @@ digiout:	;in: d0 - length, a0 - scrpos, a1 - data
          lsl.b #3,d1
 
 .c1:     move.b (a2,d1),(a0)
-	 adda.l #40,a0
-	 addq #1,d1
-	 dbra d2,.c1
+         adda.l #40,a0
+         addq #1,d1
+         dbra d2,.c1
 
-	 subi #1,d0
-	 bmi .ce
+         subi #1,d0
+         bmi .ce
 
          suba.w #40*7+1,a0
 	 moveq #6,d2

@@ -435,10 +435,11 @@ showrules2:
         tst.w d4
         bne .c4
 
-         lea.l stringbuf(a3),a0
-         suba.l a0,a4
-         move.l a4,d0
-         jmp Text(a6)
+        lea.l stringbuf(a3),a0
+        suba.l a0,a4
+        move.l a4,d0
+        movea.l RASTER_PORT(a3),a1
+        jmp Text(a6)
 
 .c20:   ;mov bl,al
         move.b d0,d1

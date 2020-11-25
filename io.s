@@ -236,7 +236,6 @@ showdir: bsr totext
 
          moveq #11,d0
 .l2:     move.l GRAPHICS_BASE(a3),a6
-         movea.l RASTER_PORT(a3),a1
          move.w d0,-(sp)
          clr.w d0
          btst #0,d5
@@ -248,6 +247,7 @@ showdir: bsr totext
          addq.w #2,d1
          lsl.w #3,d1
          subq.w #2,d1
+         movea.l RASTER_PORT(a3),a1
          jsr Move(a6)
          color 1    ;red
          move.w d6,d0
@@ -256,7 +256,7 @@ showdir: bsr totext
          color 3    ;black
          move.w (sp)+,d0
          lea.l iobseg+8,a0
-         movea.l RASTER_PORT(a3),a1  ;remove?
+         movea.l RASTER_PORT(a3),a1
          ;movea.l GRAPHICS_BASE(a3),a6
          jsr Text(a6)
          print ' '
@@ -346,7 +346,7 @@ findfn:  ;fn# in D0
 .l1:     move.l d0,tmplock(a3)     ;lock-save
          move.l d0,d1
          move.l #iobseg,d2   ;pointer to FilelnfoBlock
-         jsr    Examine(a6)    ;get disk name
+         jsr Examine(a6)     ;get disk name
          tst.l d0              ;OK?
          beq .close            ;no (rarely occurs)
          bra .setout           ;else set name
@@ -579,6 +579,9 @@ showcomm:tst.b fn(a3)
          clr.l (a2)+
          dbra d1,.l2
 
+         move.l #20,d1      ;20/50 sec (PAL), 20/60 sec (NTSC)
+         move.l doslib(a3),a6     ;DOS base address
+         jsr Delay(a6)
 .pr:     clr.l d6
          addq.w #8,d7
          move.w d7,d1

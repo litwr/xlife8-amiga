@@ -2079,6 +2079,7 @@ infov:   bsr totext
          suba.l a0,a4
          move.l a4,d0
          subq.l #1,d0
+         movea.l RASTER_PORT(a3),a1
          jsr Text(a6)
 .c11:    bsr boxsz
          beq .c12
