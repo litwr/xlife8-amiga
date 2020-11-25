@@ -11,6 +11,7 @@ BP - D6/A6
 1 - red
 0 - bg
 
++ CLR in fast code
 + memory leaks when it starts from WB
 * mouse support
 * implement: +-XZ

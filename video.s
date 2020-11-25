@@ -552,7 +552,7 @@ calcx:   move.b crsrbit(a3),d2   ;$80 -> 0, $40 -> 1, ...
 .c1:     addq.b #1,d0
          add.b d2,d2
          bcc .c1
-         rts
+.e0:     rts
 
 showscnz:movea.l BITPLANE1_PTR(a3),a5
          movea.l viewport(a3),a4
@@ -568,7 +568,7 @@ showscnz:movea.l BITPLANE1_PTR(a3),a5
          bcs .cont2
 
          ;output an empty space
-         clr.b nextline(a5)     ;replace by move.b?
+         clr.b nextline(a5)     ;FIXME! replace by move.b?
          clr.b 2*nextline(a5)
          clr.b 3*nextline(a5)
          clr.b 4*nextline(a5)
@@ -600,73 +600,103 @@ showscnz:movea.l BITPLANE1_PTR(a3),a5
          bra .loop4
 
 .cont3:  subq.b #1,d1    ;xlimit
-         bne .cont11
-         rts
+         beq calcx\.e0     ;rts
 
-.cont11: suba.l #192*nextline-8,a5
+         suba.l #192*nextline-8,a5
          suba.l #tilesize*(hormax*2-1)+8,a4
          bra .loop3
 
 showscnzp:
-   if 0
-         mov si,[viewport]
-         mov dl,5  ;xlimit
-         xor di,di
-.loop3:  mov dh,3   ;ylimit
-.loop4:  mov cl,8
-         lea bp,[si+count0]
-.loop2:  mov ax,[ds:bp]
-         and ax,18c0h
-         mov ch,al
-         shl ah,1
-         or ch,ah
-         mov ax,[ds:bp+2]
-         and ax,318h
-         shr al,1
-         or ch,al
-         or ch,ah
-         lodsb
-         add bp,4
-         mov bl,8
-         mov bh,al
-.loop1:  shl ch,1
-         rcr al,1
-         shl bh,1
-         rcr al,1
-         mov ah,[zfg]
-         test al,0c0h
-         mov al,20h   ;space char and attribute
-         jns .cont2
+.loop3:  moveq #3,d2
+.loop4:  moveq #7,d5
+         ;lea bp,[si+count0]
+         lea.l count0(a4),a6
+.loop2:  ;mov ax,[ds:bp]
+         move.b (a6)+,d0
+         move.b (a6)+,d7
+         ;and ax,18c0h
+         andi.b #$c0,d0
+         andi.b #$18,d7
+         ;mov ch,al
+         move.b d0,d6
+         ;shl ah,1
+         lsl.b d7
+         ;or ch,ah
+         or.b d7,d6
+         ;mov ax,[ds:bp+2]
+         move.b (a6)+,d0
+         move.b (a6)+,d7
+         ;and ax,318h
+         andi.b #$18,d0
+         andi.b #3,d7
+         ;shr al,1
+         lsr.b d0
+         ;or ch,al
+         or.b d0,d6
+         ;or ch,ah
+         or.b d7,d6
+         ;lodsb
+         ;add bp,4
+         ;mov bl,8
+         move.b (a4)+,d0
+         moveq #7,d3
+.loop1:  ;shl ch,1
+         lsl.b d0
+         bcc .space
 
-         mov al,9    ;live cell char
-         jpe .cont2
+         lsl.b d6
+         bcc .new
 
-         mov ah,[zfgnc]    ;new cell attr
-.cont2:  or ah,[czbg]
-         stosw
-         dec bl
-         jnz .loop1
+         move.b #$3c,nextline(a5)
+         move.b #$7e,2*nextline(a5)
+         move.b #$7e,3*nextline(a5)
+         move.b #$7e,4*nextline(a5)
+         move.b #$7e,5*nextline(a5)
+         move.b #$3c,6*nextline(a5)
+         clr.b 7*nextline(a5)
+         clr.b (a5)+
+         dbra d3,.loop1
+         bra .c1
 
-         add di,80-16
-         dec cl
-         jnz .loop2
+.new:    move.b #$3c,nextline(a5)
+         move.b #$7e,2*nextline(a5)
+         move.b #$66,3*nextline(a5)
+         move.b #$66,4*nextline(a5)
+         move.b #$7e,5*nextline(a5)
+         move.b #$3c,6*nextline(a5)
+         clr.b 7*nextline(a5)
+         clr.b (a5)+
+         dbra d3,.loop1
+         bra .c1
 
-         dec dh
-         jz .cont3
+.space:  lsl.b d6
+         clr.b nextline(a5)     ;FIXME! replace by move.b?
+         clr.b 2*nextline(a5)
+         clr.b 3*nextline(a5)
+         clr.b 4*nextline(a5)
+         clr.b 5*nextline(a5)
+         clr.b 6*nextline(a5)
+         clr.b 7*nextline(a5)
+         clr.b (a5)+
+         dbra d3,.loop1
 
-         add si,tilesize*hormax-8
-         jmp .loop4
+.c1:     lea.l 8*nextline-8(a5),a5
+         dbra d5,.loop2
 
-.cont3:  dec dl         ;xlimit
-         jnz .cont11
-         retn
+         subq.b #1,d2
+         beq .cont3
 
-.cont11: sub di,24*80-16
-         sub si,tilesize*(hormax*2-1)+8
-         jmp .loop3
-	endif
+         lea.l tilesize*hormax-8(a4),a4
+         bra .loop4
 
-gexit:    jmp crsrset
+.cont3:  subq.b #1,d1    ;xlimit
+         beq calcx\.e0     ;rts
+
+         suba.l #192*nextline-8,a5
+         suba.l #tilesize*(hormax*2-1)+8,a4
+         bra .loop3
+
+gexit:   bra crsrset
 
 showscn: bsr infoout
          tst.b zoom(a3)
@@ -678,121 +708,79 @@ showscn: bsr infoout
          tst.b pseudoc(a3)
          bne showscnp
 
-showscn2:
-	 ;;mov @#startp,r0
-         ;;mov si,[startp]
-	 movea.l startp(a3),a4
+showscn2: movea.l startp(a3),a4
+.l1:      movea.l (video,a4),a5
+          adda.l BITPLANE1_PTR(A3),A5
+          move.l (a4),d0
+          move.b d0,(nextline*3,a5)
+          swap d0
+          move.b d0,(nextline,a5)
+          lsr.l #8,d0
+          move.b d0,(a5)
+          swap d0
+          move.b d0,(nextline*2,a5)
+          move.l (4,a4),d0
+          move.b d0,(nextline*7,a5)
+          swap d0
+          move.b d0,(nextline*5,a5)
+          lsr.l #8,d0
+          move.b d0,(nextline*4,a5)
+          swap d0
+          move.b d0,(nextline*6,a5)
+          movea.l (next,a4),a4
+          cmpa.w #1,a4
+          bne .l1
+          bra crsrset
 
-.l1:
-;;       mov video(r0),r5
-	 ;;mov di,[video+si]
-	 movea.l (video,a4),a5
-    	 adda.l BITPLANE1_PTR(A3),A5
-
-         ;;lodsw
-	 move.l (a4),d0
-
-	 move.b d0,(nextline*3,a5)
-
-	 swap d0
-	 move.b d0,(nextline,a5)
-
-	 lsr.l #8,d0
-	 move.b d0,(a5)
-
-	 swap d0
-	 move.b d0,(nextline*2,a5)
-
-         move.l (4,a4),d0
-
-	 move.b d0,(nextline*7,a5)
-	 swap d0
-	 move.b d0,(nextline*5,a5)
-	 lsr.l #8,d0
-	 move.b d0,(nextline*4,a5)
-	 swap d0
-	 move.b d0,(nextline*6,a5)
-
-;;         mov next(r0),r0
-         ;;mov si,[next-8+si]
-	 movea.l (next,a4),a4
-
-;;         cmp #1,r0
-         ;;cmp si,1
-	 cmpa.w #1,a4
-	 bne .l1
-
-     bra crsrset
-
-showscnp:
-         ;;mov si,[startp]
-	 movea.l startp(a3),a4
-
-.l1:
-	 ;;mov di,[video+si]
-         movea.l (video,a4),a0
-         movea.l a0,a1
-         adda.l BITPLANE1_PTR(a3),a0
-	 adda.l BITPLANE2_PTR(a3),a1
-
-	 move.l (a4),d0
-         move.l (count3,a4),d1
-         vidmacp
-	 move.b d0,(nextline*3,a1)
-         move.b d1,(nextline*3,a0)
-
-	 lsr.w #8,d0
-         move.l (count2,a4),d1
-         vidmacp
-	 move.b d0,(nextline*2,a1)
-         move.b d1,(nextline*2,a0)
-
-	 swap d0
-	 move.l (count1,a4),d1
-         vidmacp
-	 move.b d0,(nextline,a1)
-         move.b d1,(nextline,a0)
-
-	 lsr.w #8,d0
-	 move.l (count0,a4),d1
-         vidmacp
-	 move.b d0,(a1)
-         move.b d1,(a0)
-
-         move.l (4,a4),d0
-	 move.l (count7,a4),d1
-         vidmacp
-	 move.b d0,(nextline*7,a1)
-         move.b d1,(nextline*7,a0)
-
-	 lsr.w #8,d0
-         move.l (count6,a4),d1
-         vidmacp
-	 move.b d0,(nextline*6,a1)
-         move.b d1,(nextline*6,a0)
-
-	 swap d0
-	 move.l (count5,a4),d1
-         vidmacp
-	 move.b d0,(nextline*5,a1)
-         move.b d1,(nextline*5,a0)
-
-	 lsr.w #8,d0
-	 move.l (count4,a4),d1
-         vidmacp
-	 move.b d0,(nextline*4,a1)
-         move.b d1,(nextline*4,a0)
-
-;;         mov next(r0),r0
-         ;;mov si,[next-8+si]
-	 movea.l (next,a4),a4
-
-;;         cmp #1,r0
-         ;;cmp si,1
-	 cmpa.w #1,a4
-	 bne .l1
-
-	 bra crsrset
+showscnp: movea.l startp(a3),a4
+.l1:      movea.l (video,a4),a0
+          movea.l a0,a1
+          adda.l BITPLANE1_PTR(a3),a0
+          adda.l BITPLANE2_PTR(a3),a1
+          move.l (a4),d0
+          move.l (count3,a4),d1
+          vidmacp
+          move.b d0,(nextline*3,a1)
+          move.b d1,(nextline*3,a0)
+          lsr.w #8,d0
+          move.l (count2,a4),d1
+          vidmacp
+          move.b d0,(nextline*2,a1)
+          move.b d1,(nextline*2,a0)
+          swap d0
+          move.l (count1,a4),d1
+          vidmacp
+          move.b d0,(nextline,a1)
+          move.b d1,(nextline,a0)
+          lsr.w #8,d0
+          move.l (count0,a4),d1
+          vidmacp
+          move.b d0,(a1)
+          move.b d1,(a0)
+          move.l (4,a4),d0
+          move.l (count7,a4),d1
+          vidmacp
+          move.b d0,(nextline*7,a1)
+          move.b d1,(nextline*7,a0)
+          lsr.w #8,d0
+          move.l (count6,a4),d1
+          vidmacp
+          move.b d0,(nextline*6,a1)
+          move.b d1,(nextline*6,a0)
+          swap d0
+          move.l (count5,a4),d1
+          vidmacp
+          move.b d0,(nextline*5,a1)
+          move.b d1,(nextline*5,a0)
+          lsr.w #8,d0
+          move.l (count4,a4),d1
+          vidmacp
+          move.b d0,(nextline*4,a1)
+          move.b d1,(nextline*4,a0)
+          movea.l (next,a4),a4
+          cmpa.w #1,a4
+          bne .l1
+          bra crsrset
 
 chgdrv:  moveq #nudrives+1,d5
 .loop:   subq.l #1,d5
