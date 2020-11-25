@@ -202,7 +202,6 @@ dispatcher:
          movea.l crsrtile(a3),a5
          ;;mov [di+sum],al        ;always writes no-zero value
          move.b d0,(sum,a5)
-         ;;call chkadd
          bsr chkadd
          ;;xor bx,bx
          ;;mov bl,[crsrbyte]
@@ -219,15 +218,12 @@ dispatcher:
          move.b d2,(a5,d0)
          ;;test al,ah
          and.b d2,d1
-         ;;jz .c79
          beq .c79
 
          moveq #1,d0
          bsr inctsum
 
-         ;;call infoout
          bsr infoout
-         ;;jmp .c270
          bra .c270
 
 .c79:    bsr calccells
