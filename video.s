@@ -551,60 +551,109 @@ calcx:   move.b crsrbit(a3),d2   ;$80 -> 0, $40 -> 1, ...
          moveq #-1,d0
 .c1:     addq.b #1,d0
          add.b d2,d2
-         bcc .c1
+         bcc.s .c1
 .e0:     rts
 
+crsrpg:  move.b d4,i1x(a3)
+         tst.b crsrpgmk(a3)
+         beq.s .l1
+
+         move.b #$ff,d7
+         move.b d7,6*nextline-1(a5)
+         move.b d7,-nextline-1(a5)
+         eor.b d7,-1(a5)
+         eor.b d7,nextline-1(a5)
+         eor.b d7,2*nextline-1(a5)
+         eor.b d7,3*nextline-1(a5)
+         eor.b d7,4*nextline-1(a5)
+         eor.b d7,5*nextline-1(a5)
+         rts
+
+.l1:     move.b d4,6*nextline-1(a5)
+         move.b d4,-nextline-1(a5)
+         rts
+
 showscnz:movea.l BITPLANE1_PTR(a3),a5
+         lea.l nextline(a5),a5
          movea.l viewport(a3),a4
+         moveq #0,d4
+         move.b d0,i1x(a3)
+         moveq #7,d1
+         sub.b crsrbyte(a3),d1
+         move.b d1,i1x+1(a3)
+         bsr.s calcx
+         moveq #7,d1
+         sub.b d0,d1
+         move.b d1,temp(a3)
          moveq #5,d1
          tst.b pseudoc(a3)
-         bne showscnzp
+         bne.w showscnzp
 
 .loop3:  moveq #3,d2
 .loop4:  moveq #7,d5
+         cmpa.l crsrtile(a3),a4
+         bne .loop2
+
+         addq.b #1,i1x(a3)
 .loop2:  move.b (a4)+,d0
          moveq #7,d3
 .loop1:  lsl.b d0
-         bcs .cont2
+         bcs.s .cont2
 
          ;output an empty space
-         clr.b nextline(a5)     ;FIXME! replace by move.b?
-         clr.b 2*nextline(a5)
-         clr.b 3*nextline(a5)
-         clr.b 4*nextline(a5)
-         clr.b 5*nextline(a5)
-         clr.b 6*nextline(a5)
-         clr.b 7*nextline(a5)
-         clr.b (a5)+
-         dbra d3,.loop1
-         bra .c1
+         move.b d4,nextline(a5)
+         move.b d4,2*nextline(a5)
+         move.b d4,3*nextline(a5)
+         move.b d4,4*nextline(a5)
+         move.b d4,5*nextline(a5)
+         move.b d4,(a5)+
+         tst.b i1x(a3)
+         beq.s .cont7
+
+         cmp.b i1x+1(a3),d5
+         bne.s .cont7
+
+         cmp.b temp(a3),d3
+         bne.s .cont7
+
+         bsr crsrpg
+.cont7:  dbra d3,.loop1
+         bra.s .c1
 
 .cont2:  ;output a cell
-         move.b #$3c,nextline(a5)
+         move.b #$7e,nextline(a5)
          move.b #$7e,2*nextline(a5)
          move.b #$7e,3*nextline(a5)
          move.b #$7e,4*nextline(a5)
-         move.b #$7e,5*nextline(a5)
-         move.b #$3c,6*nextline(a5)
-         clr.b 7*nextline(a5)
-         clr.b (a5)+
-         dbra d3,.loop1
+         move.b #$3c,5*nextline(a5)
+         move.b #$3c,(a5)+
+         tst.b i1x(a3)
+         beq.s .cont8
+
+         cmp.b i1x+1(a3),d5
+         bne.s .cont8
+
+         cmp.b temp(a3),d3
+         bne.s .cont8
+
+         bsr crsrpg
+.cont8:  dbra d3,.loop1
 
 .c1:     lea.l 8*nextline-8(a5),a5
          dbra d5,.loop2
 
          subq.b #1,d2
-         beq .cont3
+         beq.s .cont3
 
          lea.l tilesize*hormax-8(a4),a4
-         bra .loop4
+         bra.w .loop4
 
 .cont3:  subq.b #1,d1    ;xlimit
-         beq calcx\.e0     ;rts
+         beq.w calcx\.e0     ;rts
 
          suba.l #192*nextline-8,a5
          suba.l #tilesize*(hormax*2-1)+8,a4
-         bra .loop3
+         bra.w .loop3
 
 showscnzp:
 .loop3:  moveq #3,d2
@@ -613,28 +662,28 @@ showscnzp:
          lea.l count0(a4),a6
 .loop2:  ;mov ax,[ds:bp]
          move.b (a6)+,d0
-         move.b (a6)+,d7
+         move.b (a6)+,d3
          ;and ax,18c0h
          andi.b #$c0,d0
-         andi.b #$18,d7
+         andi.b #$18,d3
          ;mov ch,al
          move.b d0,d6
          ;shl ah,1
-         lsl.b d7
+         lsl.b d3
          ;or ch,ah
-         or.b d7,d6
+         or.b d3,d6
          ;mov ax,[ds:bp+2]
          move.b (a6)+,d0
-         move.b (a6)+,d7
+         move.b (a6)+,d3
          ;and ax,318h
          andi.b #$18,d0
-         andi.b #3,d7
+         andi.b #3,d3
          ;shr al,1
          lsr.b d0
          ;or ch,al
          or.b d0,d6
          ;or ch,ah
-         or.b d7,d6
+         or.b d3,d6
          ;lodsb
          ;add bp,4
          ;mov bl,8
@@ -642,59 +691,53 @@ showscnzp:
          moveq #7,d3
 .loop1:  ;shl ch,1
          lsl.b d0
-         bcc .space
+         bcc.s .space
 
          lsl.b d6
-         bcc .new
+         bcc.s .new
 
-         move.b #$3c,nextline(a5)
+         move.b #$7e,nextline(a5)
          move.b #$7e,2*nextline(a5)
          move.b #$7e,3*nextline(a5)
          move.b #$7e,4*nextline(a5)
-         move.b #$7e,5*nextline(a5)
-         move.b #$3c,6*nextline(a5)
-         clr.b 7*nextline(a5)
-         clr.b (a5)+
+         move.b #$3c,5*nextline(a5)
+         move.b #$3c,(a5)+
          dbra d3,.loop1
-         bra .c1
+         bra.s .c1
 
-.new:    move.b #$3c,nextline(a5)
-         move.b #$7e,2*nextline(a5)
+.new:    move.b #$7e,nextline(a5)
+         move.b #$66,2*nextline(a5)
          move.b #$66,3*nextline(a5)
-         move.b #$66,4*nextline(a5)
-         move.b #$7e,5*nextline(a5)
-         move.b #$3c,6*nextline(a5)
-         clr.b 7*nextline(a5)
-         clr.b (a5)+
+         move.b #$7e,4*nextline(a5)
+         move.b #$3c,5*nextline(a5)
+         move.b #$3c,(a5)+
          dbra d3,.loop1
-         bra .c1
+         bra.s .c1
 
 .space:  lsl.b d6
-         clr.b nextline(a5)     ;FIXME! replace by move.b?
-         clr.b 2*nextline(a5)
-         clr.b 3*nextline(a5)
-         clr.b 4*nextline(a5)
-         clr.b 5*nextline(a5)
-         clr.b 6*nextline(a5)
-         clr.b 7*nextline(a5)
-         clr.b (a5)+
+         move.b d4,nextline(a5)
+         move.b d4,2*nextline(a5)
+         move.b d4,3*nextline(a5)
+         move.b d4,4*nextline(a5)
+         move.b d4,5*nextline(a5)
+         move.b d4,(a5)+
          dbra d3,.loop1
 
 .c1:     lea.l 8*nextline-8(a5),a5
          dbra d5,.loop2
 
          subq.b #1,d2
-         beq .cont3
+         beq.s .cont3
 
          lea.l tilesize*hormax-8(a4),a4
-         bra .loop4
+         bra.w .loop4
 
 .cont3:  subq.b #1,d1    ;xlimit
-         beq calcx\.e0     ;rts
+         beq.w calcx\.e0     ;rts
 
          suba.l #192*nextline-8,a5
          suba.l #tilesize*(hormax*2-1)+8,a4
-         bra .loop3
+         bra.w .loop3
 
 gexit:   bra crsrset
 
@@ -1619,225 +1662,96 @@ setdirmsk:
          moveq #8,d0
          bsr TXT_REMOVE_CURSOR
          bra .cont4
-   if 0
+
 setviewport:
-;         ld hl,(crsrtile)
-;         ld (viewport),hl
-;         ld ix,vptilecx
-;;        mov #viewport,r3
-;;        mov @#crsrtile,@r3
-;;        mov #vptilecx,r0
-;;        movb @#crsry,r1
-        mov di,viewport
-        mov ax,[crsrtile]
-        mov [di],ax
-        mov si,vptilecx
-        mov al,[crsry]
+        ;mov di,viewport
+        lea.l viewport(a3),a5
+        ;mov ax,[crsrtile]
+        ;mov [di],ax
+        move.l crsrtile(a3),(a5)
+        ;mov si,vptilecx
+        lea.l vptilecx(a3),a4
+        ;mov al,[crsry]
+        move.b crsry(a3),d0
+        ;mov word [si],102h
+        move.w #$201,(a4)
+        ;cmp al,8
+        cmpi.b #8,d0
+        bcc.s .c1
 
-;         ld a,2
-;         ld (vptilecx),a
-;         dec a
-;         ld (vptilecy),a
-;;        mov #258,@r0      ;$102
-       mov word [si],102h
+        ;dec [vptilecy]
+        subq.b #1,vptilecy(a3)
+        ;add word [di],tilesize*hormax
+        add.l #tilesize*hormax,(a5)
+        bra.s .c2
 
-;         ld hl,(ycrsr)
-;         ld a,l
-;         or h
-;         jr nz,cont1
+.c1:    ;cmp al,vermax*8-8    ;184
+        cmpi.b #vermax*8-8,d0
+        bcs.s .c2
 
-;         ld a,(ycrsr+2)
-;         cp 8
-;         jr nc,cont1
-;;        cmpb r1,#8
-;;        bcc 1$
-        cmp al,8
-        jnc .c1
+        ;inc [vptilecy]
+        addq.b #1,vptilecy(a3)
+        ;sub word [di],tilesize*hormax
+        sub.l #tilesize*hormax,(a5)
+.c2:    ;mov al,[crsrx]
+        move.b crsrx(a3),d0
+        ;cmp al,8
+        cmpi.b #8,d0
+        bcc.s .c3
 
-;;        decb @#vptilecy
-;;        add #tilesize*hormax,@r3  ;up
-;;        br 2$
-        dec [vptilecy]
-        add word [di],tilesize*hormax
-        jmp .c2
+        ;sub byte [si],2
+        subq.b #2,(a4)
+        ;add word [di],tilesize*2
+        add.l #tilesize*2,(a5)
+        bra.s .c5
 
-;cont1    ld a,(ycrsr)
-;         dec a
-;         jr nz,cont2
+.c3:    ;cmp al,16
+        cmpi.b #16,d0
+        bcc.s .c6
 
-;         ld a,(ycrsr+1)
-;         cp 8
-;         jr c,cont2
-;         jr nz,cont4
+        ;dec byte [si]
+        subq.b #1,(a4)
+        ;add word [di],tilesize
+        add.l #tilesize,(a5)
+        bra.s .c5
 
-;         ld a,(ycrsr+2)
-;         cp 4
-;         jr c,cont2
-;;1$:     cmpb r1,#184
-;;        bcs 2$
+.c6:    ;cmp al,hormax*8-8  ;152
+        cmpi.b #hormax*8-8,d0
+        bcs.s .c8
 
-;;        incb @#vptilecy     ;down
-;;        sub #tilesize*hormax,@r3
-.c1:    cmp al,vermax*8-8    ;184
-        jc .c2
+        ;add byte [si],2
+        addq.b #2,(a4)
+        ;sub word [di],tilesize*2
+        sub.l #tilesize*2,(a5)
+        bra.s .c5
 
-        inc [vptilecy]
-        sub word [di],tilesize*hormax
+.c8:    ;cmp al,hormax*8-16   ;144
+        cmpi.b #hormax*8-16,d0
+        bcs.s .c5
 
-;cont2    ld hl,(xcrsr)
-;         ld a,l
-;         or h
-;         jr nz,cont3
-
-;         ld a,(xcrsr+2)
-;         cp 8
-;         jr nc,cont3
-;;2$:     movb @#crsrx,r1
-;;        cmpb r1,#8
-;;        bcc 3$
-.c2:    mov al,[crsrx]
-        cmp al,8
-        jnc .c3
-
-;         dec (ix)
-;         dec (ix)
-;         ld hl,(viewport)      ;left2
-;         ld de,tilesize*2
-;         add hl,de
-;         ld (viewport),hl
-;         jr cont5
-;;        decb @r0
-;;        decb @r0
-;;        add #tilesize*2,@r3
-;;        br 5$
-        sub byte [si],2
-        add word [di],tilesize*2
-        jmp .c5
-
-;cont3    ld a,(xcrsr)
-;         or a
-;         jr nz,cont6
-
-;         ld a,(xcrsr+1)
-;         cp 1
-;         jr c,cont7
-;         jr nz,cont6
-
-;         ld a,(xcrsr+2)
-;         cp 6
-;         jr nc,cont6
-;;3$:     cmpb r1,#16
-;;        bcc 6$
-.c3:    cmp al,16
-        jnc .c6
-
-;cont7    dec (ix)
-;         ld hl,(viewport)      ;left1
-;         ld de,tilesize
-;         add hl,de
-;         ld (viewport),hl
-;         jr cont5
-;;        decb @r0
-;;        add #tilesize,@r3
-;;        br 5$
-        dec byte [si]
-        add word [di],tilesize
-        jmp .c5
-
-;cont6    ld a,(xcrsr)
-;         dec a
-;         jr nz,cont8
-
-;         ld a,(xcrsr+1)
-;         cp 5
-;         jr nz,cont8
-
-;         ld a,(xcrsr+2)
-;         cp 2
-;         jr c,cont8
-;;6$:     cmpb r1,#152
-;;        bcs 8$
-.c6:    cmp al,hormax*8-8  ;152
-        jc .c8
-
-;         inc (ix)
-;         inc (ix)
-;         ld hl,(viewport)      ;right2
-;         ld de,(~(tilesize*2))+1
-;         add hl,de
-;         ld (viewport),hl
-;         jr cont5
-;;        incb @r0
-;;        incb @r0
-;;        sub #tilesize*2,@r3
-;;        br 5$
-        add byte [si],2
-        sub word [di],tilesize*2
-        jmp .c5
-
-;cont8    ld a,(xcrsr)
-;         dec a
-;         jr nz,cont5
-
-;         ld a,(xcrsr+1)
-;         cp 4
-;         jr c,cont5
-;         jr nz,cont10
-
-;         ld a,(xcrsr+2)
-;         cp 4
-;         jr c,cont5
-;;8$:     cmpb r1,#144
-;;        bcs 5$
-.c8:    cmp al,hormax*8-16   ;144
-        jc .c5
-
-;cont10   inc (ix)
-;         ld hl,(viewport)      ;right1
-;         ld de,(~tilesize)+1
-;         add hl,de
-;         ld (viewport),hl
-;;        incb @r0
-;;        sub #tilesize,@r3
-        inc byte [si]
-        sub word [di],tilesize
-
-;cont5    ld iy,(viewport)
-;         ld hl,fixvp
-;         call calllo
-;         ld (viewport),hl
-;;5$:     mov @r3,r4
-;;        mov ul(r4),r4
-;;        mov left(r4),@r3
-.c5:    mov bx,[di]
-        mov bx,[bx+ul]
-        mov ax,[bx+left]
-        mov [di],ax
-
-;         ld b,3
-;loop12   sla (ix)
-;         sla (ix+1)
-;         djnz loop12
-;;        asl @r0
-;;        asl @r0
-;;        asl @r0
-        mov cl,3
-        shl word [si],cl
-
-;         ld a,(crsrbyte)
-;         add a,(ix+1)
-;         ld (ix+1),a
-;;        movb @#crsrbyte,r1
-;;        swab r1
-;;        add r1,@r0    ;vptilecy
-;;        call @#calcx
-;;        add r1,@r0
-;;        return
-        call calcx
-        mov ah,[crsrbyte]
-        add [si],ax
-        retn
-   endif
+        ;sub word [di],tilesize
+        sub.l #tilesize,(a5)
+.c5:    ;mov bx,[di]
+        movea.l (a5),a1
+        ;mov bx,[bx+ul]
+        movea.l ul(a1),a1
+        ;mov ax,[bx+left]
+        ;mov [di],ax
+        move.l left(a1),(a5)
+        ;mov cl,3
+        ;shl word [si],cl
+        bsr calcx
+        ;mov ah,[crsrbyte]
+        move.b (a4),d1
+        lsl.b #3,d1
+        add.b d0,d1
+        move.b d1,(a4)+
+        move.b (a4),d1
+        lsl.b #3,d1
+        add.b crsrbyte(a3),d1
+        move.b d1,(a4)
+        ;add [si],ax
+        rts
 
 crsrset: bsr crsrset1
          tst.b zoom(a3)
@@ -1850,7 +1764,7 @@ pixel11: movea.l BITPLANE1_PTR(a3),a0   ;it should be after crsrset, IN: d1 - cr
 gexit2:  rts         ;this is also gexit3
 
 crsrclr: tst.b zoom(a3)
-         bne gexit2
+         bne.s .c3
 
          movea.l crsrtile(a3),a4
          moveq #0,d4
@@ -1863,7 +1777,7 @@ crsrclr: tst.b zoom(a3)
          add.l (video,a4),d4
 
          tst.b pseudoc(a3)
-         bne .c2
+         bne.s .c2
 
          move.b #0,(a1,d4)
          move.b d0,(a0,d4)
@@ -1874,6 +1788,11 @@ crsrclr: tst.b zoom(a3)
          vidmacp
          move.b d1,(a0,d4)
          move.b d0,(a1,d4)
+         rts
+
+.c3:     clr.b crsrpgmk(a3)
+         bsr showscnz
+         addq.b #1,crsrpgmk(a3)
          rts
 
 crsrcalc:
@@ -1922,56 +1841,77 @@ crsrcalc:
 
          bsr xyout
          tst.b zoom(a3)
-         ;bne .c18
+         bne.s .c18
          rts
 
-.c18:   ;;mov di,up
-        ;;mov al,[vptilecy]
-        ;;mov ah,al
-        ;;add al,8
-        ;;or ah,ah
-        ;;js .c33
+.c18:   ;mov di,up
+        movea.l #up,a5
+        ;mov al,[vptilecy]
+        move.b vptilecy(a3),d0
+        ;mov ah,al
+        move.b d0,d7
+        ;add al,8
+        addq.b #8,d0
+        ;or ah,ah
+        tst.b d7
+        bmi.s .c33
 
-        ;;mov di,down
-        ;;sub al,16
-        ;;cmp ah,24
-        ;;jc .c34
+        ;mov di,down
+        movea.w #down,a5
+        ;sub al,16
+        subi.b #16,d0
+        ;cmp ah,24
+        cmpi.b #24,d7
+        bcs.s .c34
 
-.c33:   ;;mov [vptilecy],al
-        ;;jmp .c31
+.c33:   ;mov [vptilecy],al
+        move.b d0,vptilecy(a3)
+        bra.s .c31
 
-.c34:   ;;mov di,left
-        ;;mov al,[vptilecx]
-        ;;mov ah,al
-        ;;add al,8
-        ;;or ah,ah
-        ;;js .c35
+.c34:   ;mov di,left
+        movea.w #left,a5
+        ;mov al,[vptilecx]
+        move.b vptilecx(a3),d0
+        ;mov ah,al
+        move.b d0,d7
+        ;add al,8
+        addq.b #8,d0
+        ;or ah,ah
+        tst.b d7
+        bmi.s .c35
 
-        ;;mov di,right
-        ;;sub al,16
-        ;;cmp ah,40
-        ;;jc .c30
+        ;mov di,right
+        movea.w #right,a5
+        ;sub al,16
+        subi.b #16,d0
+        ;cmp ah,40
+        cmpi.b #40,d7
+        bcs.s .c30
 
-.c35:   ;;mov [vptilecx],al
-.c31:   ;;add di,[viewport]
-        ;;mov bx,[di]
-        ;;mov [viewport],bx
-        ;;mov di,[bx+dr]
-        ;;mov di,[di+dr]
-        ;;mov di,[di+right]
-        ;;mov di,[di+right]
-        ;;add bx,44*tilesize
+.c35:   ;mov [vptilecx],al
+        move.b d0,vptilecx(a3)
+.c31:   ;add di,[viewport]
+        adda.l viewport(a3),a5
+        ;mov bx,[di]
+        movea.l (a5),a1
+        ;mov [viewport],bx
+        move.l a1,viewport(a3)
+        ;mov di,[bx+dr]
+        movea.l dr(a1),a5
+        ;mov di,[di+dr]
+        movea.l dr(a5),a5
+        ;mov di,[di+right]
+        movea.l right(a5),a5
+        ;mov di,[di+right]
+        movea.l right(a5),a5
+        ;add bx,44*tilesize
+        adda.l #44*tilesize,a1
         ;;cmp bx,di
-        ;;jz .c30
+        cmpa.l a5,a1
+        beq.s .c30
 
-        ;;call setviewport
-.c30:   ;;call showscnz
-        ;;mov ah,2
-        ;;xor bh,bh
-        ;;mov dx,word [vptilecx]
-        ;;int 10h
-        ;;retn
-        rts
+        bsr setviewport
+.c30:   bra showscnz
 
 outdec:  lea.l temp(a3),a1        ;in: d0
          move.w d0,(a1)

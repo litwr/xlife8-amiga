@@ -241,8 +241,8 @@ dispatcher:
          tst.b zoom(a3)
          beq .c100
 
-         ;;call setviewport
-         ;;call showscnz
+         bsr setviewport
+         bsr showscnz
 .c270:   bsr crsrset
          bra crsrcalc
 

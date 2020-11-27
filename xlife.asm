@@ -573,12 +573,12 @@ crsrbyte  dc.b 0      ;y%8  word aligned
 crsrbit   dc.b 128    ;x bit position
 xdir      dc.b 0      ;linear transformation, word aligned
 ydir      dc.b 0
+vptilecx  dc.b 0      ;must be word aligned
+vptilecy  dc.b 0
 cellcnt   dc.b 0,0,0
 gencnt    dc.b 0,0,0,0
 crsrx     dc.b 0      ;[x/8]*8
 crsry     dc.b 0      ;[y/8]*8
-;vptilecx  dc.b 0      ;must be word aligned
-;vptilecy  dc.b 0
 xcrsr     dc.b 0,0
 ycrsr     dc.b 0,0  ;must follow xcrsr
 tinfo     dc.b 0,0
@@ -602,11 +602,8 @@ topology  dc.b 0      ;0 - torus
 ;crsrticks dc.b 1
 ;;errst:     dc.b 0   ;0 - do not print i/o-errors message, 1 - print
 ppmode    dc.b 1    ;putpixel mode: 0 - tentative, 1 - active
-;crsrpgmk  dc.b 1   ;0 - do not draw cursor during showscnz, 1 - draw
+crsrpgmk  dc.b 1   ;0 - do not draw cursor during showscnz, 1 - draw
 svfn       blk.b 31
-;drives    rb 26
-;curdrv    dc.b 0
-;patpath   dc.b "\PATTERNS",0
 ;rootpath  dc.b "\",0
 ;cf        dc.b "\COLORS.CFG",0
 ;copyleft  dc.b "\CR.TXT",0
@@ -620,19 +617,21 @@ nformat    dc.b "%3d ",0
 sformat    dc.b "%d",0
 lformat    dc.b "%ld",0
 ulformat   dc.b "N%09ld",0
-
 dosname  dc.b "dos.library",0
-curdisk  dc.b "DH0:",0
 curdir1  dc.b "xlife8/",0
 curdir2  dc.b "patterns",0
 curpath  blk.b 34
 curpathsv blk.b 34
 ioerrmsg dc.b " i/o err #%d",0
-drvidx: dc.b 0
+drvidx  dc.b 0
+i1x dc.b 0,0
+
+        CNOP 0,4
+curdisk dc.b "DH0:",0
 
         CNOP 0,4
 nudrives = 10
-drives: dc.b 'DF0:'
+drives  dc.b 'DF0:'
         dc.b 'DF1:'
         dc.b 'DF2:'
         dc.b 'DF3:'
