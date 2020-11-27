@@ -607,16 +607,7 @@ showscnz:movea.l BITPLANE1_PTR(a3),a5
          move.b d4,4*nextline(a5)
          move.b d4,5*nextline(a5)
          move.b d4,(a5)+
-         tst.b i1x(a3)
-         beq.s .cont7
-
-         cmp.b i1x+1(a3),d5
-         bne.s .cont7
-
-         cmp.b temp(a3),d3
-         bne.s .cont7
-
-         bsr crsrpg
+         setcursor .cont7
 .cont7:  dbra d3,.loop1
          bra.s .c1
 
@@ -627,16 +618,7 @@ showscnz:movea.l BITPLANE1_PTR(a3),a5
          move.b #$7e,4*nextline(a5)
          move.b #$3c,5*nextline(a5)
          move.b #$3c,(a5)+
-         tst.b i1x(a3)
-         beq.s .cont8
-
-         cmp.b i1x+1(a3),d5
-         bne.s .cont8
-
-         cmp.b temp(a3),d3
-         bne.s .cont8
-
-         bsr crsrpg
+         setcursor .cont8
 .cont8:  dbra d3,.loop1
 
 .c1:     lea.l 8*nextline-8(a5),a5
@@ -689,9 +671,8 @@ showscnzp:
          ;mov bl,8
          move.b (a4)+,d0
          moveq #7,d3
-.loop1:  ;shl ch,1
-         lsl.b d0
-         bcc.s .space
+.loop1:  lsl.b d0
+         bcc.w .space
 
          lsl.b d6
          bcc.s .new
@@ -702,7 +683,8 @@ showscnzp:
          move.b #$7e,4*nextline(a5)
          move.b #$3c,5*nextline(a5)
          move.b #$3c,(a5)+
-         dbra d3,.loop1
+         setcursor .cont7
+.cont7:  dbra d3,.loop1
          bra.s .c1
 
 .new:    move.b #$7e,nextline(a5)
@@ -711,7 +693,8 @@ showscnzp:
          move.b #$7e,4*nextline(a5)
          move.b #$3c,5*nextline(a5)
          move.b #$3c,(a5)+
-         dbra d3,.loop1
+         setcursor .cont8
+.cont8:  dbra d3,.loop1
          bra.s .c1
 
 .space:  lsl.b d6
@@ -721,7 +704,8 @@ showscnzp:
          move.b d4,4*nextline(a5)
          move.b d4,5*nextline(a5)
          move.b d4,(a5)+
-         dbra d3,.loop1
+         setcursor .cont6
+.cont6:  dbra d3,.loop1
 
 .c1:     lea.l 8*nextline-8(a5),a5
          dbra d5,.loop2
