@@ -240,10 +240,10 @@ print macro
 endm
 
 setcursor macro
-         tst.b i1x(a3)
+         tst.b i1(a3)
          beq.s \1
 
-         cmp.b i1x+1(a3),d5
+         cmp.b i1+1(a3),d5
          bne.s \1
 
          cmp.b temp(a3),d3

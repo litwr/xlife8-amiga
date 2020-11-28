@@ -554,7 +554,7 @@ calcx:   move.b crsrbit(a3),d2   ;$80 -> 0, $40 -> 1, ...
          bcc.s .c1
 .e0:     rts
 
-crsrpg:  move.b d4,i1x(a3)
+crsrpg:  move.b d4,i1(a3)
          tst.b crsrpgmk(a3)
          beq.s .l1
 
@@ -577,10 +577,10 @@ showscnz:movea.l BITPLANE1_PTR(a3),a5
          lea.l nextline(a5),a5
          movea.l viewport(a3),a4
          moveq #0,d4
-         move.b d4,i1x(a3)
+         move.b d4,i1(a3)
          moveq #7,d1
          sub.b crsrbyte(a3),d1
-         move.b d1,i1x+1(a3)
+         move.b d1,i1+1(a3)
          bsr.s calcx
          moveq #7,d1
          sub.b d0,d1
@@ -594,7 +594,7 @@ showscnz:movea.l BITPLANE1_PTR(a3),a5
          cmpa.l crsrtile(a3),a4
          bne .loop2
 
-         addq.b #1,i1x(a3)
+         addq.b #1,i1(a3)
 .loop2:  move.b (a4)+,d0
          moveq #7,d3
 .loop1:  lsl.b d0
@@ -645,7 +645,7 @@ showscnzp:
          cmpa.l crsrtile(a3),a4
          bne .loop2
 
-         addq.b #1,i1x(a3)
+         addq.b #1,i1(a3)
 .loop2:  ;mov ax,[ds:bp]
          move.b (a6)+,d0
          move.b (a6)+,d3

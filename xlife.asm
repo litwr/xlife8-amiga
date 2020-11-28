@@ -602,7 +602,6 @@ i1        dc.b 0,0
 ;zfg       dc.b 3
 ;zfgnc     dc.b 5
 topology  dc.b 0      ;0 - torus
-;crsrticks dc.b 1
 ;;errst:     dc.b 0   ;0 - do not print i/o-errors message, 1 - print
 ppmode    dc.b 1    ;putpixel mode: 0 - tentative, 1 - active
 crsrpgmk  dc.b 1   ;0 - do not draw cursor during showscnz, 1 - draw
@@ -626,11 +625,10 @@ curdir2  dc.b "patterns",0
 curpath  blk.b 34
 curpathsv blk.b 34
 ioerrmsg dc.b " i/o err #%d",0
-drvidx  dc.b 0
-i1x dc.b 0,0
 
         CNOP 0,4
 curdisk dc.b "DH0:",0
+drvidx  dc.b 0
 
         CNOP 0,4
 nudrives = 10
