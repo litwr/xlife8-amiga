@@ -25,3 +25,4 @@ BP - D6/A6
 * cellsum: check earlier
 + 32 rows for PAL
 + key sequences like for cursor movement
++ zoom mode cursor movements - setviewport changes cursor row when the cursor is on the lowest row and moves beyound an edge horizontally

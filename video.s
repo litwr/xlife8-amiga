@@ -577,7 +577,7 @@ showscnz:movea.l BITPLANE1_PTR(a3),a5
          lea.l nextline(a5),a5
          movea.l viewport(a3),a4
          moveq #0,d4
-         move.b d0,i1x(a3)
+         move.b d4,i1x(a3)
          moveq #7,d1
          sub.b crsrbyte(a3),d1
          move.b d1,i1x+1(a3)
@@ -642,6 +642,10 @@ showscnzp:
 .loop4:  moveq #7,d5
          ;lea bp,[si+count0]
          lea.l count0(a4),a6
+         cmpa.l crsrtile(a3),a4
+         bne .loop2
+
+         addq.b #1,i1x(a3)
 .loop2:  ;mov ax,[ds:bp]
          move.b (a6)+,d0
          move.b (a6)+,d3
