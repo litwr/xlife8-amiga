@@ -487,10 +487,13 @@ crsrflash:
          bcs .l1
 
          clr.w crsrtick(a3)
+         tst.b zoom(a3)
+         bne .l2
+
          bsr crsrclr
          bchg.b #0,crsrstate(a3)
          beq crsrset
-         rts
+.l2:     rts
 
 .l1:     ;addq.w #8,d0
          move.w d0,crsrtick(a3)
