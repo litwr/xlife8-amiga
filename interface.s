@@ -366,7 +366,7 @@ dispatcher:
          move.b d0,crsrbit(a3)
          bra .c270
 
-.c71:	 bsr crsrclr
+.c71:    ;bsr crsrclr
          movea.l crsrtile(a3),a0
          movea.l (right,a0),a1
          cmpa.l #plainbox,a1
@@ -391,7 +391,7 @@ dispatcher:
          movea.l (left,a0),a1
          bra.s .csct2
 
-.c160cl: addq.b #1,vptilecx(a3)
+.c160cl: subq.b #1,vptilecx(a3)
          bsr crsrclr
          move.b crsrbit(a3),d0
          cmpi.b #$80,d0
@@ -401,7 +401,7 @@ dispatcher:
          move.b d0,crsrbit(a3)
          bra .c270
 
-.c71x:	 bsr crsrclr
+.c71x:   ;bsr crsrclr
          movea.l crsrtile(a3),a0
          movea.l (left,a0),a1
          cmpa.l #plainbox,a1
