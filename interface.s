@@ -329,26 +329,26 @@ dispatcher:
          beq .c101         ;-> rts
 
          bsr getsvfn
-         beq .c220
+         beq.s .c220
 
          bsr savepat
-         bra .c220
+         bra.s .c220
 
 .c20:    cmpi.b #$9b,d0   ;extended keys
-         bne .c100
+         bne.s .c100
 
 .e1:     bsr getkey2
          cmpi.b #$43,d0   ;cursor right
-         beq .c20cr
+         beq.s .c20cr
 
          cmpi.b #$20,d0
-         bne .c160
+         bne.s .c160
 
          bsr getkey2
          cmpi.b #$40,d0   ;cursor right shifted
-         bne .c160x
+         bne.s .c160x
 
-         ;;add [vptilecx],8
+         addq.b #8,vptilecx(a3)
          bsr crsrclr
          movea.l crsrtile(a3),a0
          movea.l (right,a0),a1
@@ -356,11 +356,11 @@ dispatcher:
          beq .c270
          bra .csct
 
-.c20cr:  ;;inc [vptilecx]
+.c20cr:  addq.b #1,vptilecx(a3)
          bsr crsrclr
          move.b crsrbit(a3),d0
          cmpi.b #1,d0
-         beq .c71
+         beq.s .c71
 
          lsr.b d0
          move.b d0,crsrbit(a3)
@@ -385,17 +385,17 @@ dispatcher:
 .c160x:  cmpi.b #$41,d0
          bne .c101
 
-         ;;sub [vptilecx],8
+         subq.b #8,vptilecx(a3)
          bsr crsrclr
          movea.l crsrtile(a3),a0
          movea.l (left,a0),a1
-         bra .csct2
+         bra.s .csct2
 
-.c160cl:  ;;inc [vptilecx]
+.c160cl: addq.b #1,vptilecx(a3)
          bsr crsrclr
          move.b crsrbit(a3),d0
          cmpi.b #$80,d0
-         beq .c71x
+         beq.s .c71x
 
          lsl.b d0
          move.b d0,crsrbit(a3)
@@ -411,21 +411,21 @@ dispatcher:
          bra .csct
 
 .c161:   cmpi.b #$41,d0  ;cursor up
-         beq .c161cu
+         beq.s .c161cu
 
          cmpi.b #$54,d0  ;shifted
-         bne .c162
+         bne.s .c162
 
-	 ;;sub [vptilecy],8
+	     subq.b #8,vptilecy(a3)
          bsr crsrclr
          movea.l crsrtile(a3),a0
          movea.l (up,a0),a1
          bra .csct2
 
-.c161cu: ;;dec [vptilecy]
+.c161cu: subq.b #1,vptilecy(a3)
          bsr crsrclr
          move.b crsrbyte(a3),d0
-         beq .c71cu
+         beq.s .c71cu
 
          subq.b #1,crsrbyte(a3)
          bra .c270
@@ -436,25 +436,25 @@ dispatcher:
          beq .c270
 
          move.b #7,crsrbyte(a3)
-         bra .csct
+         bra.s .csct
 
 .c162:   cmpi.b #$42,d0  ;cursor down
-         beq .c162cd
+         beq.s .c162cd
 
          cmpi.b #$53,d0  ;shifted
          bne .c101
 
-	 ;;add [vptilecy],8
+	     addq.b #8,vptilecy(a3)
          bsr crsrclr
          movea.l crsrtile(a3),a0
          movea.l (down,a0),a1
          bra .csct2
 
-.c162cd: ;;inc [vptilecy]
+.c162cd: addq.b #1,vptilecy(a3)
          bsr crsrclr
          move.b crsrbyte(a3),d0
          cmpi.b #7,d0
-         beq .c71cd
+         beq.s .c71cd
 
          addq.b #1,crsrbyte(a3)
          bra .c270
