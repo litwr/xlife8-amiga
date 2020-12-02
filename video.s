@@ -1670,7 +1670,7 @@ setviewport:
         ;dec [vptilecy]
         subq.b #1,vptilecy(a3)
         ;add word [di],tilesize*hormax
-        add.l #tilesize*hormax,(a5)
+        add.l #tilesize*hormax,(a5)      ;up
         bra.s .c2
 
 .c1:    ;cmp al,vermax*8-8    ;184
@@ -1680,7 +1680,7 @@ setviewport:
         ;inc [vptilecy]
         addq.b #1,vptilecy(a3)
         ;sub word [di],tilesize*hormax
-        sub.l #tilesize*hormax,(a5)
+        sub.l #tilesize*hormax,(a5)       ;down
 .c2:    ;mov al,[crsrx]
         move.b crsrx(a3),d0
         ;cmp al,8
@@ -1717,6 +1717,8 @@ setviewport:
         cmpi.b #hormax*8-16,d0
         bcs.s .c5
 
+        ;inc byte [si]
+        addq.b #1,(a4)
         ;sub word [di],tilesize
         sub.l #tilesize,(a5)
 .c5:    ;mov bx,[di]
@@ -1893,7 +1895,7 @@ crsrcalc:
         ;mov di,[di+right]
         movea.l right(a5),a5
         ;add bx,44*tilesize
-        adda.l #44*tilesize,a1
+        adda.l #(2*hormax+4)*tilesize,a1
         ;;cmp bx,di
         cmpa.l a5,a1
         beq.s .c30

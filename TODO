@@ -14,7 +14,7 @@ BP - D6/A6
 + CLR in fast code
 + memory leaks when it starts from WB
 * mouse support
-* implement: +-XZ
+* implement: XZ
 * manpage
 * optimize work with sides: get 4 rows (??), mix left and right cases (check if it is applyable for other architectures)
 * work with word as 2 bytes maybe slow, check a use of 2 bytes instead
@@ -25,4 +25,3 @@ BP - D6/A6
 * cellsum: check earlier
 + 32 rows for PAL
 + key sequences like for cursor movement
-+ zoom mode cursor movements - setviewport changes cursor row when the cursor is on the lowest row and moves beyound an edge horizontally (for the IBM PC version too, the bk is ok!)
