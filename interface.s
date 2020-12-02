@@ -290,6 +290,7 @@ dispatcher:
          bne .c100
 
          addq.b #1,zoom(a3)
+         bsr setviewport
          bsr tograph
          bra .c270
 
