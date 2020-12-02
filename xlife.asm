@@ -606,7 +606,6 @@ topology  dc.b 0      ;0 - torus
 ppmode    dc.b 1    ;putpixel mode: 0 - tentative, 1 - active
 crsrpgmk  dc.b 1   ;0 - do not draw cursor during showscnz, 1 - draw
 svfn       blk.b 31
-;rootpath  dc.b "\",0
 ;cf        dc.b "\COLORS.CFG",0
 ;copyleft  dc.b "\CR.TXT",0
 nofnchar  dc.b "?#()|%[]~/:;<>'*+"
@@ -688,9 +687,11 @@ FONT_ATTR:
 	DC.B	0
 	DC.W	8		; Size
 
+lightgreen: dc.w $0c0
+
 COLORS:
-	DC.W	$0080,$0ee0,$0000,$0FFF  ;green,yellow,black,white
-	DC.W	$000C,$000B,$000A,$0009
+	DC.W	$080,$ee0,$000,$FFF  ;green,yellow,black,white
+	;DC.W	$00C,$00B,$00A,$009  ;extra, not used
 
 texts:	dc.b 'G%XY'
 
@@ -714,8 +715,6 @@ ERROR_STACK:        DC.L	0
 KEYB_BUFFER:		DCB.B	KB2_SIZE,0
 KEYB_OUTBUFFER:		DC.W	0
 KEYB_INBUFFER:		DC.W	0
-
-
 
 IO_REQUEST:		DCB.B	32,0
 KEY_BUFFER:		DCB.B	80,0

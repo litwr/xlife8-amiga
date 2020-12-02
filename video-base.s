@@ -97,14 +97,16 @@ tograph:bsr clrscn
         bsr xyout
         bra initxt
 
-showmode:moveq #12,d2
+showmode:move.w lightgreen(a3),d2
          tst.b mode(a3)
-         bne .e1
+         bne.s .e1
 
-         moveq #8,d2
-.e1:     moveq #0,d3
+         move.w COLORS(a3),d2
+.e1:     move.w d2,d1
+         lsr.w #4,d2
+         move.w d2,d3
+         lsr.w #4,d3
          moveq #0,d0
-         moveq #0,d1
          move.l GRAPHICS_BASE(a3),a6
          MOVE.L VIEW_PORT(A3),A0
          jmp SetRGB4(a6)
@@ -114,7 +116,7 @@ showtopology:
          movea.l RASTER_PORT(a3),a1
          color 3
          tst.b topology(a3)
-         beq .l1
+         beq.s .l1
 
          invvideo
 .l1:     movepen 0,198

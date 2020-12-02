@@ -87,7 +87,6 @@ KEYB_INIT:
 
 COLORS_SET:
         movea.l VIEW_PORT(a3),a0
-
 	MOVE.L	GRAPHICS_BASE(A3),A6
 	lea	COLORS(A3),A1		; Pointer to the color list
 	MOVEQ	#8,D0			; 8 colors to set

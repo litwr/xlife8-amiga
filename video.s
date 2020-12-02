@@ -1979,75 +1979,82 @@ infov:   bsr totext
          ;call curoff
          bsr getkey
          bra tograph
-   if 0
-outinnum:mov cl,10
-         xor ah,ah
-         div cl
-         mov dx,ax
-         mov ah,2
-         or al,al
-         jz .l1
 
-         or dl,'0'
-         int 21h
-.l1:     mov dl,dh
-         or dl,'0'
-         int 21h
-         call printstr
-         db purple,']: ',black,'$'  ;must be followed by inputdec
+outinnum:color 2
+         invvideo
+         lea.l sformat(a3),a0
+         lea.l temp(a3),a1
+         move.w d5,(a1)
+         lea.l stuffChar(pc),a2
+         move.l #-1,charCount(a3)
+         move.l a3,-(sp)
+         lea.l stringbuf(a3),a3
+         movea.l 4.w,a6
+         jsr RawDoFmt(a6)
+         move.l (sp)+,a3
+         move.l charCount(a3),d0
+         lea.l stringbuf(a3),a0
+         movea.l RASTER_PORT(a3),a1
+         move.l GRAPHICS_BASE(a3),a6
+         jsr Text(a6)
+         color 1
+         normvideo
+         print ']: '
+         normvideo
+         color 3     ;must be followed by inputdec
 
-inputdec:mov si,stringbuf  ;in: ch - limit hi
-         xor cl,cl
-.c1:     call getkey
-         cmp al,0dh
-         je .c11
+inputdec:;mov si,stringbuf  ;in: ch - limit hi
+         ;xor cl,cl
+.c1:     ;call getkey
+         ;cmp al,0dh
+         ;je .c11
 
-         cmp al,8    ;backspace
-         je .c12
+         ;cmp al,8    ;backspace
+         ;je .c12
 
-         cmp al,'0'+10
-         jnc .c1
+         ;cmp al,'0'+10
+         ;jnc .c1
 
-         cmp al,'0'
-         jc .c1
+         ;cmp al,'0'
+         ;jc .c1
 
-         cmp cl,2
-         je .c1
+         ;cmp cl,2
+         ;je .c1
 
-         inc cx
-         mov dl,al
-         mov ah,2
-         int 21h
+         ;inc cx
+         ;mov dl,al
+         ;mov ah,2
+         ;int 21h
 
-         sub al,'0'
-         mov [si],al
-         inc si
-         jmp .c1
+         ;sub al,'0'
+         ;mov [si],al
+         ;inc si
+         ;jmp .c1
 
-.c12:    dec si
-         dec cl
-         js inputdec
+.c12:    ;dec si
+         ;dec cl
+         ;js inputdec
 
-         call delchr
-         jmp .c1
+         ;call delchr
+         ;jmp .c1
 
-.c11:    or cl,cl
-         je .exit
+.c11:    ;or cl,cl
+         ;je .exit
 
-         mov di,stringbuf
-         xor ax,ax
-         cmp cl,1
-         je .c16
+         ;mov di,stringbuf
+         ;xor ax,ax
+         ;cmp cl,1
+         ;je .c16
 
-         mov al,[di]
-         inc di
-         mov ah,10
-         mul ah
-.c16:    add al,[di]
-         cmp al,ch
-         jnc .c1
-.exit:   retn          ;should proper set CF
-   endif
+         ;mov al,[di]
+         ;inc di
+         ;mov ah,10
+         ;mul ah
+.c16:    ;add al,[di]
+         ;cmp al,ch
+         ;jnc .c1
+.exit:   rts          ;should proper set CF
+
 chgcolors:
          bsr totext
          move.l GRAPHICS_BASE(a3),a6 
@@ -2056,74 +2063,60 @@ chgcolors:
          color 2  ;green
          print 'PRESS '
          color 1  ;red
+         invvideo
          print 'ENTER'
          color 2
+         normvideo
          print ' TO USE THE DEFAULT VALUE OR'
          movepenq 0,14
-         print 'INPUT A DECIMAL NUMBER.'
-         ;purple
-         ;db 'PALETTE# FOR ZOOM OUT MODE (0-1)[',cyan,'$'
-         ;mov al,[palette]
-         ;mov ch,2
-         ;call outinnum
+         print 'INPUT A DECIMAL NUMBER (0-4095).'
+         movepenq 0,22
+         color 1
+         print 'COLOR #0 ['
+         move.w COLORS(a3),d5
+         moveq #22,d4
+         bsr outinnum
          ;jnc .l1
 
-         ;mov [palette],al
-.l1:     ;call printstr
-         ;db 0dh,10,purple,'THE ZOOM OUT GO BACKGROUND (0-31)[',cyan,'$'
-         ;mov al,[bgr]
-         ;mov ch,32
-         ;call outinnum
+         move.w d0,COLORS(a3)
+.l1:     color 1
+         movepenq 0,30
+         print 'COLOR #0 HIGHLIGHTED ['
+         move.w lightgreen(a3),d5
+         moveq #30,d4
+         bsr outinnum
          ;jnc .l2
 
-         ;mov [bgr],al
-.l2:     ;call printstr
-         ;db 0dh,10,purple,'THE ZOOM OUT EDIT BACKGROUND (0-31)[',cyan,'$'
-         ;mov al,[bgs]
-         ;mov ch,32
-         ;call outinnum
+         move.w d0,lightgreen(a3)
+.l2:     color 1
+         movepenq 0,38
+         print 'COLOR #1 ['
+         move.w COLORS+2(a3),d5
+         moveq #38,d4
+         bsr outinnum
          ;jnc .l3
 
-         ;mov [bgs],al
-.l3:     ;call printstr
-         ;db 0dh,10,purple,'THE ZOOM IN GO BACKGROUND (0-7)[',cyan,'$'
-         ;mov al,[zbgr]
-         ;mov cx,804h
-         ;shr al,cl
-         ;call outinnum
+         move.w d5,COLORS+2(a3)
+.l3:     color 1
+         movepenq 0,46
+         print 'COLOR #2 ['
+         move.w COLORS+4(a3),d5
+         moveq #46,d4
+         bsr outinnum
          ;jnc .l4
 
-         ;mov cl,4
-         ;shl al,cl
-         ;mov [zbgr],al
-.l4:     ;call printstr
-         ;db 0dh,10,purple,'THE ZOOM IN EDIT BACKGROUND (0-7)[',cyan,'$'
-         ;mov al,[zbgs]
-         ;mov cx,804h
-         ;shr al,cl
-         ;call outinnum
-         ;jnc .l5
-
-         ;mov cl,4
-         ;shl al,cl
-         ;mov [zbgs],al
-.l5:     ;call printstr
-         ;db 0dh,10,purple,'THE ZOOM IN LIVE CELL (0-15)[',cyan,'$'
-         ;mov al,[zfg]
-         ;mov ch,16
-         ;call outinnum
-         ;jnc .l6
-
-         ;mov [zfg],al
-.l6:     ;call printstr
-         ;db 0dh,10,purple,'THE ZOOM IN NEW CELL (0-15)[',cyan,'$'
-         ;mov al,[zfgnc]
-         ;mov ch,16
-         ;call outinnum
+         move.w d5,COLORS+4(a3)
+.l4:     color 1
+         movepenq 0,54
+         print 'COLOR #3 ['
+         move.w COLORS+6(a3),d5
+         moveq #54,d4
+         bsr outinnum
          ;jnc .l7
 
-         ;mov [zfgnc],al
-.l7:     movepenq 0,46
+         move.w d5,COLORS+6(a3)
+.l7:     movepenq 0,62
+         color 1
          print 'TO SAVE THIS CONFIG?'
 .l8:     bsr getkey
          ori.b #32,d0
