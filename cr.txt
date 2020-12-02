@@ -1,0 +1,18 @@
+Xlife v1 for the Commodore Amiga ported to 8/16-bit universe by litwr
+
+(c) 2014-20 GNU GPL
+
+The 1st version of the original xlife for Unix was developed at CMU at the
+1989 by Jon Bennett & Chuck Silvers
+
+It was developed by Jon Bennett, Paul Callahan, Achim Flammenkamp, Eric S.
+Raymond up to 1999
+
+Its development was continued by Vladimir Lidovski at 2011
+
+http://freecode.com/projects/xlife
+
+This program creation was inspired by Luca, Mkarcz, Gaia, and Opqa. Thanks to
+makers of 'fasm' assembler, dosemu and pce emulators, wikipedia and other
+documentation, the original 'xlife', Commodore +4, Amstrad CPC6128, Elektronika
+BK, IBM PC, ...

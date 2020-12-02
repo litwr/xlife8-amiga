@@ -312,22 +312,22 @@ dispatcher:
          cmpi.b #'Z',d0
          bne .c179
 
-         ;;call totext
-         ;;call chgcolors
+         bsr totext
+         bsr chgcolors
 .c220:   bra tograph
 
 .c179:   cmpi.b #'X',d0
          bne .c18
 
-         ;;call totext
-         ;;call setcolors
-         ;;jmp .c220
+         bsr totext
+         ;bsr setcolors
+         bra.s .c220
 
 .c18:    cmpi.b #'S',d0
-         bne .c20
+         bne.s .c20
 
          bsr boxsz
-         beq .c101         ;-> rts
+         beq.w .c101         ;-> rts
 
          bsr getsvfn
          beq.s .c220
@@ -336,7 +336,7 @@ dispatcher:
          bra.s .c220
 
 .c20:    cmpi.b #$9b,d0   ;extended keys
-         bne.s .c100
+         bne.w .c100
 
 .e1:     bsr getkey2
          cmpi.b #$43,d0   ;cursor right

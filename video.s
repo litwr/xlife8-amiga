@@ -592,7 +592,7 @@ showscnz:movea.l BITPLANE1_PTR(a3),a5
 .loop3:  moveq #3,d2
 .loop4:  moveq #7,d5
          cmpa.l crsrtile(a3),a4
-         bne .loop2
+         bne.s .loop2
 
          addq.b #1,i1(a3)
 .loop2:  move.b (a4)+,d0
@@ -2047,85 +2047,93 @@ inputdec:mov si,stringbuf  ;in: ch - limit hi
          cmp al,ch
          jnc .c1
 .exit:   retn          ;should proper set CF
-
-chgcolors:
-         mov ax,3
-         int 10h
-         call printstr
-         db green,'PRESS ',red,'ENTER',green
-         db ' TO USE THE DEFAULT VALUE OR INPUT THE DECIMAL NUMBER.',0dh,10,purple
-         db 'PALETTE# FOR ZOOM OUT MODE (0-1)[',cyan,'$'
-         mov al,[palette]
-         mov ch,2
-         call outinnum
-         jnc .l1
-
-         mov [palette],al
-.l1:     call printstr
-         db 0dh,10,purple,'THE ZOOM OUT GO BACKGROUND (0-31)[',cyan,'$'
-         mov al,[bgr]
-         mov ch,32
-         call outinnum
-         jnc .l2
-
-         mov [bgr],al
-.l2:     call printstr
-         db 0dh,10,purple,'THE ZOOM OUT EDIT BACKGROUND (0-31)[',cyan,'$'
-         mov al,[bgs]
-         mov ch,32
-         call outinnum
-         jnc .l3
-
-         mov [bgs],al
-.l3:     call printstr
-         db 0dh,10,purple,'THE ZOOM IN GO BACKGROUND (0-7)[',cyan,'$'
-         mov al,[zbgr]
-         mov cx,804h
-         shr al,cl
-         call outinnum
-         jnc .l4
-
-         mov cl,4
-         shl al,cl
-         mov [zbgr],al
-.l4:     call printstr
-         db 0dh,10,purple,'THE ZOOM IN EDIT BACKGROUND (0-7)[',cyan,'$'
-         mov al,[zbgs]
-         mov cx,804h
-         shr al,cl
-         call outinnum
-         jnc .l5
-
-         mov cl,4
-         shl al,cl
-         mov [zbgs],al
-.l5:     call printstr
-         db 0dh,10,purple,'THE ZOOM IN LIVE CELL (0-15)[',cyan,'$'
-         mov al,[zfg]
-         mov ch,16
-         call outinnum
-         jnc .l6
-
-         mov [zfg],al
-.l6:     call printstr
-         db 0dh,10,purple,'THE ZOOM IN NEW CELL (0-15)[',cyan,'$'
-         mov al,[zfgnc]
-         mov ch,16
-         call outinnum
-         jnc .l7
-
-         mov [zfgnc],al
-.l7:     call printstr
-         db 0dh,10,'TO SAVE THIS CONFIG?$'
-.l8:     call getkey
-         or al,32
-         cmp al,'n'
-         je putpixel2.e1
-
-         cmp al,'y'
-         jne .l8
-         jmp savecf
    endif
+chgcolors:
+         bsr totext
+         move.l GRAPHICS_BASE(a3),a6 
+         ;movea.l RASTER_PORT(a3),a1
+         movepenq 0,6
+         color 2  ;green
+         print 'PRESS '
+         color 1  ;red
+         print 'ENTER'
+         color 2
+         print ' TO USE THE DEFAULT VALUE OR'
+         movepenq 0,14
+         print 'INPUT A DECIMAL NUMBER.'
+         ;purple
+         ;db 'PALETTE# FOR ZOOM OUT MODE (0-1)[',cyan,'$'
+         ;mov al,[palette]
+         ;mov ch,2
+         ;call outinnum
+         ;jnc .l1
+
+         ;mov [palette],al
+.l1:     ;call printstr
+         ;db 0dh,10,purple,'THE ZOOM OUT GO BACKGROUND (0-31)[',cyan,'$'
+         ;mov al,[bgr]
+         ;mov ch,32
+         ;call outinnum
+         ;jnc .l2
+
+         ;mov [bgr],al
+.l2:     ;call printstr
+         ;db 0dh,10,purple,'THE ZOOM OUT EDIT BACKGROUND (0-31)[',cyan,'$'
+         ;mov al,[bgs]
+         ;mov ch,32
+         ;call outinnum
+         ;jnc .l3
+
+         ;mov [bgs],al
+.l3:     ;call printstr
+         ;db 0dh,10,purple,'THE ZOOM IN GO BACKGROUND (0-7)[',cyan,'$'
+         ;mov al,[zbgr]
+         ;mov cx,804h
+         ;shr al,cl
+         ;call outinnum
+         ;jnc .l4
+
+         ;mov cl,4
+         ;shl al,cl
+         ;mov [zbgr],al
+.l4:     ;call printstr
+         ;db 0dh,10,purple,'THE ZOOM IN EDIT BACKGROUND (0-7)[',cyan,'$'
+         ;mov al,[zbgs]
+         ;mov cx,804h
+         ;shr al,cl
+         ;call outinnum
+         ;jnc .l5
+
+         ;mov cl,4
+         ;shl al,cl
+         ;mov [zbgs],al
+.l5:     ;call printstr
+         ;db 0dh,10,purple,'THE ZOOM IN LIVE CELL (0-15)[',cyan,'$'
+         ;mov al,[zfg]
+         ;mov ch,16
+         ;call outinnum
+         ;jnc .l6
+
+         ;mov [zfg],al
+.l6:     ;call printstr
+         ;db 0dh,10,purple,'THE ZOOM IN NEW CELL (0-15)[',cyan,'$'
+         ;mov al,[zfgnc]
+         ;mov ch,16
+         ;call outinnum
+         ;jnc .l7
+
+         ;mov [zfgnc],al
+.l7:     movepenq 0,46
+         print 'TO SAVE THIS CONFIG?'
+.l8:     bsr getkey
+         ori.b #32,d0
+         cmpi.b #'n',d0
+         beq.s putpixel2\.e1
+
+         cmpi.b #'y',d0
+         bne .l8
+         bra savecf
+
 putpixel2:
          ;;mov di,[di+video]
          move.l video(a5),d0

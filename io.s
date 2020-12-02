@@ -38,20 +38,21 @@ setcolors:mov ax,3d00h
          mov dx,palette
          int 21h
 .e1:     jmp loadpat.e1
+   endif
+savecf:  rts  ;FIXME!!
+         ;mov ah,3ch   ;create a file
+         ;mov dx,cf
+         ;xor cx,cx
+         ;int 21h
+         ;jc readtent.e1
 
-savecf:  mov ah,3ch   ;create a file
-         mov dx,cf
-         xor cx,cx
-         int 21h
-         jc readtent.e1
+         ;mov bx,ax
+         ;mov ah,40h   ;write
+         ;mov cx,7
+         ;mov dx,palette
+         ;int 21h
+         bra loadpat\.exit2
 
-         mov bx,ax
-         mov ah,40h   ;write
-         mov cx,7
-         mov dx,palette
-         int 21h
-         jmp loadpat.e1
-  endif
 readtent:move.l filehl(a3),d1
          move.l #iobseg,d2
          move.l #iobseg_end-iobseg,d3
