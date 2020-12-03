@@ -615,7 +615,7 @@ curdir1  dc.b "xlife8/",0
 curdir2  dc.b "patterns",0
 curpath  blk.b 34
 curpathsv blk.b 34
-ioerrmsg dc.b " i/o err #%d",0
+ioerrmsg dc.b " i/o err #%ld",0
 
         CNOP 0,4
 curdisk dc.b "DH0:",0

@@ -39,18 +39,26 @@ setcolors:mov ax,3d00h
          int 21h
 .e1:     jmp loadpat.e1
    endif
-savecf:  rts  ;FIXME!!
-         ;mov ah,3ch   ;create a file
-         ;mov dx,cf
-         ;xor cx,cx
-         ;int 21h
-         ;jc readtent.e1
+savecf:  lea.l curpathsv(a3),a1
+         bsr makepath2
+         lea.l cf(a3),a0
+         bsr fn2path\.loop
+         move.l #curpathsv,d1
+         move.l #MODE_NEWFILE,d2
+         move.l doslib(a3),a6
+         jsr Open(a6)
+         tst.l d0
+         beq savepat\.error
 
-         ;mov bx,ax
-         ;mov ah,40h   ;write
-         ;mov cx,7
-         ;mov dx,palette
-         ;int 21h
+         move.l d0,tmplock(a3)     ;lock-save
+         move.l d0,d1
+         move.l #lightgreen,d2
+         moveq #10,d3
+         jsr Write(a6)
+         tst.l d0
+         bne loadpat\.exit2
+
+         bsr savepat\.error
          bra loadpat\.exit2
 
 readtent:move.l filehl(a3),d1
@@ -457,9 +465,11 @@ savepat: lea.l curpathsv(a3),a1
          movea.l 4.w,a6
          jsr RawDoFmt(a6)
          move.l (sp)+,a3
-         movea.l RASTER_PORT(a3),a1
+         bsr totext
          move.l GRAPHICS_BASE(a3),a6
+         movepenq 0,6
          color 1
+         movea.l RASTER_PORT(a3),a1
          move.l charCount(a3),d0
          lea.l stringbuf(a3),a0
          jsr Text(a6)
