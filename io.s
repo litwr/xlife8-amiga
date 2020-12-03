@@ -39,16 +39,16 @@ setcolors:
          tst.l d0
          beq savepat\.error
 
-         move.l d0,tmplock(a3)     ;lock-save
+         move.l d0,filehl(a3)     ;fh-save
          move.l d0,d1
          move.l #lightgreen,d2
          moveq #10,d3
          jsr Read(a6)
-         tst.l d0
-         beq.s savecf\.e
+         cmpi.l #10,d0
+         bne.s savecf\.e
 
          movea.l VIEW_PORT(a3),a0
-         move.l GRAPHICS_BASE(A3),a6
+         movea.l GRAPHICS_BASE(A3),a6
          lea.l COLORS(a3),a1   ; Pointer to the color list
          moveq #4,d0           ; 4 colors to set
          jsr LoadRGB4(a6)      ; Set the colors
@@ -60,12 +60,12 @@ savecf:  lea.l curpathsv(a3),a1
          bsr fn2path\.loop
          move.l #curpathsv,d1
          move.l #MODE_NEWFILE,d2
-         move.l doslib(a3),a6
+         movea.l doslib(a3),a6
          jsr Open(a6)
          tst.l d0
          beq savepat\.error
 
-         move.l d0,tmplock(a3)     ;lock-save
+         move.l d0,filehl(a3)     ;fh-save
          move.l d0,d1
          move.l #lightgreen,d2
          moveq #10,d3
@@ -169,6 +169,7 @@ loadpat: bsr makepath
          bne .loop
 
 .exit2:  move.l filehl(a3),d1
+         move.l doslib(a3),a6
          jmp Close(a6)
 
 printd0l:
@@ -470,7 +471,11 @@ savepat: lea.l curpathsv(a3),a1
          bra loadpat\.exit2
 
 .error:  jsr IoErr(a6)
-         move.l d0,temp(a3)
+         tst.b errst(a3)
+         bne.s .c1
+         rts
+
+.c1:     move.l d0,temp(a3)
          lea.l ioerrmsg(a3),a0
          lea.l temp(a3),a1
          lea.l stuffChar(pc),a2

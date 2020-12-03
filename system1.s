@@ -86,10 +86,10 @@ KEYB_INIT:
 	RTS
 
 COLORS_SET:
-        movea.l VIEW_PORT(a3),a0
-	MOVE.L	GRAPHICS_BASE(A3),A6
-	lea.l	COLORS(A3),A1		; Pointer to the color list
-	MOVEQ	#8,D0			; 8 colors to set
+    movea.l VIEW_PORT(a3),a0
+	movea.l GRAPHICS_BASE(a3),a6
+	lea.l	COLORS(a3),a1		; Pointer to the color list
+	MOVEQ	#4,D0			; 4 colors to set
 	JMP	LoadRGB4(A6)		; Set the colors
 
 KEYB_EXIT:

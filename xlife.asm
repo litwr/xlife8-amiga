@@ -19,55 +19,51 @@
          lea.l SOD,A3
 
          include "system1.s"
-start:
-         movea.l 4.w,a6
+
+start:   movea.l 4.w,a6
          lea dosname(a3),a1
          jsr OldOpenLibrary(a6)
          move.l d0,doslib(a3)
          bsr chgdrv
+         ;bsr copyr
+         bsr setcolors
+         addq.b #1,errst(a3)
+         bsr showmode
          bsr help
-mainloop:
-         bsr crsrflash
+mainloop:bsr crsrflash
 .e1:     bsr dispatcher
          move.b mode(a3),d0
-         beq mainloop
+         beq.s mainloop
 
          cmp.b #3,d0
-         bne .c3
+         bne.s .c3
 
-         ;mov ah,3bh
-         ;mov dx,rootpath
-         ;int 21h
-
-         ;mov ax,3
-         ;call totext.e1
-.exit:
-         move.l doslib(a3),a1
+.exit:   move.l doslib(a3),a1
          movea.l 4.w,a6
          jmp CloseLibrary(a6)
          ;clr.l d1
          ;jmp Exit(a6)
 
 .c3:     tst.w tilecnt(a3)
-         bne .c4
+         bne.s .c4
 
          clr.b mode(a3)
          bsr incgen
          bsr tograph
-         bra mainloop
+         bra.s mainloop
 
 .c4:     cmp.b #2,d0
-         bne .c5
+         bne.s .c5
 
          bsr generate     ;hide
          bsr cleanup
-         bra .e1
+         bra.s .e1
 
 .c5:     bsr zerocc
          bsr generate
          bsr showscn
          bsr cleanup
-         bra mainloop
+         bra.s mainloop
 
          include "parsepattern.s"
          include "io.s"
@@ -80,7 +76,7 @@ mainloop:
          include "tile.s"
 
 rasteri:     btst #6,$dff01e   ;blitter?
-             bne rasterie
+             bne.s rasterie
 
              addq.l #1,timercnt
 rasterie:    move.l interruptv,-(sp)
@@ -100,8 +96,7 @@ generate:
 
          movea.l startp(a3),a4		;;mov si,[startp]
 .c5:     tst.b (sum,a4)			;;cmp byte [si+sum],0
-         beq .lnext			;;jz .$
-					;;jmp .lnext
+         beq .lnext
 
          moveq #0,d1			;;xor bx,bx
          move.b (a4),d1  ;top row	;;or bl,byte [si]
@@ -594,7 +589,7 @@ fn        blk.b 31,0    ;30 is max filename length
 density   dc.b 3
 i1        dc.b 0,0
 topology  dc.b 0      ;0 - torus
-;;errst:     dc.b 0   ;0 - do not print i/o-errors message, 1 - print
+errst     dc.b 0   ;0 - do not print i/o-errors message, 1 - print
 ppmode    dc.b 1    ;putpixel mode: 0 - tentative, 1 - active
 crsrpgmk  dc.b 1   ;0 - do not draw cursor during showscnz, 1 - draw
 svfn      blk.b 31
