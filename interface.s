@@ -320,7 +320,7 @@ dispatcher:
          bne .c18
 
          bsr totext
-         ;bsr setcolors
+         bsr setcolors
          bra.s .c220
 
 .c18:    cmpi.b #'S',d0

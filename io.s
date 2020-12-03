@@ -26,19 +26,34 @@ copyr:   call printstr
 
 .exit:   call getkey
          jmp setcolors.e1
-
-setcolors:mov ax,3d00h
-         mov dx,cf
-         int 21h
-         jc readtent.e1
-
-         mov bx,ax
-         mov ah,3fh   ;read file
-         mov cx,7
-         mov dx,palette
-         int 21h
-.e1:     jmp loadpat.e1
    endif
+setcolors:
+         lea.l curpathsv(a3),a1
+         bsr makepath2
+         lea.l cf(a3),a0
+         bsr fn2path\.loop
+         move.l #curpathsv,d1
+         move.l #MODE_OLD,d2
+         move.l doslib(a3),a6
+         jsr Open(a6)
+         tst.l d0
+         beq savepat\.error
+
+         move.l d0,tmplock(a3)     ;lock-save
+         move.l d0,d1
+         move.l #lightgreen,d2
+         moveq #10,d3
+         jsr Read(a6)
+         tst.l d0
+         beq.s savecf\.e
+
+         movea.l VIEW_PORT(a3),a0
+         move.l GRAPHICS_BASE(A3),a6
+         lea.l COLORS(a3),a1   ; Pointer to the color list
+         moveq #4,d0           ; 4 colors to set
+         jsr LoadRGB4(a6)      ; Set the colors
+         bra loadpat\.exit2
+
 savecf:  lea.l curpathsv(a3),a1
          bsr makepath2
          lea.l cf(a3),a0
@@ -55,10 +70,10 @@ savecf:  lea.l curpathsv(a3),a1
          move.l #lightgreen,d2
          moveq #10,d3
          jsr Write(a6)
-         tst.l d0
-         bne loadpat\.exit2
+         cmpi.l #10,d0
+         beq loadpat\.exit2
 
-         bsr savepat\.error
+.e:      bsr savepat\.error
          bra loadpat\.exit2
 
 readtent:move.l filehl(a3),d1
