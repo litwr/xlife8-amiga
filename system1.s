@@ -72,8 +72,8 @@ TASK_FIND:
 
 KEYB_INIT:
 	MOVE.L	4.W,A6
-	LEA	CONSOLE_NAME(A3),A0	; Pointer to "Console.Device"
-	LEA	IO_REQUEST(A3),A1	; Io Buffer
+	LEA.l	CONSOLE_NAME(A3),A0	; Pointer to "Console.Device"
+	LEA.l	IO_REQUEST(A3),A1	; Io Buffer
 	MOVEQ	#-1,D0			; Flags
 	MOVEQ	#0,D1			; Unit
 	JSR	OpenDevice(A6)		
@@ -88,18 +88,18 @@ KEYB_INIT:
 COLORS_SET:
         movea.l VIEW_PORT(a3),a0
 	MOVE.L	GRAPHICS_BASE(A3),A6
-	lea	COLORS(A3),A1		; Pointer to the color list
+	lea.l	COLORS(A3),A1		; Pointer to the color list
 	MOVEQ	#8,D0			; 8 colors to set
 	JMP	LoadRGB4(A6)		; Set the colors
 
 KEYB_EXIT:
-	LEA	IO_REQUEST(A3),A1
+	LEA.l	IO_REQUEST(A3),A1
 	MOVE.L	4.W,A6
 	JMP	CloseDevice(A6)
 
 INTULIB_OPEN:
 	MOVE.L	4.W,A6
-	LEA	INTUITION_NAME(A3),A1	; Pointer to "intuition.library"
+	LEA.l	INTUITION_NAME(A3),A1	; Pointer to "intuition.library"
 	JSR	OldOpenLibrary(A6)
 	MOVE.L	D0,INTUITION_BASE(A3)	; Store pointer
 	BEQ	STARTUP_ERROR		; If error jump
@@ -112,7 +112,7 @@ INTULIB_CLOSE:
 
 GRAPHLIB_OPEN:
 	MOVE.L	4.W,A6
-	LEA	GRAPHICS_NAME(A3),A1	; Pointer to "graphics.library"
+	LEA.l	GRAPHICS_NAME(A3),A1	; Pointer to "graphics.library"
 	JSR	OldOpenLibrary(A6)
 	MOVE.L	D0,GRAPHICS_BASE(A3)
 	BEQ	STARTUP_ERROR
@@ -124,17 +124,17 @@ GRAPHLIB_CLOSE:
 	JMP	CloseLibrary(A6)
 
 SCREEN_OPEN:
-	LEA	SCREEN_DEFS(A3),A0
+	LEA.l	SCREEN_DEFS(A3),A0
 	MOVE.L	INTUITION_BASE(A3),A6
 	JSR	OpenScreen(A6)
 	MOVE.L	D0,SCREEN_HANDLE(A3)
 	BEQ	STARTUP_ERROR
 
 	MOVE.L	D0,A0
-        lea 44(a0),a2
+        lea.l 44(a0),a2
         move.l a2,VIEW_PORT(a3)
-	LEA	$C0(A0),A2		; Get bitplane pointers
-	LEA	BITPLANE1_PTR(A3),A1
+	LEA.l	$C0(A0),A2		; Get bitplane pointers
+	LEA.l	BITPLANE1_PTR(A3),A1
 	MOVE.L	(A2)+,(A1)+		; Bitplane 1
 	MOVE.L	(A2)+,(A1)+		; Bitplane 2
 	moveq #0,d0
@@ -147,7 +147,7 @@ SCREEN_CLOSE:
 
 WINDOW_OPEN:
 	MOVE.L	INTUITION_BASE(A3),A6	; Pointer to intuition library
-	LEA	WINDOW_DEFS(A3),A0	; Pointer to window definitions
+	LEA.l	WINDOW_DEFS(A3),A0	; Pointer to window definitions
 	JSR	OpenWindow(A6)
 	MOVE.L	D0,WINDOW_HANDLE(A3)	; Store window handle
 	BEQ	STARTUP_ERROR		; Error jump
@@ -174,7 +174,7 @@ KEYB_STILLKEYSINBUFFER:
 
         moveq #0,d1
 .l1:	move.w d1,KEYB_OUTBUFFER(A3)
-        LEA	KEYB_BUFFER(A3),A0
+        LEA.l	KEYB_BUFFER(A3),A0
 	MOVE.B	(A0,D0.W),D0		; Get the oldest key
 	RTS
 
@@ -204,8 +204,8 @@ KEYB_GETKEYS0:
 	MOVE.L	D6,IEADDR(A3)	; AND POINTER TO OLD KEYS
 
 ;---  Convert to ascii  ---
-	LEA	MY_EVENT(A3),A0	; Pointer to event structure
-	LEA	KEY_BUFFER(A3),A1	; Convert buffer
+	LEA.l	MY_EVENT(A3),A0	; Pointer to event structure
+	LEA.l	KEY_BUFFER(A3),A1	; Convert buffer
 	MOVEQ	#80,D1		; Max 80 characters
 	SUB.L	A2,A2		; A2 = 0 Keymap - Default
 	MOVE.L	CONSOLE_DEVICE(A3),A6
@@ -216,8 +216,8 @@ KEYB_GETKEYS0:
 	SUBQ.W	#1,D0
 	BMI.S	KEYB_ANSWER		; No chars ??
 
-	LEA	KEY_BUFFER(A3),A1
-	LEA	KEYB_BUFFER(A3),A0
+	LEA.l	KEY_BUFFER(A3),A1
+	LEA.l	KEYB_BUFFER(A3),A0
 	MOVE.W	KEYB_INBUFFER(A3),D1
 .LOOP:	MOVE.B	(A1)+,(A0,D1.W)		; Copy the keys to the normal
 	ADDQ.B	#1,D1			;  buffer.

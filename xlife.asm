@@ -593,21 +593,13 @@ zoom      dc.b 0
 fn        blk.b 31,0    ;30 is max filename length
 density   dc.b 3
 i1        dc.b 0,0
-;czbg      dc.b 0
-;palette   dc.b 0
-;bgr       dc.b 0ah
-;bgs       dc.b 0
-;zbgr      dc.b 20h
-;zbgs      dc.b 0
-;zfg       dc.b 3
-;zfgnc     dc.b 5
 topology  dc.b 0      ;0 - torus
 ;;errst:     dc.b 0   ;0 - do not print i/o-errors message, 1 - print
 ppmode    dc.b 1    ;putpixel mode: 0 - tentative, 1 - active
 crsrpgmk  dc.b 1   ;0 - do not draw cursor during showscnz, 1 - draw
-svfn       blk.b 31
-;cf        dc.b "\COLORS.CFG",0
-;copyleft  dc.b "\CR.TXT",0
+svfn      blk.b 31
+cf        dc.b "colors.cfg",0
+copyleft  dc.b "cr.txt",0
 nofnchar  dc.b "?#()|%[]~/:;<>'*+"
           dc.b '"'
 stringbuf blk.b 21     ;must be after nofnchar
