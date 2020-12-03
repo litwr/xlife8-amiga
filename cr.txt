@@ -1,4 +1,4 @@
-Xlife v1 for the Commodore Amiga ported to 8/16-bit universe by litwr
+Xlife for the Commodore Amiga v1 ported to 8/16-bit universe by litwr
 
 (c) 2014-20 GNU GPL
 

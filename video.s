@@ -984,9 +984,9 @@ menu2:   bsr setdirmsk
 .c3:     lea.l stringbuf+1(a3),a4
          move.l a4,a5
          moveq #0,d3
-.c1:     movem.l a1/a4/a5/a6/d3/d6,-(sp)
+.c1:     movem.l a4/a5/a6/d3/d6,-(sp)
          bsr getkey
-         movem.l (sp)+,a1/a4/a5/a6/d3/d6
+         movem.l (sp)+,a4/a5/a6/d3/d6
          cmpi.b #27,d0     ;esc
          bne .c17
 
@@ -994,49 +994,50 @@ menu2:   bsr setdirmsk
          bra loadmenu
 
 .c17:    cmpi.b #$d,d0
-         beq .c11
+         beq.s .c11
 
          cmpi.b #8,d0   ;backspace
-         beq .c12
+         beq.s .c12
 
          cmpi.b #'0',d0
-         bcs .c1
+         bcs.s .c1
 
          cmpi.b #'9'+1,d0
-         bcc .c1
+         bcc.s .c1
 
          cmpi.b #3*8,d3
-         beq .c1
+         beq.s .c1
 
-         move.l a4,a0
-         move.b d0,(a4)+
          addq.b #8,d3
          moveq #6,d1
          move.w #152,d4
-         move.l a0,-(sp)
          bsr TXT_ON_CURSOR
-         move.l (sp)+,a0
+         move.l a4,a0
+         move.b d0,(a4)+
          moveq #1,d0
          jsr Text(a6)
 .cont4:  bsr TXT_PLACE_CURSOR
-         bra .c1
+         bra.s .c1
 
 .c11:    moveq #0,d0  ;result
          move.b d3,d4
          tst.b d3
-         beq .c3
+         beq.s .c3
+
          move.l a5,-(sp)
-         bra .l4
+         bra.s .l4
 
 .l2:     mulu #10,d0
-.l4:     add.b (a5)+,d0
-         subi.b #'0',d0
+.l4:     clr.w d1
+         move.b (a5)+,d1
+         subi.b #'0',d1
+         add.w d1,d0
          subq #8,d4
-         bne .l2
+         bne.s .l2
 
          move.l (sp)+,a5
 .c21:    cmp d6,d0
-         bcc .c1
+         bcc.s .c1
 
 .l3:     bsr findfn
          ;;;call curoff
@@ -1050,7 +1051,7 @@ menu2:   bsr setdirmsk
          moveq #6,d1
          move.w #168,d0
          bsr TXT_REMOVE_CURSOR
-         bra .cont4
+         bra.s .cont4
 
 getsvfn: bsr totext
          move.l GRAPHICS_BASE(a3),a6
@@ -1983,8 +1984,7 @@ infov:   bsr totext
 outinnum:color 2
          invvideo
          lea.l sformat(a3),a0
-         lea.l temp(a3),a1
-         move.w d5,(a1)
+         movea.l a5,a1
          lea.l stuffChar(pc),a2
          move.l #-1,charCount(a3)
          move.l a3,-(sp)
@@ -1993,6 +1993,10 @@ outinnum:color 2
          jsr RawDoFmt(a6)
          move.l (sp)+,a3
          move.l charCount(a3),d0
+         move.w d0,d4
+         subq.w #1,d4
+         lsl.w #3,d4
+         add.w d4,d7
          lea.l stringbuf(a3),a0
          movea.l RASTER_PORT(a3),a1
          move.l GRAPHICS_BASE(a3),a6
@@ -2003,57 +2007,88 @@ outinnum:color 2
          normvideo
          color 3     ;must be followed by inputdec
 
-inputdec:;mov si,stringbuf  ;in: ch - limit hi
-         ;xor cl,cl
-.c1:     ;call getkey
-         ;cmp al,0dh
-         ;je .c11
+inputdec:bsr TXT_PLACE_CURSOR
+.c3:     lea.l stringbuf(a3),a4
+         moveq #0,d3
+.c1:     movem.l a4/a5/a6/d3/d5/d6,-(sp)
+         bsr getkey
+         movem.l (sp)+,a4/a5/a6/d3/d5/d6
+         cmpi.b #27,d0     ;esc
+         bne.s .c17
 
-         ;cmp al,8    ;backspace
-         ;je .c12
+.c101:   move.w d5,d1
+         move.w d7,d0
+         add.w #8,d0
+         bsr TXT_REMOVE_CURSOR
+         subq.b #8,d3
+         bcc.s .c101
 
-         ;cmp al,'0'+10
-         ;jnc .c1
+         ori.b #1,d0    ;sets NZ
+         rts
 
-         ;cmp al,'0'
-         ;jc .c1
+.c17:    cmpi.b #$d,d0
+         beq.s .c11
 
-         ;cmp cl,2
-         ;je .c1
+         cmpi.b #8,d0   ;backspace
+         beq.s .c12
 
-         ;inc cx
-         ;mov dl,al
-         ;mov ah,2
-         ;int 21h
+         cmpi.b #'0',d0
+         bcs.s .c1
 
-         ;sub al,'0'
-         ;mov [si],al
-         ;inc si
-         ;jmp .c1
+         cmpi.b #'9'+1,d0
+         bcc.s .c1
 
-.c12:    ;dec si
-         ;dec cl
-         ;js inputdec
+         cmpi.b #4*8,d3
+         beq.s .c1
 
-         ;call delchr
-         ;jmp .c1
+         addq.b #8,d3
+         move.w d5,d1
+         move.w d7,d4
+         bsr TXT_ON_CURSOR
+         move.l a4,a0
+         move.b d0,(a4)+
+         moveq #1,d0
+         jsr Text(a6)
+.cont4:  bsr TXT_PLACE_CURSOR
+         bra.s .c1
 
-.c11:    ;or cl,cl
-         ;je .exit
+.c11:    moveq #0,d0  ;result
+         move.b d3,d4
+         tst.b d3
+         beq.s .c101
 
-         ;mov di,stringbuf
-         ;xor ax,ax
-         ;cmp cl,1
-         ;je .c16
+         lea.l stringbuf(a3),a0
+         bra.s .l4
 
-         ;mov al,[di]
-         ;inc di
-         ;mov ah,10
-         ;mul ah
-.c16:    ;add al,[di]
-         ;cmp al,ch
-         ;jnc .c1
-.exit:   rts          ;should proper set CF
+.l2:     mulu #10,d0
+.l4:     clr.w d1
+         move.b (a0)+,d1
+         subi.b #'0',d1
+         add.w d1,d0
+         subq #8,d4
+         bne.s .l2
+
+.c21:    cmp.w d6,d0
+         bcc .c1
+
+         move.w d0,-(sp)
+         move.w d5,d1
+         move.w d7,d0
+         add.w #8,d0
+         bsr TXT_REMOVE_CURSOR
+         move.w (sp)+,d0
+         eor.b d1,d1     ;sets ZF
+         rts
+
+.c12:    subq.l #1,a4
+         subq.b #8,d3
+         bcs .c3
+
+         move.w d5,d1
+         move.w d7,d0
+         add.w #16,d0
+         bsr TXT_REMOVE_CURSOR
+         bra.s .cont4
 
 chgcolors:
          bsr totext
@@ -2073,48 +2108,54 @@ chgcolors:
          movepenq 0,22
          color 1
          print 'COLOR #0 ['
-         move.w COLORS(a3),d5
-         moveq #22,d4
+         lea.l COLORS(a3),a5
+         moveq #22,d5  ;Y
+         moveq #13*8,d7  ;X
+         move.w #4096,d6
          bsr outinnum
-         ;jnc .l1
+         bne.s .l1
 
-         move.w d0,COLORS(a3)
+         move.w d0,(a5)
 .l1:     color 1
          movepenq 0,30
          print 'COLOR #0 HIGHLIGHTED ['
-         move.w lightgreen(a3),d5
-         moveq #30,d4
+         lea.l lightgreen(a3),a5
+         moveq #30,d5 ;Y
+         move.l #25*8,d7
          bsr outinnum
-         ;jnc .l2
+         bne.s .l2
 
-         move.w d0,lightgreen(a3)
+         move.w d0,(a5)
 .l2:     color 1
          movepenq 0,38
          print 'COLOR #1 ['
-         move.w COLORS+2(a3),d5
-         moveq #38,d4
+         lea.l COLORS+2(a3),a5
+         moveq #38,d5
+         moveq #13*8,d7
          bsr outinnum
-         ;jnc .l3
+         bne.s .l3
 
-         move.w d5,COLORS+2(a3)
+         move.w d0,(a5)
 .l3:     color 1
          movepenq 0,46
          print 'COLOR #2 ['
-         move.w COLORS+4(a3),d5
-         moveq #46,d4
+         lea.l COLORS+4(a3),a5
+         moveq #46,d5
+         moveq #13*8,d7
          bsr outinnum
-         ;jnc .l4
+         bne.s .l4
 
-         move.w d5,COLORS+4(a3)
+         move.w d0,(a5)
 .l4:     color 1
          movepenq 0,54
          print 'COLOR #3 ['
-         move.w COLORS+6(a3),d5
-         moveq #54,d4
+         lea.l COLORS+6(a3),a5
+         moveq #54,d5
+         moveq #13*8,d7
          bsr outinnum
-         ;jnc .l7
+         bne.s .l7
 
-         move.w d5,COLORS+6(a3)
+         move.w d0,(a5)
 .l7:     movepenq 0,62
          color 1
          print 'TO SAVE THIS CONFIG?'
@@ -2124,7 +2165,7 @@ chgcolors:
          beq.s putpixel2\.e1
 
          cmpi.b #'y',d0
-         bne .l8
+         bne.s .l8
          bra savecf
 
 putpixel2:
