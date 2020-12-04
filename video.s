@@ -2162,13 +2162,13 @@ chgcolors:
 .l8:     bsr getkey
          move.l d0,d4
          movea.l VIEW_PORT(a3),a0
-         move.l GRAPHICS_BASE(A3),a6
+         movea.l GRAPHICS_BASE(a3),a6
          lea.l COLORS(a3),a1   ; Pointer to the color list
          moveq #4,d0           ; 4 colors to set
          jsr LoadRGB4(a6)      ; Set the colors
          ori.b #32,d4
          cmpi.b #'n',d4
-         beq.s putpixel2\.e1
+         beq.s putpixel2\.e1   ; -> rts
 
          cmpi.b #'y',d4
          bne.s .l8

@@ -24,8 +24,10 @@ copyr:   bsr totext
          subq.l #1,d0
          bne .exit
 
-         move.l #1,d1      ;1/50 sec (PAL), 1/60 sec (NTSC)
-         jsr Delay(a6)
+         move.l #1000,d0
+.delay:  mulu #10,d1
+         dbra d0,.delay
+
          cmpi.b #10,x0(a3)
          beq.s .nl
 
