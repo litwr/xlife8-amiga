@@ -25,7 +25,7 @@ start:   movea.l 4.w,a6
          jsr OldOpenLibrary(a6)
          move.l d0,doslib(a3)
          bsr chgdrv
-         ;bsr copyr
+         bsr copyr
          bsr setcolors
          addq.b #1,errst(a3)
          bsr showmode

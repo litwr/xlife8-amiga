@@ -1,32 +1,54 @@
-   if 0
-copyr:   call printstr
-         db ansiclrscn,green,'$'
+copyr:   bsr totext
+         move.l GRAPHICS_BASE(a3),a6
+         movepenq 0,6
+         ;color 1
+         lea.l curpathsv(a3),a1
+         bsr makepath2
+         lea.l copyleft(a3),a0
+         bsr fn2path\.loop
+         move.l #curpathsv,d1
+         move.l #MODE_OLD,d2
+         move.l doslib(a3),a6
+         jsr Open(a6)
+         tst.l d0
+         beq readtent\.e1     ;-> rts
 
-         mov ax,3d00h
-         mov dx,copyleft
-         int 21h
-         jc readtent.e1
+         moveq #40,d7
+         moveq #6,d6
+         move.l d0,filehl(a3)     ;fh-save
+.loop:   move.l filehl(a3),d1
+         move.l #x0,d2
+         moveq #1,d3
+         move.l doslib(a3),a6
+         jsr Read(a6)
+         subq.l #1,d0
+         bne .exit
 
-         mov bx,ax
-.loop:   mov ah,3fh   ;read file
-         mov cx,1
-         mov dx,x0
-         int 21h
-         jc .exit
+         move.l #1,d1      ;1/50 sec (PAL), 1/60 sec (NTSC)
+         jsr Delay(a6)
+         cmpi.b #10,x0(a3)
+         beq.s .nl
 
-         mov dl,[x0]
-         cmp dl,26
-         jz .exit
+         moveq #1,d0
+         lea.l x0(a3),a0
+         movea.l RASTER_PORT(a3),a1
+         move.l GRAPHICS_BASE(a3),a6
+         jsr Text(a6)
+         subq.b #1,d7
+         bne.s .loop
 
-         mov cx,2000
-.delay:  mov ah,2
-         loop .delay
-         int 21h
-         jmp .loop
+.nl:     moveq #40,d7
+         addq.l #8,d6
+         moveq #0,d0
+         move.l d6,d1
+         move.l GRAPHICS_BASE(a3),a6
+         movea.l RASTER_PORT(a3),a1
+         jsr Move(a6)
+         bra.s .loop
 
-.exit:   call getkey
-         jmp setcolors.e1
-   endif
+.exit:   bsr getkey
+         bra loadpat\.exit2
+
 setcolors:
          lea.l curpathsv(a3),a1
          bsr makepath2
