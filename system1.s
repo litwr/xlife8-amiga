@@ -8,27 +8,33 @@
 ScreenHeight = 256	;200 for NTSC
 KB2_SIZE = 128
 
-J	BSR.S	STARTUP
-	BEQ.S	.ERROR		; An error ?
+J	 BSR.S STARTUP
+	 BEQ.S .ERROR		; An error ?
 
-        BSR	start
-	BRA.S	CLOSEDOWN	; Closedown
+     bsr start
+     BSR.S CLOSEDOWN
+     clr.l d0
+     rts
+     ;clr.l d1
+     ;jmp Exit(a6)
 
-.ERROR:	RTS
+.ERROR:	
+     moveq #1,d0
+     RTS
 
 STARTUP:
 	 MOVE.L	A7,ERROR_STACK(A3)	; Save stack pointer if an error
-	 BSR	TASK_FIND
-	 BSR	INTULIB_OPEN
-	 BSR	GRAPHLIB_OPEN
-	 BSR	SCREEN_OPEN
-	 BSR	WINDOW_OPEN
-	 BSR	KEYB_INIT
-	 BSR	COLORS_SET
-         move.l GRAPHICS_BASE(a3),a6 
-         movea.l RASTER_PORT(a3),a1
-         moveq #0,d0
-         jsr SetBPen(a6)
+	 BSR TASK_FIND
+	 BSR INTULIB_OPEN
+	 BSR GRAPHLIB_OPEN
+	 BSR SCREEN_OPEN
+	 BSR WINDOW_OPEN
+	 BSR KEYB_INIT
+	 BSR COLORS_SET
+     move.l GRAPHICS_BASE(a3),a6 
+     movea.l RASTER_PORT(a3),a1
+     moveq #0,d0
+     jsr SetBPen(a6)
 	 MOVEQ	#-1,D0		; Set ok value
 	 RTS
 
@@ -38,11 +44,11 @@ STARTUP_ERROR:
 	 RTS			; Return to main to main routine
 
 CLOSEDOWN:
-	 BSR	KEYB_EXIT
-	 BSR	WINDOW_CLOSE
-	 BSR	SCREEN_CLOSE
-	 BSR	GRAPHLIB_CLOSE
-	 BRA	INTULIB_CLOSE
+	 BSR KEYB_EXIT
+	 BSR WINDOW_CLOSE
+	 BSR SCREEN_CLOSE
+	 BSR GRAPHLIB_CLOSE
+	 bra INTULIB_CLOSE
 
 TASK_FIND:
 	SUB.L	A1,A1		; a1 = 0 Our task
@@ -101,7 +107,7 @@ INTULIB_OPEN:
 	MOVE.L	4.W,A6
 	LEA.l	INTUITION_NAME(A3),A1	; Pointer to "intuition.library"
 	JSR	OldOpenLibrary(A6)
-	MOVE.L	D0,INTUITION_BASE(A3)	; Store pointer
+	MOVE.l d0,INTUITION_BASE(a3)	; Store pointer
 	BEQ	STARTUP_ERROR		; If error jump
 	RTS
 
@@ -130,13 +136,15 @@ SCREEN_OPEN:
 	MOVE.L	D0,SCREEN_HANDLE(A3)
 	BEQ	STARTUP_ERROR
 
-	MOVE.L	D0,A0
-        lea.l 44(a0),a2
-        move.l a2,VIEW_PORT(a3)
-	LEA.l	$C0(A0),A2		; Get bitplane pointers
-	LEA.l	BITPLANE1_PTR(A3),A1
-	MOVE.L	(A2)+,(A1)+		; Bitplane 1
-	MOVE.L	(A2)+,(A1)+		; Bitplane 2
+	MOVE.L d0,a0
+    lea.l 44(a0),a2
+    move.l a2,VIEW_PORT(a3)
+    ;lea.l 84(a0),a2
+    ;move.l a2,RASTER_PORT(a3)
+	LEA.l $C0(A0),A2		; Get bitplane pointers
+	LEA.l BITPLANE1_PTR(A3),A1
+	MOVE.L (A2)+,(A1)+		; Bitplane 1
+	MOVE.L (A2)+,(A1)+		; Bitplane 2
 	moveq #0,d0
 	jmp ShowTitle(a6)
 

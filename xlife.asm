@@ -41,8 +41,6 @@ mainloop:bsr crsrflash
 .exit:   move.l doslib(a3),a1
          movea.l 4.w,a6
          jmp CloseLibrary(a6)
-         ;clr.l d1
-         ;jmp Exit(a6)
 
 .c3:     tst.w tilecnt(a3)
          bne.s .c4

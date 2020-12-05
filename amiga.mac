@@ -57,6 +57,7 @@ CloseScreen =	-66
 OpenWindow =	-204
 CloseWindow =	-72
 ShowTitle =	-282
+WbenchToFront = -342
 
 ;console.device
 RawKeyConvert =	-$30
