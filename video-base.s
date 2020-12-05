@@ -107,8 +107,10 @@ showmode:move.w lightgreen(a3),d2
          move.w d2,d1
          lsr.w #4,d1
          moveq #0,d0
-         and.b #15,d3   ;for the A1200
-         and.b #15,d2   ;for the A1200
+         moveq #15,d4
+         and.l d4,d3   ;for the A1200 bug
+         and.l d4,d2
+         and.l d4,d1
          move.l GRAPHICS_BASE(a3),a6
          MOVE.L VIEW_PORT(a3),a0
          jmp SetRGB4(a6)
