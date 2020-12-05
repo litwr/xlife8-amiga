@@ -30,14 +30,55 @@ stop_timer:
 dispatcher:
          bsr getkey2
          ;tst.b d0
-         bne .e0
-         rts
+         bne.s .e0
+.exit:   rts
 
-.e0:     cmp.b #"g",d0
-         bne .c3
+.e0:     cmpi.b #'m',d0
+         bne.s .e01
+
+         bsr crsrclr
+         movea.l SCREEN_HANDLE(a3),a0
+         clr.l d0
+         clr.l d2
+         move.w 16(a0),d0   ;y
+         subq.w #2,d0
+         bcs .exit
+
+         cmpi.w #192,d0
+         bcc .exit
+
+         moveq #7,d3
+         move.w d0,d1
+         lsr.w #3,d0
+         and.w d3,d1
+         move.b d1,crsrbyte(a3)
+         move.w 18(a0),d2   ;x
+         subq.w #2,d2
+         bcs .exit
+
+         cmpi.w #280,d2
+         bcc.s .exit
+
+         subi.w #32,d2
+         bcs.s .exit
+
+         move.w d2,d1
+         lsr.w #3,d2
+         and.w d3,d1
+         mulu #hormax,d0
+         add.w d2,d0
+         mulu #tilesize,d0
+         add.l #tiles,d0
+         move.l d0,crsrtile(a3)
+         sub.b d1,d3
+         move.b bittab(a3,d3),d0
+         bra .c272
+
+.e01:    cmpi.b #"g",d0
+         bne.s .c3
 
          tst.b mode(a3)
-         beq .c2
+         beq.s .c2
 
 .c53:    subi.b #1,mode(a3)
          bra .c40
@@ -45,35 +86,34 @@ dispatcher:
 .c2:     addi.b #1,mode(a3)
 .c40:    bra tograph
 
-.c3:
-         cmpi.b #"Q",d0
-         bne .c5
+.c3:     cmpi.b #"Q",d0
+         bne.s .c5
 
          move.b #3,mode(a3)
 .c101:   rts
 
 .c5:     cmpi.b #"h",d0
-         bne .c4
+         bne.s .c4
 
          cmpi.b #2,mode(a3)
-         beq .c53
+         beq.s .c53
 
          moveq #2,d0
          move.b d0,mode(a3)
          bra clrscn
 
 .c4:     cmpi.b #2,mode(a3)
-         beq .c101
+         beq.s .c101
 
          cmpi.b #"T",d0
-         bne .c6
+         bne.s .c6
 
          tst.b topology(A3)
-         beq .c84
+         beq.s .c84
 
          bsr torus
          move.b #0,topology(a3)
-         bra .c40
+         bra.s .c40
 
 .c84:    bsr plain
          addq.b #1,topology(A3)
