@@ -24,7 +24,7 @@ copyr:   bsr totext
          subq.l #1,d0
          bne .exit
 
-         move.l #1000,d0
+         move.l #700,d0
 .delay:  mulu #10,d1
          dbra d0,.delay
 

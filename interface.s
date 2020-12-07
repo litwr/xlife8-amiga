@@ -34,27 +34,43 @@ dispatcher:
 .exit:   rts
 
 .e0:     cmpi.b #'m',d0
-         bne.s .e01
+         bne .e01
 
          bsr crsrclr
          movea.l SCREEN_HANDLE(a3),a0
          clr.l d0
          clr.l d2
          move.w 16(a0),d0   ;y
-         subq.w #2,d0
-         bcs .exit
+         move.w 18(a0),d2   ;x
+         tst.b zoom(a3)
+         beq.s .l11
+
+         lsr.w #3,d0
+         cmpi.w #24,d0
+         bcc.s .exit
+
+         move.b d0,vptilecy(a3)
+         lsr.w #3,d2
+         move.b d2,vptilecx(a3)
+         move.l viewport(a3),d3
+         sub.l #tiles,d3
+         divu #tilesize,d3
+         divu #hormax,d3
+         lsl.w #3,d3
+         add.w d3,d0
+         swap d3
+         lsl.w #3,d3
+         add.w d3,d2
+         bra.s .l12
+
+.l11:    subq.w #2,d0
+         bcs.s .exit
 
          cmpi.w #192,d0
-         bcc .exit
+         bcc.s .exit
 
-         moveq #7,d3
-         move.w d0,d1
-         lsr.w #3,d0
-         and.w d3,d1
-         move.b d1,crsrbyte(a3)
-         move.w 18(a0),d2   ;x
          subq.w #2,d2
-         bcs .exit
+         bcs.s .exit
 
          cmpi.w #280,d2
          bcc.s .exit
@@ -62,6 +78,11 @@ dispatcher:
          subi.w #32,d2
          bcs.s .exit
 
+.l12:    moveq #7,d3
+         move.w d0,d1
+         lsr.w #3,d0
+         and.w d3,d1
+         move.b d1,crsrbyte(a3)
          move.w d2,d1
          lsr.w #3,d2
          and.w d3,d1
@@ -72,7 +93,10 @@ dispatcher:
          move.l d0,crsrtile(a3)
          sub.b d1,d3
          move.b bittab(a3,d3),d0
-         bra .c272
+         clr.b mouseact(a3)
+         bsr .c272
+         addq.b #1,mouseact(a3)
+         rts
 
 .e01:    cmpi.b #"g",d0
          bne.s .c3
@@ -90,7 +114,7 @@ dispatcher:
          bne.s .c5
 
          move.b #3,mode(a3)
-.c101:   rts
+.rts1:   rts
 
 .c5:     cmpi.b #"h",d0
          bne.s .c4
@@ -103,7 +127,7 @@ dispatcher:
          bra clrscn
 
 .c4:     cmpi.b #2,mode(a3)
-         beq.s .c101
+         beq.s .rts1
 
          cmpi.b #"T",d0
          bne.s .c6
@@ -120,13 +144,13 @@ dispatcher:
          bra tograph
 
 .c6:     cmpi.b #'o',d0
-         bne .c7
+         bne.s .c7
 
          tst.b mode(a3)
-         bne .c101
+         bne.s .rts1
 
          tst.w tilecnt(a3)
-         bne .c108
+         bne.s .c108
 
          bsr incgen
          bra .c202
@@ -143,14 +167,14 @@ dispatcher:
          bne .c10
 
          tst.w tilecnt(a3)
-         bne .c201
+         bne.s .c201
 
          bsr zerogc
 .c202:   bra infoout
 .c201:   bra clear
 
 .c10:    cmpi.b #'E',d0
-         bne .c11
+         bne.s .c11
 
          subq.b #1,pseudoc(a3)
          beq tograph
@@ -159,7 +183,7 @@ dispatcher:
          bra tograph
 
 .c11:    cmpi.b #'!',d0
-         bne .c12
+         bne.s .c12
 
          bsr random
          bra showscn
@@ -279,7 +303,7 @@ dispatcher:
 .c272:   move.b d0,crsrbit(a3)
          bsr .c270
          tst.b zoom(a3)
-         beq .c100
+         beq .rts
 
          bsr setviewport
          bsr showscnz
@@ -316,7 +340,7 @@ dispatcher:
 
          tst.b fn(a3)
          bne .c317
-.c100:   rts
+.rts:    rts
 
 .c317:   move.b zoom(a3),d0
          move.w d0,-(sp)
@@ -327,7 +351,7 @@ dispatcher:
          bne .c175
 
          tst.b zoom(a3)
-         bne .c100
+         bne.s .rts
 
          addq.b #1,zoom(a3)
          bsr setviewport
@@ -338,7 +362,7 @@ dispatcher:
          bne .c176
 
          tst.b zoom(a3)
-         beq .c100
+         beq.s .rts
 
          clr.b zoom(a3)
          bra tograph
@@ -367,7 +391,7 @@ dispatcher:
          bne.s .c20
 
          bsr boxsz
-         beq.w .c101         ;-> rts
+         beq.s .rts
 
          bsr getsvfn
          beq.s .c220
@@ -376,7 +400,7 @@ dispatcher:
          bra.s .c220
 
 .c20:    cmpi.b #$9b,d0   ;extended keys
-         bne.w .c100
+         bne.w .rts
 
 .e1:     bsr getkey2
          cmpi.b #$43,d0   ;cursor right
@@ -417,14 +441,14 @@ dispatcher:
          bra .csct
 
 .c160:   cmpi.b #$44,d0   ;cursor left
-         beq .c160cl
+         beq.s .c160cl
 
          cmpi.b #$20,d0
          bne .c161
 
          bsr getkey2
 .c160x:  cmpi.b #$41,d0
-         bne .c101
+         bne .rts
 
          subq.b #8,vptilecx(a3)
          bsr crsrclr
@@ -442,8 +466,7 @@ dispatcher:
          move.b d0,crsrbit(a3)
          bra .c270
 
-.c71x:   ;bsr crsrclr
-         movea.l crsrtile(a3),a0
+.c71x:   movea.l crsrtile(a3),a0
          movea.l (left,a0),a1
          cmpa.l #plainbox,a1
          beq .c270
@@ -483,7 +506,7 @@ dispatcher:
          beq.s .c162cd
 
          cmpi.b #$53,d0  ;shifted
-         bne .c101
+         bne .rts
 
 	     addq.b #8,vptilecy(a3)
          bsr crsrclr

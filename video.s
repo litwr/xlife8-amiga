@@ -412,7 +412,7 @@ help:    bsr totext
          print ' save'
          movepen 0,142
 	 color 1
-         print 't'
+         print 'T'
          color 2
          print ' toggle plain/torus topology'
          movepen 0,150
@@ -573,7 +573,123 @@ crsrpg:  move.b d4,i1(a3)
          move.b d4,-nextline-1(a5)
          rts
 
-showscnz:movea.l BITPLANE1_PTR(a3),a5
+crsrcalc:
+         ;;mov bx,[crsrtile]
+         movea.l crsrtile(a3),a1
+         ;;mov bx,[bx+video]
+         move.l (video,a1),d1
+         subq.w #(40-hormax)/2,d1
+         divu #40,d1    ;nextline
+         move.b d1,crsry(a3)
+         move.w d1,d0
+         add.b crsrbyte(a3),d0
+         move.w #0,d1
+         swap d1
+         lsl.w #3,d1
+         move.b d1,crsrx(a3)
+         move.b crsrbit(a3),d2
+.c10:    add.b d2,d2
+         bcs.s .c8
+
+         addq #1,d1
+         bra.s .c10
+
+.c8:     divu #100,d1
+         move.b d1,xcrsr(a3)
+         move.w #0,d1
+         swap d1
+         divu #10,d1
+         move.w d1,d2
+         lsl #4,d2
+         swap d1
+         add.b d2,d1
+         move.b d1,xcrsr+1(a3)
+
+         divu #100,d0
+         move.b d0,ycrsr(a3)
+         move.w #0,d0
+         swap d0
+         divu #10,d0
+         move.w d0,d2
+         lsl #4,d2
+         swap d0
+         or.b d2,d0
+         move.b d0,ycrsr+1(a3)
+
+         bsr xyout
+         tst.b zoom(a3)
+         bne.s .c18
+         rts
+
+.c18:   ;mov di,up
+        movea.l #up,a5
+        ;mov al,[vptilecy]
+        move.b vptilecy(a3),d0
+        ;mov ah,al
+        move.b d0,d7
+        ;add al,8
+        addq.b #8,d0
+        ;or ah,ah
+        tst.b d7
+        bmi.s .c33
+
+        ;mov di,down
+        movea.w #down,a5
+        ;sub al,16
+        subi.b #16,d0
+        ;cmp ah,24
+        cmpi.b #24,d7
+        bcs.s .c34
+
+.c33:   ;mov [vptilecy],al
+        move.b d0,vptilecy(a3)
+        bra.s .c31
+
+.c34:   ;mov di,left
+        movea.w #left,a5
+        ;mov al,[vptilecx]
+        move.b vptilecx(a3),d0
+        ;mov ah,al
+        move.b d0,d7
+        ;add al,8
+        addq.b #8,d0
+        ;or ah,ah
+        tst.b d7
+        bmi.s .c35
+
+        ;mov di,right
+        movea.w #right,a5
+        ;sub al,16
+        subi.b #16,d0
+        ;cmp ah,40
+        cmpi.b #40,d7
+        bcs.s showscnz
+
+.c35:   ;mov [vptilecx],al
+        move.b d0,vptilecx(a3)
+.c31:   ;add di,[viewport]
+        adda.l viewport(a3),a5
+        ;mov bx,[di]
+        movea.l (a5),a1
+        ;mov [viewport],bx
+        move.l a1,viewport(a3)
+        ;mov di,[bx+dr]
+        movea.l dr(a1),a5
+        ;mov di,[di+dr]
+        movea.l dr(a5),a5
+        ;mov di,[di+right]
+        movea.l right(a5),a5
+        ;mov di,[di+right]
+        movea.l right(a5),a5
+        ;add bx,44*tilesize
+        adda.l #(2*hormax+4)*tilesize,a1
+        ;;cmp bx,di
+        cmpa.l a5,a1
+        beq.s showscnz
+
+        bsr setviewport
+
+showscnz:movea.l BITPLANE1_PTR(a3),a5    ;must be after crsrcalc
          lea.l nextline(a5),a5
          movea.l viewport(a3),a4
          moveq #0,d4
@@ -581,7 +697,7 @@ showscnz:movea.l BITPLANE1_PTR(a3),a5
          moveq #7,d1
          sub.b crsrbyte(a3),d1
          move.b d1,i1+1(a3)
-         bsr.s calcx
+         bsr calcx
          moveq #7,d1
          sub.b d0,d1
          move.b d1,temp(a3)
@@ -1592,7 +1708,7 @@ setdirmsk:
          beq .c12
 
          cmpi.b #27,d0     ;esc
-         beq .c13
+         beq .rts
 
          cmpi.b #'!',d0
          bcs .c1
@@ -1641,7 +1757,7 @@ setdirmsk:
          move.b #"x",(a4)+
          move.b #"l",(a4)+
          clr.b (a4)
-.c13:    rts
+.rts:    rts
 
 .c12:    subq.l #1,a4
          subq.b #8,d3
@@ -1653,6 +1769,9 @@ setdirmsk:
          bra .cont4
 
 setviewport:
+        tst.b mouseact(a3)
+        beq.s setdirmsk\.rts
+       
         ;mov di,viewport
         lea.l viewport(a3),a5
         ;mov ax,[crsrtile]
@@ -1785,124 +1904,6 @@ crsrclr: tst.b zoom(a3)
          bsr showscnz
          addq.b #1,crsrpgmk(a3)
          rts
-
-crsrcalc:
-         ;;mov bx,[crsrtile]
-         movea.l crsrtile(a3),a1
-         ;;mov bx,[bx+video]
-         move.l (video,a1),d1
-         subq.w #4,d1   ;(40-hormax)/2
-         divu #40,d1    ;nextline
-         move.b d1,crsry(a3)
-         move.w d1,d0
-         add.b crsrbyte(a3),d0
-         move.w #0,d1
-         swap d1
-         lsl.w #3,d1
-         move.b d1,crsrx(a3)
-
-         move.b crsrbit(a3),d2
-.c10:    add.b d2,d2
-         bcs .c8
-
-         addq #1,d1
-         bra .c10
-
-.c8:     divu #100,d1
-         move.b d1,xcrsr(a3)
-         move.w #0,d1
-         swap d1
-         divu #10,d1
-         move.w d1,d2
-         lsl #4,d2
-         swap d1
-         add.b d2,d1
-         move.b d1,xcrsr+1(a3)
-
-         divu #100,d0
-         move.b d0,ycrsr(a3)
-         move.w #0,d0
-         swap d0
-         divu #10,d0
-         move.w d0,d2
-         lsl #4,d2
-         swap d0
-         or.b d2,d0
-         move.b d0,ycrsr+1(a3)
-
-         bsr xyout
-         tst.b zoom(a3)
-         bne.s .c18
-         rts
-
-.c18:   ;mov di,up
-        movea.l #up,a5
-        ;mov al,[vptilecy]
-        move.b vptilecy(a3),d0
-        ;mov ah,al
-        move.b d0,d7
-        ;add al,8
-        addq.b #8,d0
-        ;or ah,ah
-        tst.b d7
-        bmi.s .c33
-
-        ;mov di,down
-        movea.w #down,a5
-        ;sub al,16
-        subi.b #16,d0
-        ;cmp ah,24
-        cmpi.b #24,d7
-        bcs.s .c34
-
-.c33:   ;mov [vptilecy],al
-        move.b d0,vptilecy(a3)
-        bra.s .c31
-
-.c34:   ;mov di,left
-        movea.w #left,a5
-        ;mov al,[vptilecx]
-        move.b vptilecx(a3),d0
-        ;mov ah,al
-        move.b d0,d7
-        ;add al,8
-        addq.b #8,d0
-        ;or ah,ah
-        tst.b d7
-        bmi.s .c35
-
-        ;mov di,right
-        movea.w #right,a5
-        ;sub al,16
-        subi.b #16,d0
-        ;cmp ah,40
-        cmpi.b #40,d7
-        bcs.s .c30
-
-.c35:   ;mov [vptilecx],al
-        move.b d0,vptilecx(a3)
-.c31:   ;add di,[viewport]
-        adda.l viewport(a3),a5
-        ;mov bx,[di]
-        movea.l (a5),a1
-        ;mov [viewport],bx
-        move.l a1,viewport(a3)
-        ;mov di,[bx+dr]
-        movea.l dr(a1),a5
-        ;mov di,[di+dr]
-        movea.l dr(a5),a5
-        ;mov di,[di+right]
-        movea.l right(a5),a5
-        ;mov di,[di+right]
-        movea.l right(a5),a5
-        ;add bx,44*tilesize
-        adda.l #(2*hormax+4)*tilesize,a1
-        ;;cmp bx,di
-        cmpa.l a5,a1
-        beq.s .c30
-
-        bsr setviewport
-.c30:   bra showscnz
 
 outdec:  lea.l temp(a3),a1        ;in: d0
          move.w d0,(a1)

@@ -197,8 +197,12 @@ KEYB_GETKEYS0:
 	MOVE.L	D0,A4		; Msg now in A4
 	MOVE.L	20(A4),D3	; Get message type
 
-	MOVE.L	D3,D1
-	AND.L	#RAWKEY,D1	; Was it a raw key ??
+	MOVE.L d3,d1
+    and.l #MOUSEBUTTONS,d1
+    bne MOUSE_HANDLE
+
+    move.l d3,d1
+	AND.L #RAWKEY,D1	; Was it a raw key ??
 	BEQ	KEYB_ANSWER	; If no just answer
 
 	MOVE.W	24(A4),D4	; Key code
@@ -246,3 +250,39 @@ KEYB_ANSWER:
         moveq #0,d0
         rts
 
+MOUSE_HANDLE:
+	;MOVE.W	24(A4),D4	; Key code
+	;BTST	#7,D4		; Bit 7 - Key release
+	;BNE	KEYB_ANSWER		; We dont need them
+
+	;MOVE.W	26(A4),D5	; QUALIFIER
+	;MOVE.L	28(A4),D6	; IADDRESS
+	;MOVE.W	D4,IECODE(A3)	; TRANSFER CODE
+	;MOVE.W	D5,IEQUAL(A3)	; QUALIFIERS
+	;MOVE.L	D6,IEADDR(A3)	; AND POINTER TO OLD KEYS
+
+;---  Convert to ascii  ---
+	;LEA.l	MY_EVENT(A3),A0	; Pointer to event structure
+	;LEA.l	KEY_BUFFER(A3),A1	; Convert buffer
+	;MOVEQ	#80,D1		; Max 80 characters
+	;SUB.L	A2,A2		; A2 = 0 Keymap - Default
+	;MOVE.L	CONSOLE_DEVICE(A3),A6
+	;JSR	RawKeyConvert(A6) ; Convert the rawkey into Ascii
+
+;---  Copy keys to buffer  ---
+; d0 = number of chars in the convert buffer
+	;SUBQ.W	#1,D0
+	;BMI.S	KEYB_ANSWER		; No chars ??
+
+	;LEA.l	KEY_BUFFER(A3),A1
+	;LEA.l	KEYB_BUFFER(A3),A0
+	;MOVE.W	KEYB_INBUFFER(A3),D1
+;.LOOP:	MOVE.B	(A1)+,(A0,D1.W)		; Copy the keys to the normal
+	;ADDQ.B	#1,D1			;  buffer.
+        ;cmpi.w #KB2_SIZE,D1
+        ;bne .l1
+
+        ;moveq #0,d1
+;.l1:	DBF	D0,.LOOP
+	;MOVE.W	D1,KEYB_INBUFFER(A3)
+    bra KEYB_ANSWER
