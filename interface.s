@@ -164,7 +164,7 @@ dispatcher:
          beq help
 
          cmpi.b #'C',d0
-         bne .c10
+         bne.s .c10
 
          tst.w tilecnt(a3)
          bne.s .c201
@@ -189,7 +189,7 @@ dispatcher:
          bra showscn
 
 .c12:    cmpi.b #'%',d0
-         bne .c14
+         bne.s .c14
          bra indens
 
 .c14:    cmpi.b #'B',d0
@@ -245,7 +245,7 @@ dispatcher:
          bra .c401
 
 .c15:    cmpi.b #'R',d0
-         bne .c16
+         bne.s .c16
 
          bsr inborn
          cmpi.b #27,d0         ;esc
@@ -260,7 +260,7 @@ dispatcher:
 .c200:   bra tograph
 
 .c16:    cmpi.b #' ',d0    ;space
-         bne .c170
+         bne.s .c170
 
          ;;mov di,[crsrtile]
          movea.l crsrtile(a3),a5
@@ -282,7 +282,7 @@ dispatcher:
          move.b d2,(a5,d0)
          ;;test al,ah
          and.b d2,d1
-         beq .c79
+         beq.s .c79
 
          moveq #1,d0
          bsr inctsum
@@ -326,7 +326,7 @@ dispatcher:
          move.w d0,-(sp)
          clr.b zoom(a3)
          bsr loadmenu
-         bmi .c302
+         bmi.s .c302
 
 .c303:   bsr tograph
          bsr loadpat
@@ -336,10 +336,10 @@ dispatcher:
          bra tograph
 
 .c173:   cmpi.b #'L',d0
-         bne .c174
+         bne.s .c174
 
          tst.b fn(a3)
-         bne .c317
+         bne.s .c317
 .rts:    rts
 
 .c317:   move.b zoom(a3),d0
@@ -348,7 +348,7 @@ dispatcher:
          bra .c303
 
 .c174:   cmpi.b #'+',d0
-         bne .c175
+         bne.s .c175
 
          tst.b zoom(a3)
          bne.s .rts
@@ -359,7 +359,7 @@ dispatcher:
          bra .c270
 
 .c175:   cmpi.b #'-',d0
-         bne .c176
+         bne.s .c176
 
          tst.b zoom(a3)
          beq.s .rts
@@ -374,7 +374,7 @@ dispatcher:
          beq infov
 
          cmpi.b #'Z',d0
-         bne .c179
+         bne.s .c179
 
          bsr totext
          bsr chgcolors

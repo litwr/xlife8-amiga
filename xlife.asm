@@ -649,7 +649,7 @@ WINDOW_DEFS:
 	dc.w	320		; Current width
 	dc.w	ScreenHeight		; Current higth
 	dc.b	0,1
-	dc.l	RAWKEY		; Report only raw keys
+	dc.l	RAWKEY+MOUSEBUTTONS		; Report only raw keys
 	dc.l	BACKDROP+BORDERLESS+ACTIVATE+RMBTRAP
 	dc.l	0	;Intuition Direct Communications Message Port
 	dc.l	0
@@ -683,7 +683,7 @@ texts:	dc.b 'G%XY'
 
 FONT_NAME:		DC.B	'topaz.font',0
 CONSOLE_NAME:		DC.B	'console.device',0,0
-;SCREEN_NAME:		DC.B	'Xlife-8 for Commodore Amiga',0
+;SCREEN_NAME:		DC.B	'Xlife-8 for the Commodore Amiga',0
 INTUITION_NAME:		DC.B	'intuition.library',0
 GRAPHICS_NAME:		DC.B	'graphics.library',0
 
