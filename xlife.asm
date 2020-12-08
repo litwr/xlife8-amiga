@@ -531,8 +531,6 @@ x0        dc.b 0   ;word aligned for the speed
 y0        dc.b 0
 live      dc.w 12  ;x0,y0,live,born have to go sequently
 born      dc.w 8
-mouseprevX dc.w 0
-mouseprevY dc.w 0
 
          include "tab12.s"
 gentab:
@@ -653,7 +651,7 @@ WINDOW_DEFS:
 	dc.w	320		; Current width
 	dc.w	ScreenHeight		; Current higth
 	dc.b	0,1
-	dc.l	RAWKEY+MOUSEBUTTONS		; Report only raw keys
+	dc.l	RAWKEY+MOUSEBUTTONS+MOUSEMOVE
 	dc.l	BACKDROP+BORDERLESS+ACTIVATE+RMBTRAP
 	dc.l	0	;Intuition Direct Communications Message Port
 	dc.l	0

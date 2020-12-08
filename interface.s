@@ -58,9 +58,7 @@ dispatcher:
          clr.l d0
          clr.l d2
          move.w 16(a0),d0   ;y
-         move.w d0,mouseprevY(a3)
          move.w 18(a0),d2   ;x
-         move.w d2,mouseprevX(a3)
          tst.b zoom(a3)
          beq.s .l11
 
