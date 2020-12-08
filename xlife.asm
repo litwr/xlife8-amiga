@@ -531,6 +531,8 @@ x0        dc.b 0   ;word aligned for the speed
 y0        dc.b 0
 live      dc.w 12  ;x0,y0,live,born have to go sequently
 born      dc.w 8
+mouseprevX dc.w 0
+mouseprevY dc.w 0
 
          include "tab12.s"
 gentab:
@@ -610,6 +612,8 @@ curdir2  dc.b "patterns",0
 curpath  blk.b 34
 curpathsv blk.b 34
 ioerrmsg dc.b " i/o err #%ld",0
+mouseleft dc.b 0
+mouseright dc.b 0
 
         CNOP 0,4
 curdisk dc.b "DH0:",0

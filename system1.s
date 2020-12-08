@@ -252,21 +252,39 @@ KEYB_ANSWER:
 
 MOUSE_HANDLER:
 	MOVE.W	24(A4),D4	; Key code
-	BTST	#7,D4		; Bit 7 - Key release
-	BNE	KEYB_ANSWER		; We dont need them
-
-	;MOVE.W	26(A4),D5	; QUALIFIER
-	;MOVE.L	28(A4),D6	; IADDRESS
-
-;---  Convert to ascii  ---
     moveq #0,d0
-    lea.l stringbuf(a3),a1
-    move.b #'m',(a1)
-    cmpi.b #$68,d4     ;left button
-    beq.s KEYB_GETKEYS0\.e
+    moveq #0,d1
+	BTST	#7,D4		; Bit 7 - Key release
+	beq.s .pressed
 
-    move.b #'M',(a1)
+    cmpi.b #$E8,d4     ;left button
+    bne.s .rightr
+
+    lea.l mouseleft(a3),a1
+    move.b #'4',(a1)
+    bra.s KEYB_GETKEYS0\.e
+
+.rightr:
+    cmpi.b #$E9,d4     ;right button
+    bne.s KEYB_ANSWER
+
+    lea.l mouseright(a3),a1
+    move.b #'5',(a1)
+    bra.s KEYB_GETKEYS0\.e
+
+.pressed:
+    cmpi.b #$68,d4     ;left button
+    bne.s .rightp
+
+    lea.l mouseleft(a3),a1
+    move.b #'0',(a1)
+    bra.s KEYB_GETKEYS0\.e
+
+.rightp:
     cmpi.b #$69,d4     ;right button
-    beq.s KEYB_GETKEYS0\.e
-    bra.s KEYB_ANSWER
+    bne.s KEYB_ANSWER
+
+    lea.l mouseright(a3),a1
+    move.b #'1',(a1)
+    bra.s KEYB_GETKEYS0\.e
 

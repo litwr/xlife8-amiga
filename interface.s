@@ -33,7 +33,7 @@ dispatcher:
          bne.s .e0
 .exit:   rts
 
-.e0:     cmpi.b #'m',d0
+.e0:     cmpi.b #'0',d0
          bne .e01
 
          bsr crsrclr
