@@ -187,11 +187,55 @@ KEYB_STILLKEYSINBUFFER:
 	RTS
 
 KEYB_GETKEYS:
-	MOVE.L	KEY_PORT(A3),A0	; Our key port
+	MOVE.L	KEY_PORT(A3),A0
 	MOVE.L	4.W,A6
-	JSR	GetMsg(A6)	; Get the message
-	MOVE.L	D0,KEY_MSG(A3)
-	BEQ.S	KEYB_GETKEYS	; No message, jump again
+	JSR	GetMsg(A6)
+	MOVE.L D0,KEY_MSG(A3)
+	bne.s KEYB_GETKEYS0
+
+    ;moveq #0,d0
+    cmpi.b #'0',mouseleft(a3)
+    bne.s .c
+
+    movea.l SCREEN_HANDLE(a3),a0
+    move.w 16(a0),d1
+    cmp.w mouseprevY(a3),d1
+    bne.s .c1
+
+    move.w 18(a0),d1
+    cmp.w mouseprevX(a3),d1
+    beq.s .c
+
+.c1:lea.l mouseleft(a3),a1
+    ;move.b #'0',(a1)
+.e: lea.l KEYB_BUFFER(a3),a0
+    MOVE.W	KEYB_INBUFFER(A3),D1
+    move.b (a1)+,(a0,d1.w)		; Copy the keys to the normal
+    addq.b	#1,d1			;  buffer.
+    cmpi.w #KB2_SIZE,d1
+    bne .l1
+
+    moveq #0,d1
+.l1:MOVE.W D1,KEYB_INBUFFER(A3)
+.rts:
+    moveq #0,d0
+    rts
+
+.c: cmpi.b #'1',mouseright(a3)
+    bne.s .rts
+
+    movea.l SCREEN_HANDLE(a3),a0
+    move.w 16(a0),d1
+    cmp.w mouseprevY(a3),d1
+    bne.s .c2
+
+    move.w 18(a0),d1
+    cmp.w mouseprevX(a3),d1
+    beq.s .rts
+
+.c2:lea.l mouseright(a3),a1
+    ;move.b #'1',(a1)
+    bra.s .e
 
 KEYB_GETKEYS0:
 	MOVE.L	D0,A4		; Msg now in A4
@@ -199,15 +243,15 @@ KEYB_GETKEYS0:
 
 	MOVE.L d3,d1
     and.l #MOUSEBUTTONS,d1
-    bne MOUSE_HANDLER
+    bne.s MOUSE_HANDLER
 
     move.l d3,d1
-	AND.L #RAWKEY,D1	; Was it a raw key ??
-	BEQ	KEYB_ANSWER	; If no just answer
+	and.l #RAWKEY,d1
+	beq.s KEYB_ANSWER
 
-	MOVE.W	24(A4),D4	; Key code
+    MOVE.W	24(A4),D4	; Key code
 	BTST	#7,D4		; Bit 7 - Key release
-	BNE	KEYB_ANSWER		; We dont need them
+	bne.s KEYB_ANSWER	; We dont need them
 
 	MOVE.W	26(A4),D5	; QUALIFIER
 	MOVE.L	28(A4),D6	; IADDRESS
@@ -225,7 +269,7 @@ KEYB_GETKEYS0:
 
 ;---  Copy keys to buffer  ---
 ; d0 = number of chars in the convert buffer
-	SUBQ.W	#1,D0
+    SUBQ.W	#1,D0
 	BMI.S	KEYB_ANSWER		; No chars ??
 
      lea.l KEY_BUFFER(a3),a1
@@ -252,27 +296,24 @@ KEYB_ANSWER:
 
 MOUSE_HANDLER:
 	MOVE.W	24(A4),D4	; Key code
-    moveq #0,d0
-    moveq #0,d1
 	BTST	#7,D4		; Bit 7 - Key release
 	beq.s .pressed
 
     cmpi.b #$E8,d4     ;left button
     bne.s .rightr
 
-    lea.l mouseleft(a3),a1
-    move.b #'4',(a1)
-    bra.s KEYB_GETKEYS0\.e
+    move.b #0,mouseleft(a3)
+    bra.s KEYB_ANSWER
 
 .rightr:
     cmpi.b #$E9,d4     ;right button
     bne.s KEYB_ANSWER
 
-    lea.l mouseright(a3),a1
-    move.b #'5',(a1)
-    bra.s KEYB_GETKEYS0\.e
+    move.b #0,mouseright(a3)
+    bra.s KEYB_ANSWER
 
 .pressed:
+    moveq #0,d0
     cmpi.b #$68,d4     ;left button
     bne.s .rightp
 

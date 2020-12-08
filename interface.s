@@ -10,12 +10,13 @@ getkey2:  ;******* KEY POLLING *******
 	 CMP.W	KEYB_INBUFFER(A3),D0	; Is buffer empty
 	 BNE	KEYB_STILLKEYSINBUFFER	; No ??
 
-	 MOVE.L	KEY_PORT(A3),A0	; Our key port
-	 MOVE.L	4.W,A6
-	 JSR	GetMsg(A6)
-	 MOVE.L	D0,KEY_MSG(A3)   ;D0=0 means no message
-	 BNE	KEYB_GETKEYS0
-	 rts
+	 ;MOVE.L	KEY_PORT(A3),A0	; Our key port
+	 ;MOVE.L	4.W,A6
+	 ;JSR	GetMsg(A6)
+	 ;MOVE.L	D0,KEY_MSG(A3)   ;D0=0 means no message
+	 ;BNE	KEYB_GETKEYS0
+	 ;rts
+     bra KEYB_GETKEYS
 
 start_timer:
          move.l $6c,interruptv(a3)
@@ -27,13 +28,29 @@ stop_timer:
          move.l interruptv(a3),$6c
          rts
 
+zzz  dc.l 0
+zz dc.b 128,0
+zmark:    movea.l BITPLANE1_PTR(a3),a0
+.e:   movem.l d0/d1,-(sp)
+   move.l zzz(a3),d0
+   move.b zz(a3),d1
+   move.b d1,(a0,d0)
+   ror.b d1
+   move.b d1,zz(a3)
+   btst #7,d1
+   beq.s .x1
+      addq.l #1,zzz(a3)
+      move.b #1,zz(a3)
+.x1:movem.l (sp)+,d0/d1
+    rts
+
 dispatcher:
          bsr getkey2
          ;tst.b d0
          bne.s .e0
 .exit:   rts
 
-.e0:     cmpi.b #'0',d0
+.e0:     cmpi.b #'0',d0     ;mouse left button
          bne .e01
 
          bsr crsrclr
@@ -41,7 +58,9 @@ dispatcher:
          clr.l d0
          clr.l d2
          move.w 16(a0),d0   ;y
+         move.w d0,mouseprevY(a3)
          move.w 18(a0),d2   ;x
+         move.w d2,mouseprevX(a3)
          tst.b zoom(a3)
          beq.s .l11
 
@@ -95,10 +114,30 @@ dispatcher:
          move.b bittab(a3,d3),d0
          clr.b mouseact(a3)
          bsr .c272
-         addq.b #1,mouseact(a3)
-         rts
+         addq.b #1,mouseact(a3)    ;FIXME!! it is almost common with space
+         movea.l crsrtile(a3),a5
+         move.b #1,(sum,a5)
+         bsr chkadd
+         moveq #0,d0
+         move.b crsrbyte(a3),d0
+         move.b crsrbit(a3),d1
+         move.b (a5,d0),d2
+         move.b d2,d3
+         or.b d1,d2
+         move.b d2,(a5,d0)
+         eor.b d2,d3
+         beq .c270
 
-.e01:    cmpi.b #"g",d0
+         moveq #1,d0
+         bsr inctsum
+
+         bsr infoout
+         bra .c270
+
+.e01:    cmpi.b #'1',d0     ;mouse right button
+         ;bne.s .e02
+
+.e02:    cmpi.b #"g",d0
          bne.s .c3
 
          tst.b mode(a3)
