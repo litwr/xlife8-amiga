@@ -199,7 +199,7 @@ KEYB_GETKEYS0:
 
 	MOVE.L d3,d1
     and.l #MOUSEBUTTONS,d1
-    bne MOUSE_HANDLE
+    bne MOUSE_HANDLER
 
     move.l d3,d1
 	AND.L #RAWKEY,D1	; Was it a raw key ??
@@ -250,7 +250,7 @@ KEYB_ANSWER:
         moveq #0,d0
         rts
 
-MOUSE_HANDLE:
+MOUSE_HANDLER:
 	MOVE.W	24(A4),D4	; Key code
 	BTST	#7,D4		; Bit 7 - Key release
 	BNE	KEYB_ANSWER		; We dont need them
