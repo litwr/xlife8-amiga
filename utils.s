@@ -243,5 +243,59 @@ rndbyte: movem.l d1/d2/d3/d6/d7,-(sp)
 
          or.b d3,(a5)+
          movem.l (sp)+,d1/d2/d3/d6/d7
-         rts
+.rts:    rts
 
+drawline:  ;IN: d7 - x1, d4 - y1, d5 - x2, d6 - y2
+         move.w d5,d0
+         sub.w d7,d0
+         bpl.s .c1
+
+         neg.w d0
+.c1:     cmpi.w #2,d0
+         bcc.s .c3
+
+         move.w d6,d0
+         sub.w d4,d0
+         bpl.s .c2
+
+         neg.w d0
+.c2:     cmpi.w #2,d0
+         bcs.s rndbyte\.rts
+
+.c3:     move.w d7,d2
+         add.w d5,d2
+         lsr.w d2
+         move.w d4,d0
+         add.w d6,d0
+         lsr.w d0
+         movem.w d0/d2/d4,-(sp)
+         bsr.s mousepixel
+         movem.w (sp)+,d0/d2/d4
+         movem.w d0/d2/d5/d6,-(sp)
+         move.w d2,d5
+         move.w d0,d6
+         bsr.s drawline
+         movem.w (sp)+,d0/d2/d5/d6
+         move.w d2,d7
+         move.w d0,d4
+         bra.s drawline
+
+mousepixel:   ;IN: d2 - x, d0 - y
+         moveq #7,d3
+         move.w d0,d1
+         lsr.w #3,d0
+         and.w d3,d1
+         move.w d2,d4
+         lsr.w #3,d2
+         and.w d3,d4
+         mulu #hormax,d0
+         add.w d2,d0
+         mulu #tilesize,d0
+         add.l #tiles,d0
+         move.l d0,a5
+         sub.b d4,d3
+         moveq #0,d0
+         move.b bittab(a3,d3),d0
+         move.b #1,(sum,a5)
+         or.b d0,(a5,d1)
+         bra chkadd

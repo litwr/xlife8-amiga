@@ -2,7 +2,7 @@
 ;**it is the conversion from 6502 port for Commodore +4 v4
 ;**from z80 port for Amstrad CPC6128 v2, from K1801VM1 port for BK0011 v1
 ;**from 8088 port for IBM PC v1
-;written by litwr, 2018
+;written by litwr, 2018, 2020
 ;thanks to Tuomas Järvensivu's blog post Crash course to Amiga assembly programming
 ;a lot of thanks to guys at http://eab.abime.net
 ;some materials were used from AsmOne examples coded by Rune Gram-Madsen
@@ -531,6 +531,12 @@ x0        dc.b 0   ;word aligned for the speed
 y0        dc.b 0
 live      dc.w 12  ;x0,y0,live,born have to go sequently
 born      dc.w 8
+mouseprevX dc.w 0
+mouseprevY dc.w 0
+mouseoldX dc.w 0
+mouseoldY dc.w 0
+mousesaveX dc.w 0
+mousesaveY dc.w 0
 
          include "tab12.s"
 gentab:
@@ -651,7 +657,7 @@ WINDOW_DEFS:
 	dc.w	320		; Current width
 	dc.w	ScreenHeight		; Current higth
 	dc.b	0,1
-	dc.l	RAWKEY+MOUSEBUTTONS+MOUSEMOVE
+	dc.l	RAWKEY+MOUSEBUTTONS		; Report only raw keys
 	dc.l	BACKDROP+BORDERLESS+ACTIVATE+RMBTRAP
 	dc.l	0	;Intuition Direct Communications Message Port
 	dc.l	0

@@ -15,6 +15,7 @@ Enable =	-126
 Forbid = -132
 Permit = -138
 WaitPort =	-384
+;Wait =	-318 
 ReplyMsg =	-378
 GetMsg =	-372
 FindTask =	-294
@@ -58,6 +59,7 @@ OpenWindow =	-204
 CloseWindow =	-72
 ShowTitle =	-282
 WbenchToFront = -342
+;ModifyIDCMP =	-150
 
 ;console.device
 RawKeyConvert =	-$30
@@ -66,11 +68,12 @@ VBlankFrequency = 530
 
 IECLASS_RAWKEY = $01
 
-RAWKEY  =	$00000400      ;console device
-MOUSEBUTTONS =	$00000008
-MOUSEMOVE = $10
+RAWKEY  	=	$00000400      ;console device
+MOUSEBUTTONS	=	$00000008
+;MOUSEMOVE	=	$00000010
 
 BACKDROP	=	$00000100
+;REPORTMOUSE	=	$0200
 BORDERLESS	=	$00000800
 ACTIVATE	=	$00001000
 RMBTRAP		=	$00010000
@@ -80,37 +83,37 @@ SCREENQUIET	= 	$0100
 
 ;V_HIRES		=	$8000
 
-CUSTOM equ $DFF000
-CIAAPRA EQU $bfe001
+;CUSTOM equ $DFF000
+;CIAAPRA EQU $bfe001
 
-DMACONR equ 2
-VPOSR           EQU             4
-ADKCONR		EQU		$10
-INTENAR		EQU		$1c
-INTREQR		EQU		$1e
-COP1LCH equ $80
-COPJMP1 equ $88
-DIWSTRT equ $8e
-DIWSTOP equ $90
-DDFSTRT equ $92
-DDFSTOP equ $94
-DMACON equ $96
-ADKCON		EQU		$9e
-INTENA		EQU		$9a
-INTREQ		EQU		$9c
-BPL1PTH equ $E0
-BPL1PTL equ $E2
-BPL2PTH equ $E4
-BPL2PTL equ $E6
-BPLCON0 equ $100
-BPLCON1 equ $102
-BPLCON2 equ $104
-BPL1MOD equ $108
-BPL2MOD equ $10a
-COLOR00 equ $180
-COLOR01 equ $182
-COLOR02 equ $184
-COLOR03 equ $186
-COLOR04 equ $188
+;DMACONR equ 2
+;VPOSR           EQU             4
+;ADKCONR		EQU		$10
+;INTENAR		EQU		$1c
+;INTREQR		EQU		$1e
+;COP1LCH equ $80
+;COPJMP1 equ $88
+;DIWSTRT equ $8e
+;DIWSTOP equ $90
+;DDFSTRT equ $92
+;DDFSTOP equ $94
+;DMACON equ $96
+;ADKCON		EQU		$9e
+;INTENA		EQU		$9a
+;INTREQ		EQU		$9c
+;BPL1PTH equ $E0
+;BPL1PTL equ $E2
+;BPL2PTH equ $E4
+;BPL2PTL equ $E6
+;BPLCON0 equ $100
+;BPLCON1 equ $102
+;BPLCON2 equ $104
+;BPL1MOD equ $108
+;BPL2MOD equ $10a
+;COLOR00 equ $180
+;COLOR01 equ $182
+;COLOR02 equ $184
+;COLOR03 equ $186
+;COLOR04 equ $188
 
 FNMAXLEN equ 26

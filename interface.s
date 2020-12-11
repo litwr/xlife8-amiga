@@ -26,23 +26,7 @@ start_timer:
 
 stop_timer:
          move.l interruptv(a3),$6c
-         rts
-
-zzz  dc.l 0
-zz dc.b 128,0
-zmark:    movea.l BITPLANE1_PTR(a3),a0
-.e:   movem.l d0/d1,-(sp)
-   move.l zzz(a3),d0
-   move.b zz(a3),d1
-   move.b d1,(a0,d0)
-   ror.b d1
-   move.b d1,zz(a3)
-   btst #7,d1
-   beq.s .x1
-      addq.l #1,zzz(a3)
-      move.b #1,zz(a3)
-.x1:movem.l (sp)+,d0/d1
-    rts
+.rts:    rts
 
 dispatcher:
          bsr getkey2
@@ -57,8 +41,10 @@ dispatcher:
          movea.l SCREEN_HANDLE(a3),a0
          clr.l d0
          clr.l d2
-         move.w 16(a0),d0   ;y
-         move.w 18(a0),d2   ;x
+         move.w 16(a0),d0   ;screen.y
+         move.w d0,mouseprevY(a3)
+         move.w 18(a0),d2   ;screen.x
+         move.w d2,mouseprevX(a3)
          tst.b zoom(a3)
          beq.s .l11
 
@@ -93,44 +79,33 @@ dispatcher:
          bcc.s .exit
 
          subi.w #32,d2
-         bcs.s .exit
+         bcs.s stop_timer\.rts
 
-.l12:    moveq #7,d3
-         move.w d0,d1
-         lsr.w #3,d0
-         and.w d3,d1
-         move.b d1,crsrbyte(a3)
-         move.w d2,d1
-         lsr.w #3,d2
-         and.w d3,d1
-         mulu #hormax,d0
-         add.w d2,d0
-         mulu #tilesize,d0
-         add.l #tiles,d0
-         move.l d0,crsrtile(a3)
-         sub.b d1,d3
-         move.b bittab(a3,d3),d0
-         clr.b mouseact(a3)
-         bsr .c272
-         addq.b #1,mouseact(a3)    ;FIXME!! it is almost common with space
-         movea.l crsrtile(a3),a5
-         move.b #1,(sum,a5)
-         bsr chkadd
-         moveq #0,d0
-         move.b crsrbyte(a3),d0
-         move.b crsrbit(a3),d1
-         move.b (a5,d0),d2
-         move.b d2,d3
-         or.b d1,d2
-         move.b d2,(a5,d0)
-         eor.b d2,d3
-         beq .c270
+.l12:    move.w d2,mousesaveX(a3)
+         move.w d0,mousesaveY(a3)
+         bsr mousecursor
+         move.w mousesaveX(a3),d2
+         move.w mousesaveY(a3),d0
+         bsr mousepixel
+         tst.w mouseoldX(a3)    ;FIXME!! (0,0) is ok!
+         bne.s .l20
 
-         moveq #1,d0
-         bsr inctsum
+         tst.w mouseoldY(a3)
+         beq.s .l16
 
-         bsr infoout
-         bra .c270
+.l20:    move.w mouseoldX(a3),d7
+         move.w mouseoldY(a3),d4
+         move.w mousesaveX(a3),d5
+         move.w mousesaveY(a3),d6
+         bsr drawline
+.l16:    bsr calccells
+         move.w mousesaveX(a3),mouseoldX(a3)
+         move.w mousesaveY(a3),mouseoldY(a3)
+         move.b #0,mouseact(a3)
+         bsr .c273
+         move.b #1,mouseact(a3)
+         bra showscn
+         ;bra infoout
 
 .e01:    cmpi.b #'1',d0     ;mouse right button
          ;bne.s .e02
@@ -338,11 +313,11 @@ dispatcher:
          moveq #1,d0
          move.b d0,crsrbyte(a3)
 .c272:   move.b d0,crsrbit(a3)
-         bsr .c270
+.c273:   bsr .c270
          tst.b zoom(a3)
          beq .rts
 
-         bsr setviewport
+         bsr setviewport   ;FIXME!!
          bsr showscnz
 .c270:   bsr crsrset
          bra crsrcalc

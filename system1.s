@@ -191,40 +191,57 @@ KEYB_GETKEYS:
 	MOVE.L	4.W,A6
 	JSR	GetMsg(A6)
 	MOVE.L D0,KEY_MSG(A3)
-	beq.s KEYB_ANSWER\.rts
+	bne.s KEYB_GETKEYS0
+
+    ;moveq #0,d0
+    cmpi.b #'0',mouseleft(a3)
+    bne.s .c
+
+    movea.l SCREEN_HANDLE(a3),a0
+    move.w 16(a0),d1
+    cmp.w mouseprevY(a3),d1
+    bne.s .c1
+
+    move.w 18(a0),d1
+    cmp.w mouseprevX(a3),d1
+    beq.s .rts
+
+.c1:lea.l mouseleft(a3),a1
+    ;move.b #'0',(a1)
+.e: lea.l KEYB_BUFFER(a3),a0
+    MOVE.W	KEYB_INBUFFER(A3),D1
+    move.b (a1),(a0,d1.w)		; Copy the keys to the normal
+    addq.b	#1,d1			;  buffer.
+    cmpi.w #KB2_SIZE,d1
+    bne .l1
+
+    moveq #0,d1
+.l1:MOVE.W D1,KEYB_INBUFFER(A3)
+.rts:
+    moveq #0,d0
+    rts
+
+.c: cmpi.b #'1',mouseright(a3)
+    bne.s .rts
+
+    movea.l SCREEN_HANDLE(a3),a0
+    move.w 16(a0),d1
+    cmp.w mouseprevY(a3),d1
+    bne.s .c2
+
+    move.w 18(a0),d1
+    cmp.w mouseprevX(a3),d1
+    beq.s .rts
+
+.c2:lea.l mouseright(a3),a1
+    ;move.b #'1',(a1)
+    bra.s .e
 
 KEYB_GETKEYS0:
 	MOVE.L	D0,A4		; Msg now in A4
 	MOVE.L	20(A4),D3	; Get message type
 
 	MOVE.L d3,d1
-    and.l #MOUSEMOVE,d1  ;FIXME!! btst
-    bne.s .l1
-
-    cmpi.b #'0',mouseleft(a3)
-    bne.s .c
-
-    lea.l mouseleft(a3),a1
-    ;move.b #'0',(a1)
-.e: lea.l KEYB_BUFFER(a3),a0
-    MOVE.W	KEYB_INBUFFER(A3),D1
-    move.b (a1)+,(a0,d1.w)		; Copy the keys to the normal
-    addq.b	#1,d1			;  buffer.
-    cmpi.w #KB2_SIZE,d1
-    bne .l0
-
-    moveq #0,d1
-.l0:MOVE.W D1,KEYB_INBUFFER(A3)
-    bra.s KEYB_ANSWER
-
-.c: cmpi.b #'1',mouseright(a3)
-    bne.s KEYB_ANSWER
-
-    lea.l mouseright(a3),a1
-    ;move.b #'1',(a1)
-    bra.s .e
-
-.l1:MOVE.L d3,d1
     and.l #MOUSEBUTTONS,d1
     bne.s MOUSE_HANDLER
 
@@ -274,29 +291,33 @@ KEYB_ANSWER:
 	MOVE.L	KEY_MSG(A3),A1
 	MOVE.L	4.W,A6
 	JSR	ReplyMsg(A6)
-.rts:   moveq #0,d0
+        moveq #0,d0
         rts
 
 MOUSE_HANDLER:
 	MOVE.W	24(A4),D4	; Key code
+    moveq #0,d0
 	BTST	#7,D4		; Bit 7 - Key release
 	beq.s .pressed
 
     cmpi.b #$E8,d4     ;left button
     bne.s .rightr
 
-    move.b #0,mouseleft(a3)
+    move.b d0,mouseleft(a3)
+    move.w d0,mouseoldX(a3)
+    move.w d0,mouseoldY(a3)
     bra.s KEYB_ANSWER
 
 .rightr:
     cmpi.b #$E9,d4     ;right button
     bne.s KEYB_ANSWER
 
-    move.b #0,mouseright(a3)
+    move.b d0,mouseright(a3)
+    move.w d0,mouseoldX(a3)
+    move.w d0,mouseoldY(a3)
     bra.s KEYB_ANSWER
 
 .pressed:
-    moveq #0,d0
     cmpi.b #$68,d4     ;left button
     bne.s .rightp
 
@@ -310,5 +331,5 @@ MOUSE_HANDLER:
 
     lea.l mouseright(a3),a1
     move.b #'1',(a1)
-    bra.s KEYB_GETKEYS0\.e
+    bra KEYB_GETKEYS0\.e
 

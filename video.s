@@ -1771,7 +1771,7 @@ setdirmsk:
 setviewport:
         tst.b mouseact(a3)
         beq.s setdirmsk\.rts
-       
+
         ;mov di,viewport
         lea.l viewport(a3),a5
         ;mov ax,[crsrtile]

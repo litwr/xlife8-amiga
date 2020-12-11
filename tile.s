@@ -37,13 +37,13 @@ chkaddt:
 	 ;;or cx,cx
          tst.w d2
          ;;jz exit2
-         beq exit2
+         beq.s exit2
 
 chkadd:
 	 ;;cmp word [di+next],0    ;in: di
          tst.l (next,a5)
          ;;jnz exit2
-         bne exit2
+         bne.s exit2
 
 addnode:
          ;;mov ax,[startp]
@@ -622,3 +622,21 @@ putpixel3:
          ;;or [di+bx],dl
          or.b d3,(a5,d6)
          bra chkadd
+
+mousecursor:   ;IN: d0 - Y, d2 - X
+         moveq #7,d3
+         move.w d0,d1
+         lsr.w #3,d0
+         and.w d3,d1
+         move.b d1,crsrbyte(a3)
+         move.w d2,d1
+         lsr.w #3,d2
+         and.w d3,d1
+         mulu #hormax,d0
+         add.w d2,d0
+         mulu #tilesize,d0
+         add.l #tiles,d0
+         move.l d0,crsrtile(a3)
+         sub.b d1,d3
+         move.b bittab(a3,d3),crsrbit(a3)
+         rts
