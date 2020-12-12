@@ -689,7 +689,7 @@ lightgreen: dc.w $0c0
 
 COLORS:
 	DC.W	$080,$ee0,$000,$FFF  ;green, yellow, black, white
-	DC.W	$B00,$E0E,$0EE,$00B  ;red, magenta, cyan, blue
+	DC.W	$E00,$00F,$0EE,$e0e  ;red, blue, cyan, magenta
 
 texts:	dc.b 'G%XY'
 

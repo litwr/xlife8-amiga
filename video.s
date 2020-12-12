@@ -1294,8 +1294,8 @@ showrect:
          clr.b xchgdir(a3)
 .c10:    bsr drawrect
          bsr showtent
-.c11:    ;call crsrflash
-         bsr getkey
+.c11:    bsr crsrflash
+         bsr getkey2
          cmpi.b #$9b,d0   ;extended keys
          beq .c101
 
@@ -1920,7 +1920,9 @@ crsrclr: tst.b zoom(a3)
          move.w d4,d6
          mulu #nextline,d4
          add.l (video,a4),d4
-         move.b #0,(a0,d4)
+         move.b crsrbit(a3),d1
+         not.b d1
+         and.b d1,(a0,d4)
          movea.l BITPLANE1_PTR(a3),a0
          movea.l BITPLANE2_PTR(a3),a1
          tst.b pseudoc(a3)
