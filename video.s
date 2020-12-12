@@ -554,23 +554,19 @@ calcx:   move.b crsrbit(a3),d2   ;$80 -> 0, $40 -> 1, ...
          bcc.s .c1
 .e0:     rts
 
-crsrpg:  move.b d4,i1(a3)
-         tst.b crsrpgmk(a3)
-         beq.s .l1
-
+crsrpg:  move.b d4,i1(a3)   ;d4 = 0
+         movea.l a5,a0
+         suba.l BITPLANE1_PTR(a3),a0
+         adda.l BITPLANE3_PTR(a3),a0
          move.b #$ff,d7
-         move.b d7,6*nextline-1(a5)
-         move.b d7,-nextline-1(a5)
-         eor.b d7,-1(a5)
-         eor.b d7,nextline-1(a5)
-         eor.b d7,2*nextline-1(a5)
-         eor.b d7,3*nextline-1(a5)
-         eor.b d7,4*nextline-1(a5)
-         eor.b d7,5*nextline-1(a5)
-         rts
-
-.l1:     move.b d4,6*nextline-1(a5)
-         move.b d4,-nextline-1(a5)
+         move.b d7,6*nextline-1(a0)
+         move.b d7,-nextline-1(a0)
+         move.b d7,-1(a0)
+         move.b d7,nextline-1(a0)
+         move.b d7,2*nextline-1(a0)
+         move.b d7,3*nextline-1(a0)
+         move.b d7,4*nextline-1(a0)
+         move.b d7,5*nextline-1(a0)
          rts
 
 crsrcalc:
@@ -1925,11 +1921,53 @@ crsrclr: tst.b zoom(a3)
          mulu #nextline,d4
          add.l (video,a4),d4
          move.b #0,(a0,d4)
+         movea.l BITPLANE1_PTR(a3),a0
+         movea.l BITPLANE2_PTR(a3),a1
+         tst.b pseudoc(a3)
+         bne.s .c2
+
+         move.b #0,(a1,d4)
+         move.b d0,(a0,d4)
          rts
 
-.c3:     clr.b crsrpgmk(a3)
-         bsr showscnz
-         addq.b #1,crsrpgmk(a3)
+.c2:     lsl.w #2,d6
+         move.l (count0,a4,d6.w),d1
+         vidmacp
+         move.b d1,(a0,d4)
+         move.b d0,(a1,d4)
+         rts
+
+.c3:     movea.l crsrtile(a3),a0
+         move.l (video,a0),d1
+         movea.l viewport(a3),a0
+         sub.l (video,a0),d1
+         divu #nextline,d1
+         moveq #0,d0
+         move.w d1,d0
+         add.b crsrbyte(a3),d0
+         move.w #0,d1
+         swap d1
+         lsl.w #3,d1
+         move.b crsrbit(a3),d2
+.c10:    add.b d2,d2
+         bcs.s .c8
+
+         addq.l #1,d1
+         bra.s .c10
+
+.c8:     mulu #320,d0
+         add.w d1,d0
+         movea.l BITPLANE3_PTR(a3),a0
+         adda.l d0,a0
+         moveq #0,d1
+         move.b d1,(a0)
+         move.b d1,nextline(a0)
+         move.b d1,2*nextline(a0)
+         move.b d1,3*nextline(a0)
+         move.b d1,4*nextline(a0)
+         move.b d1,5*nextline(a0)
+         move.b d1,6*nextline(a0)
+         move.b d1,7*nextline(a0)
          rts
 
 outdec:  lea.l temp(a3),a1        ;in: d0

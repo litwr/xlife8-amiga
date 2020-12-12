@@ -601,7 +601,6 @@ topology  dc.b 0      ;0 - torus
 errst     dc.b 0   ;0 - do not print i/o-errors message, 1 - print
 mouseact  dc.b 1   ;0 - do not call setviewport after mouse action
 ppmode    dc.b 1    ;putpixel mode: 0 - tentative, 1 - active
-crsrpgmk  dc.b 1   ;0 - do not draw cursor during showscnz, 1 - draw
 svfn      blk.b 31
 cf        dc.b "colors.cfg",0
 copyleft  dc.b "cr.txt",0

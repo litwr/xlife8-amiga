@@ -290,20 +290,20 @@ dispatcher:
          bsr inctsum
 
          bsr infoout
-         bra .c270
+         bra.s .c270
 
 .c79:    bsr calccells
-         bra .c270
+         bra.s .c270
 
 .c170:   cmpi.b #'.',d0
-         bne .c171
+         bne.s .c171
 
          bsr crsrclr
          move.l #tiles+tilesize*(hormax*vermax/2+hormax/2-1),crsrtile(a3)
          moveq #1,d0
          move.b d0,crsrbyte(a3)
 .c272:   move.b d0,crsrbit(a3)
-.c273:   bsr .c270
+.c273:   bsr.s .c270
          tst.b zoom(a3)
          beq .rts
 
@@ -313,16 +313,16 @@ dispatcher:
          bra crsrcalc
 
 .c171:   cmpi.b #"H",d0    ;home
-         bne .c172
+         bne.s .c172
 
          bsr crsrclr
          move.l #tiles,crsrtile(a3)
          move.b #0,crsrbyte(a3)
          move.b #$80,d0
-         bra .c272
+         bra.s .c272
 
 .c172:   cmpi.b #'l',d0
-         bne .c173
+         bne.s .c173
 
          move.b zoom(a3),d0
          move.w d0,-(sp)
@@ -355,6 +355,7 @@ dispatcher:
          tst.b zoom(a3)
          bne.s .rts
 
+         bsr crsrclr
          addq.b #1,zoom(a3)
          bsr setviewport
          bsr tograph
@@ -366,6 +367,7 @@ dispatcher:
          tst.b zoom(a3)
          beq.s .rts
 
+         bsr crsrclr
          clr.b zoom(a3)
          bra tograph
 
@@ -393,7 +395,7 @@ dispatcher:
          bne.s .c20
 
          bsr boxsz
-         beq.s .rts
+         beq .rts
 
          bsr getsvfn
          beq.s .c220
