@@ -1,4 +1,6 @@
 ;t9 equ '    '
+mouseleft_char = 1
+mouseright_char = 2
 vermax   = 24     ;192
 hormax   = 31     ;248
 total    = hormax*vermax+1

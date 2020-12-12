@@ -34,10 +34,10 @@ dispatcher:
          bne.s .e0
 .exit:   rts
 
-.e0:     cmpi.b #'0',d0     ;mouse left button
+.e0:     cmpi.b #mouseleft_char,d0     ;mouse left button
          bne .e01
 
-         bsr crsrclr
+.mouse:  bsr crsrclr
          movea.l SCREEN_HANDLE(a3),a0
          clr.l d0
          clr.l d2
@@ -105,12 +105,11 @@ dispatcher:
          bsr .c273
          move.b #1,mouseact(a3)
          bra showscn
-         ;bra infoout
 
-.e01:    cmpi.b #'1',d0     ;mouse right button
-         ;bne.s .e02
+.e01:    cmpi.b #mouseright_char,d0     ;mouse right button
+         beq .mouse
 
-.e02:    cmpi.b #"g",d0
+         cmpi.b #"g",d0
          bne.s .c3
 
          tst.b mode(a3)

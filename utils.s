@@ -296,6 +296,10 @@ mousepixel:   ;IN: d2 - x, d0 - y
          sub.b d4,d3
          moveq #0,d0
          move.b bittab(a3,d3),d0
-         move.b #1,(sum,a5)
+         move.b d0,(sum,a5)
          or.b d0,(a5,d1)
-         bra chkadd
+         cmpi.b #mouseleft_char,mouseleft(a3)
+         beq chkadd
+
+         eor.b d0,(a5,d1)
+         rts

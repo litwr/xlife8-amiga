@@ -194,7 +194,7 @@ KEYB_GETKEYS:
 	bne.s KEYB_GETKEYS0
 
     ;moveq #0,d0
-    cmpi.b #'0',mouseleft(a3)
+    cmpi.b #mouseleft_char,mouseleft(a3)
     bne.s .c
 
     movea.l SCREEN_HANDLE(a3),a0
@@ -207,7 +207,6 @@ KEYB_GETKEYS:
     beq.s .rts
 
 .c1:lea.l mouseleft(a3),a1
-    ;move.b #'0',(a1)
 .e: lea.l KEYB_BUFFER(a3),a0
     MOVE.W	KEYB_INBUFFER(A3),D1
     move.b (a1),(a0,d1.w)		; Copy the keys to the normal
@@ -221,7 +220,7 @@ KEYB_GETKEYS:
     moveq #0,d0
     rts
 
-.c: cmpi.b #'1',mouseright(a3)
+.c: cmpi.b #mouseright_char,mouseright(a3)
     bne.s .rts
 
     movea.l SCREEN_HANDLE(a3),a0
@@ -234,7 +233,6 @@ KEYB_GETKEYS:
     beq.s .rts
 
 .c2:lea.l mouseright(a3),a1
-    ;move.b #'1',(a1)
     bra.s .e
 
 KEYB_GETKEYS0:
@@ -322,7 +320,7 @@ MOUSE_HANDLER:
     bne.s .rightp
 
     lea.l mouseleft(a3),a1
-    move.b #'0',(a1)
+    move.b #mouseleft_char,(a1)
     bra.s KEYB_GETKEYS0\.e
 
 .rightp:
@@ -330,6 +328,6 @@ MOUSE_HANDLER:
     bne.s KEYB_ANSWER
 
     lea.l mouseright(a3),a1
-    move.b #'1',(a1)
+    move.b #mouseright_char,(a1)
     bra KEYB_GETKEYS0\.e
 
