@@ -9,13 +9,6 @@ getkey2:  ;******* KEY POLLING *******
 	 MOVE.W	KEYB_OUTBUFFER(A3),D0
 	 CMP.W	KEYB_INBUFFER(A3),D0	; Is buffer empty
 	 BNE	KEYB_STILLKEYSINBUFFER	; No ??
-
-	 ;MOVE.L	KEY_PORT(A3),A0	; Our key port
-	 ;MOVE.L	4.W,A6
-	 ;JSR	GetMsg(A6)
-	 ;MOVE.L	D0,KEY_MSG(A3)   ;D0=0 means no message
-	 ;BNE	KEYB_GETKEYS0
-	 ;rts
      bra KEYB_GETKEYS
 
 start_timer:
@@ -39,8 +32,6 @@ dispatcher:
 
 .mouse:  bsr crsrclr
          movea.l SCREEN_HANDLE(a3),a0
-         clr.l d0
-         clr.l d2
          move.w 16(a0),d0   ;screen.y
          move.w d0,mouseprevY(a3)
          move.w 18(a0),d2   ;screen.x

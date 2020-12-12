@@ -843,14 +843,12 @@ showscnzp:
          suba.l #tilesize*(hormax*2-1)+8,a4
          bra.w .loop3
 
-gexit:   bra crsrset
-
 showscn: bsr infoout
          tst.b zoom(a3)
          bne showscnz
 
          tst.w tilecnt(a3)
-         beq gexit
+         beq crsrset
 
          tst.b pseudoc(a3)
          bne showscnp
@@ -1311,30 +1309,67 @@ showrect:
          cmpi.b #'H',d0     ;to home
          beq .c100
 
-         cmpi.b #'r',d0
-         bne .c1
+         cmpi.b #mouseright_char,d0
+         bne.s .c7
 
-         bsr clrrect
+         move.l #10,d1      ;10/50 sec (PAL), 10/60 sec (NTSC)
+         move.l doslib(a3),a6     ;DOS base address
+         jsr Delay(a6)
+         bra.s .rotate
+
+.c7:     cmpi.b #'r',d0
+         bne.s .c1
+
+.rotate: bsr clrrect
          not.b xchgdir(a3)
          move.w xdir(a3),d0
          rol.w #8,d0
          not.b d0
          move.w d0,xdir(a3)
-         bra .c10
+         bra.s .c10
 
 .c1:     cmpi.b #'f',d0
-         bne .c2
+         bne.s .c2
 
          bsr clrrect
          not.b xdir(a3)
-         bra .c10
+         bra.s .c10
 
 .c2:     cmpi.b #$d,d0
          beq exit7
 
          cmpi.b #27,d0      ;esc
          beq exit7
-         bra .c11
+
+         cmpi.b #mouseleft_char,d0
+         bne.s .c11
+
+         bsr crsrclr
+         movea.l SCREEN_HANDLE(a3),a0
+         move.w 16(a0),d0   ;screen.y
+         move.w 18(a0),d2   ;screen.x
+         subq.w #2,d0
+         bcs .c10
+
+         cmpi.w #192,d0
+         bcc .c10
+
+         subq.w #2,d2
+         bcs .c10
+
+         cmpi.w #280,d2
+         bcc .c10
+
+         subi.w #32,d2
+         bcs .c10
+
+.l12:    movem.w d0/d2,-(sp)
+         bsr clrrect
+         movem.w (sp)+,d0/d2
+         bsr mousecursor
+         bsr crsrset
+         bsr crsrcalc
+         bra .c10
 
 .c100:   move.w d0,-(sp)
          bsr clrrect
@@ -1343,7 +1378,7 @@ showrect:
          bra .c10
 
 .c101:   move.w d0,-(sp)
-         bsr clrrect
+         bsr clrrect   ;in: x8poscp, y8poscp!!!  FIXME!!
          move.w (sp)+,d0
          bsr dispatcher\.e1
          bra .c10
@@ -1488,7 +1523,7 @@ drawrect: bsr xchgxy
          bsr xmove
          ;cmp bh,[xcut]
          tst.b xcut(a3)
-         bne exitdrawrect
+         bne drrect1\.rts
 
 ymove:   ;cmp [ydir],0
          tst.b ydir(a3)
@@ -1498,7 +1533,7 @@ loopdn:  bsr drrect1
 .c10:    bsr pixel11
          ;dec dh
          subq.b #1,d5
-         beq exitdrawrect
+         beq drrect1\.rts
 
          addq.b #1,y8byte(a3)
          ;cmp byte [y8byte],8
@@ -1514,7 +1549,7 @@ loopdn:  bsr drrect1
 loopup:  bsr drrect1
 .c11:    bsr pixel11
          subq.b #1,d5
-         beq exitdrawrect
+         beq drrect1\.rts
 
          subq.b #1,y8byte(a3)
          bpl loopup
@@ -1532,7 +1567,7 @@ xmove:   ;cmp [xdir],bh
 looprt:  bsr drrect1
 .c12:    bsr pixel11
          subq.b #1,d4
-         beq exitdrawrect
+         beq drrect1\.rts
 
          ;shr bl,1
          lsr.b d1
@@ -1547,7 +1582,7 @@ looprt:  bsr drrect1
 looplt:  bsr drrect1
 .c15:    bsr pixel11
          subq.b #1,d4
-         beq exitdrawrect
+         beq drrect1\.rts
 
          ;shl bl,1
          lsl.b d1
@@ -1564,11 +1599,11 @@ drrect1: move.l video(a5),d0
          move.b y8byte(a3),d3
          mulu #40,d3
          add.l d3,d0
-exitdrawrect: rts
+.rts:    rts
 
 
 loopup2: bsr xclrect2
-         beq exitdrawrect
+         beq.s drrect1\.rts
 
          subq.b #1,y8byte(a3)
          bpl loopup2
@@ -1581,7 +1616,7 @@ clrrect:  ;in: x8poscp, y8poscp
          bsr xchgxy
          bsr calcx   ;sets ah=0
          tst.b xdir(a3)
-         beq .c3
+         beq.s .c3
 
          subq.b #8,d0
          not.b d0
@@ -1604,10 +1639,10 @@ clrrect:  ;in: x8poscp, y8poscp
          movea.l crsrtile(a3),a5
          ;cmp [ydir],ah
          tst.b ydir(a3)
-         bne loopup2
+         bne.s loopup2
 
 loopdn2: bsr xclrect2
-         beq exitclrect2
+         beq.s xclrect2\.rts
 
          addq.b #1,y8byte(a3)
          ;cmp byte [y8byte],8
@@ -1618,13 +1653,13 @@ loopdn2: bsr xclrect2
          movea.l down(a5),a5
          ;mov byte [y8byte],0
          clr.b y8byte(a3)
-         bra loopdn2
+         bra.s loopdn2
 
 xclrect2:;push si
          move.l a5,-(sp)
          ;cmp [xdir],0
          tst.b xdir(a3)
-         bne .c2
+         bne.s .c2
 
 .c1:     bsr clrect12
          ;mov si,[si+right]
@@ -1645,7 +1680,7 @@ xclrect2:;push si
          move.b x8poscp(a3),d4
          ;dec dh
          subq.b #1,d5
-exitclrect2: rts
+.rts:    rts
 
 clrect12:clr.l d6
          move.b y8byte(a3),d6
@@ -1865,13 +1900,13 @@ setviewport:
 
 crsrset: bsr crsrset1
          tst.b zoom(a3)
-         bne gexit2
+         bne.s pixel11\.rts
 
 pixel11: movea.l BITPLANE1_PTR(a3),a0   ;it should be after crsrset, IN: d1 - crsrbit, d0 - addr of video tile line
          or.b d1,(a0,d0)
          movea.l BITPLANE2_PTR(a3),a0
          or.b d1,(a0,d0)
-gexit2:  rts         ;this is also gexit3
+.rts:    rts
 
 crsrclr: tst.b zoom(a3)
          bne.s .c3
