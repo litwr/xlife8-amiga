@@ -1336,12 +1336,17 @@ showrect:
          bra.s .c10
 
 .c2:     cmpi.b #$d,d0
-         beq exit7
+         beq .exit
 
          cmpi.b #27,d0      ;esc
-         beq exit7
+         bne .c22
 
-         cmpi.b #mouseleft_char,d0
+.exit:   move.w d0,-(sp)
+         bsr clrrect
+         move.w (sp)+,d0
+         rts
+
+.c22:    cmpi.b #mouseleft_char,d0
          bne.s .c11
 
          bsr crsrclr
@@ -1700,6 +1705,8 @@ clrect12:clr.l d6
          move.b d1,(a0,d6)
          movea.l BITPLANE2_PTR(a3),a0
          move.b d0,(a0,d6)
+         movea.l BITPLANE3_PTR(a3),a0
+         move.b #0,(a0,d6)
          rts
 
 crsrset1:
@@ -1902,9 +1909,7 @@ crsrset: bsr crsrset1
          tst.b zoom(a3)
          bne.s pixel11\.rts
 
-pixel11: movea.l BITPLANE1_PTR(a3),a0   ;it should be after crsrset, IN: d1 - crsrbit, d0 - addr of video tile line
-         or.b d1,(a0,d0)
-         movea.l BITPLANE2_PTR(a3),a0
+pixel11: movea.l BITPLANE3_PTR(a3),a0   ;it should be after crsrset, IN: d1 - crsrbit, d0 - addr of video tile line
          or.b d1,(a0,d0)
 .rts:    rts
 
@@ -1915,24 +1920,11 @@ crsrclr: tst.b zoom(a3)
          moveq #0,d4
          move.b crsrbyte(a3),d4
          move.b (a4,d4.w),d0
-         movea.l BITPLANE1_PTR(a3),a0
-         movea.l BITPLANE2_PTR(a3),a1
+         movea.l BITPLANE3_PTR(a3),a0
          move.w d4,d6
          mulu #nextline,d4
          add.l (video,a4),d4
-
-         tst.b pseudoc(a3)
-         bne.s .c2
-
-         move.b #0,(a1,d4)
-         move.b d0,(a0,d4)
-         rts
-
-.c2:     lsl.w #2,d6
-         move.l (count0,a4,d6.w),d1
-         vidmacp
-         move.b d1,(a0,d4)
-         move.b d0,(a1,d4)
+         move.b #0,(a0,d4)
          rts
 
 .c3:     clr.b crsrpgmk(a3)
@@ -2200,7 +2192,7 @@ chgcolors:
          movea.l VIEW_PORT(a3),a0
          movea.l GRAPHICS_BASE(a3),a6
          lea.l COLORS(a3),a1   ; Pointer to the color list
-         moveq #4,d0           ; 4 colors to set
+         moveq #8,d0           ; 8 colors to set
          jsr LoadRGB4(a6)      ; Set the colors
          ori.b #32,d4
          cmpi.b #'n',d4

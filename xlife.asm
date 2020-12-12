@@ -2,7 +2,7 @@
 ;**it is the conversion from 6502 port for Commodore +4 v4
 ;**from z80 port for Amstrad CPC6128 v2, from K1801VM1 port for BK0011 v1
 ;**from 8088 port for IBM PC v1
-;written by litwr, 2018, 2020
+;written by litwr, 2018, 2019, 2020
 ;thanks to Tuomas Järvensivu's blog post Crash course to Amiga assembly programming
 ;a lot of thanks to guys at http://eab.abime.net
 ;some materials were used from AsmOne examples coded by Rune Gram-Madsen
@@ -27,6 +27,11 @@ start:   movea.l 4.w,a6
          bsr chgdrv
          bsr copyr
          bsr setcolors
+         movea.l BITPLANE3_PTR(a3),a0   ;clear cursor plane
+         move.w #nextline*50-1,d1
+         moveq #0,d0
+.l1:     move.l d0,(a0)+
+         dbra d1,.l1
          addq.b #1,errst(a3)
          bsr showmode
          bsr help
@@ -640,7 +645,7 @@ SCREEN_DEFS:
 	DC.W	0,0		; X-Y position
 	DC.W	320		; Width
 	DC.W	ScreenHeight		; Hight
-	DC.W	2		; Depth
+	DC.W	3		; Depth
 	DC.B	0,1		; Pen colors
 	DC.W	0		; V_HIRES
 	DC.W	SCREENQUIET	;CUSTOMSCREEN
@@ -684,8 +689,8 @@ FONT_ATTR:
 lightgreen: dc.w $0c0
 
 COLORS:
-	DC.W	$080,$ee0,$000,$FFF  ;green,yellow,black,white
-	;DC.W	$00C,$00B,$00A,$009  ;extra, not used
+	DC.W	$080,$ee0,$000,$FFF  ;green, yellow, black, white
+	DC.W	$B00,$E0E,$0EE,$00B  ;red, magenta, cyan, blue
 
 texts:	dc.b 'G%XY'
 
@@ -703,6 +708,7 @@ TASK_OLDWINDOW:     DC.L	0
 
 BITPLANE1_PTR:      DC.L	0
 BITPLANE2_PTR:      DC.L	0
+BITPLANE3_PTR:      DC.L	0
 TASK_PTR:           DC.L	0
 ERROR_STACK:        DC.L	0
 

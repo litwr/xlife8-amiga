@@ -12,9 +12,9 @@ BP - D6/A6
 0 - bg
 
 + cursor, borders, ... to additional plane
++ cursor flash on the tentative screen
 + CLR in fast code
 + memory leaks when it starts from WB
-* mouse support
 * manpage
 * optimize work with sides: get 4 rows (??), mix left and right cases (check if it is applyable for other architectures)
 * work with word as 2 bytes maybe slow, check a use of 2 bytes instead

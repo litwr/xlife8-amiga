@@ -1,7 +1,7 @@
 copyr:   bsr totext
          move.l GRAPHICS_BASE(a3),a6
          movepenq 0,6
-         ;color 1
+         ;color 2
          lea.l curpathsv(a3),a1
          bsr makepath2
          lea.l copyleft(a3),a0

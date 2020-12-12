@@ -95,7 +95,7 @@ COLORS_SET:
     movea.l VIEW_PORT(a3),a0
 	movea.l GRAPHICS_BASE(a3),a6
 	lea.l	COLORS(a3),a1		; Pointer to the color list
-	MOVEQ	#4,D0			; 4 colors to set
+	MOVEQ	#8,D0			; 8 colors to set
 	JMP	LoadRGB4(A6)		; Set the colors
 
 KEYB_EXIT:
@@ -145,6 +145,7 @@ SCREEN_OPEN:
 	LEA.l BITPLANE1_PTR(A3),A1
 	MOVE.L (A2)+,(A1)+		; Bitplane 1
 	MOVE.L (A2)+,(A1)+		; Bitplane 2
+      MOVE.L (A2),(A1)		; Bitplane 3
 	moveq #0,d0
 	jmp ShowTitle(a6)
 
