@@ -5,7 +5,7 @@
 ;*                                                     *
 ;*******************************************************
 
-ScreenHeight = 256	;200 for NTSC
+ScreenHeight = 200
 KB2_SIZE = 128
 
 J	 BSR.S STARTUP
@@ -274,8 +274,8 @@ KEYB_GETKEYS0:
      lea.l KEY_BUFFER(a3),a1
 .e:  lea.l KEYB_BUFFER(a3),a0
      MOVE.W	KEYB_INBUFFER(A3),D1
-.LOOP:	MOVE.B	(A1)+,(A0,D1.W)		; Copy the keys to the normal
-	ADDQ.B	#1,D1			;  buffer.
+.LOOP:	MOVE.B	(A1)+,(A0,D1.W)		;Copy the keys to the normal buffer
+	ADDQ.B	#1,D1
         cmpi.w #KB2_SIZE,D1
         bne .l1
 

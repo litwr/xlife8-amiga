@@ -8,4 +8,5 @@
 * cleanup: add, #8
 * delel rep stosw
 * cellsum: check earlier
-+ check NTSC
++ check the port before a call to GetMsg
+

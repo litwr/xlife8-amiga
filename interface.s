@@ -560,7 +560,6 @@ benchcalc: bsr stop_timer
          lsr.w #2,d3
          negx.l d5
          neg.l d5
-
 .l8:     move.l d5,d7
          divu #100,d5
          swap d5
