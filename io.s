@@ -74,7 +74,7 @@ setcolors:
          movea.l VIEW_PORT(a3),a0
          movea.l GRAPHICS_BASE(A3),a6
          lea.l COLORS(a3),a1   ; Pointer to the color list
-         moveq #4,d0           ; 4 colors to set
+         moveq #8,d0           ; 8 colors to set
          jsr LoadRGB4(a6)      ; Set the colors
          bra loadpat\.exit2
 
@@ -576,6 +576,7 @@ savepat: lea.l curpathsv(a3),a1
 showcomm:tst.b fn(a3)
          beq tograph
 
+         bsr crsrclr
          bsr makepath
          bsr fn2path
          lea.l -4(a1),a1

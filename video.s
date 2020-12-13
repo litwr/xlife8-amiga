@@ -1988,19 +1988,20 @@ outdec:  lea.l temp(a3),a1        ;in: d0
          movea.l GRAPHICS_BASE(a3),a6
          jmp Text(a6)
 
-infov:   bsr totext
+infov:   bsr crsrclr
+         bsr totext
          movea.l GRAPHICS_BASE(a3),a6
          ;movea.l RASTER_PORT(a3),a1
          movepenq 0,6
          ;color 2
          tst.b fn(a3)
-         beq .c11
+         beq.s .c11
 
          print "Last loaded filename: "
          lea.l fn(a3),a4
          movea.l a4,a0
 .c1:     cmpi.b #'.',(a4)+
-         bne .c1
+         bne.s .c1
 
          suba.l a0,a4
          move.l a4,d0
@@ -2008,7 +2009,7 @@ infov:   bsr totext
          movea.l RASTER_PORT(a3),a1
          jsr Text(a6)
 .c11:    bsr boxsz
-         beq .c12
+         beq.w .c12
 
          move.w d3,-(sp)
          move.w d6,-(sp)
@@ -2051,7 +2052,8 @@ infov:   bsr totext
 
 outinnum:color 2
          invvideo
-         lea.l sformat(a3),a0
+         lsl.w #3,d7
+         lea.l xformat(a3),a0
          movea.l a5,a1
          lea.l stuffChar(pc),a2
          move.l #-1,charCount(a3)
@@ -2075,10 +2077,10 @@ outinnum:color 2
          normvideo
          color 3     ;must be followed by inputdec
 
-inputdec:bsr TXT_PLACE_CURSOR
+inputhex:bsr TXT_PLACE_CURSOR
 .c3:     lea.l stringbuf(a3),a4
          moveq #0,d3
-.c1:     movem.l a4/a5/a6/d3/d5/d6,-(sp)
+.loop:   movem.l a4/a5/a6/d3/d5/d6,-(sp)
          bsr getkey
          movem.l (sp)+,a4/a5/a6/d3/d5/d6
          cmpi.b #27,d0     ;esc
@@ -2098,27 +2100,44 @@ inputdec:bsr TXT_PLACE_CURSOR
          beq.s .c11
 
          cmpi.b #8,d0   ;backspace
-         beq.s .c12
+         beq.w .c12
 
+         cmpi.b #3*8,d3
+         beq.s .loop
+
+         move.b d0,d2
          cmpi.b #'0',d0
-         bcs.s .c1
+         bcs.s .loop
 
          cmpi.b #'9'+1,d0
-         bcc.s .c1
+         bcs.s .ok
 
-         cmpi.b #4*8,d3
-         beq.s .c1
+         cmpi.b #'A',d0
+         bcs.s .loop
 
+         cmpi.b #'F'+1,d0
+         bcs.s .okl
+
+         cmpi.b #'a',d0
+         bcs.s .loop
+
+         cmpi.b #'f'+1,d0
+         bcc.s .loop
+
+         subi.b #32,d2
+.okl:    subi.b #7,d2
+.ok:     subi.b #'0',d2
          addq.b #8,d3
          move.w d5,d1
          move.w d7,d4
          bsr TXT_ON_CURSOR
          move.l a4,a0
-         move.b d0,(a4)+
+         move.b d0,(a4)
          moveq #1,d0
          jsr Text(a6)
+         move.b d2,(a4)+
 .cont4:  bsr TXT_PLACE_CURSOR
-         bra.s .c1
+         bra.w .loop
 
 .c11:    moveq #0,d0  ;result
          move.b d3,d4
@@ -2128,18 +2147,14 @@ inputdec:bsr TXT_PLACE_CURSOR
          lea.l stringbuf(a3),a0
          bra.s .l4
 
-.l2:     mulu #10,d0
+.l2:     lsl.w #4,d0
 .l4:     clr.w d1
          move.b (a0)+,d1
-         subi.b #'0',d1
          add.w d1,d0
          subq #8,d4
          bne.s .l2
 
-.c21:    cmp.w d6,d0
-         bcc .c1
-
-         move.w d0,-(sp)
+.c21:    move.w d0,-(sp)
          move.w d5,d1
          move.w d7,d0
          add.w #8,d0
@@ -2172,84 +2187,83 @@ chgcolors:
          normvideo
          print ' TO USE THE DEFAULT VALUE OR'
          movepenq 0,14
-         print 'INPUT A DECIMAL NUMBER (0-4095).'
+         print 'INPUT A HEXADECIMAL NUMBER (0-FFF).'
          movepenq 0,22
          color 1
-         print 'COLOR #0 ['
+         print 'THE EDIT BACKGROUND ['
          lea.l COLORS(a3),a5
          moveq #22,d5  ;Y
-         moveq #13*8,d7  ;X
-         move.w #4096,d6
+         moveq #24,d7  ;X
          bsr outinnum
          bne.s .l1
 
          move.w d0,(a5)
 .l1:     color 1
          movepenq 0,30
-         print 'COLOR #0 HIGHLIGHTED ['
+         print 'THE GO BACKGROUND ['
          lea.l lightgreen(a3),a5
          moveq #30,d5 ;Y
-         move.l #25*8,d7
+         move.l #22,d7
          bsr outinnum
          bne.s .l2
 
          move.w d0,(a5)
 .l2:     color 1
          movepenq 0,38
-         print 'COLOR #1 ['
+         print 'THE LIVE CELL ['
          lea.l COLORS+2(a3),a5
          moveq #38,d5
-         moveq #13*8,d7
+         moveq #18,d7
          bsr outinnum
          bne.s .l3
 
          move.w d0,(a5)
 .l3:     color 1
          movepenq 0,46
-         print 'COLOR #2 ['
+         print 'THE NEW CELL ['
          lea.l COLORS+4(a3),a5
          moveq #46,d5
-         moveq #13*8,d7
+         moveq #17,d7
          bsr outinnum
          bne.s .l4
 
          move.w d0,(a5)
 .l4:     color 1
          movepenq 0,54
-         print 'COLOR #3 ['
+         print 'TEXT COLOR ['
          lea.l COLORS+6(a3),a5
          moveq #54,d5
-         moveq #13*8,d7
+         moveq #15,d7
          bsr outinnum
          bne.s .l7
 
          move.w d0,(a5)
 .l7:     color 1
          movepenq 0,62
-         print 'COLOR #4 ['
+         print 'THE CURSOR OVER AN EMPTY CELL ['
          lea.l COLORS+8(a3),a5
          moveq #62,d5
-         moveq #13*8,d7
+         moveq #34,d7
          bsr outinnum
          bne.s .l5
 
          move.w d0,(a5)
 .l5:     color 1
          movepenq 0,70
-         print 'COLOR #5 ['
+         print 'THE CURSOR OVER A LIVE CELL ['
          lea.l COLORS+10(a3),a5
          moveq #70,d5
-         moveq #13*8,d7
+         moveq #32,d7
          bsr outinnum
          bne.s .l6
 
          move.w d0,(a5)
 .l6:     color 1
          movepenq 0,78
-         print 'COLOR #6 ['
+         print 'THE CURSOR OVER A NEW CELL ['
          lea.l COLORS+12(a3),a5
          moveq #78,d5
-         moveq #13*8,d7
+         moveq #31,d7
          bsr outinnum
          bne.s .l9
 

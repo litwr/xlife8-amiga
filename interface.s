@@ -163,9 +163,12 @@ dispatcher:
          bra cleanup
 
 .c7:     cmpi.b #'?',d0
-         beq help
+         bne.s .c7a
 
-         cmpi.b #'C',d0
+         bsr crsrclr
+         bra help
+
+.c7a:    cmpi.b #'C',d0
          bne.s .c10
 
          tst.w tilecnt(a3)
@@ -192,32 +195,35 @@ dispatcher:
 
 .c12:    cmpi.b #'%',d0
          bne.s .c14
+
+         bsr crsrclr
          bra indens
 
 .c14:    cmpi.b #'B',d0
          bne .c15
 
-.c159:   bsr insteps
+.c159:   bsr crsrclr
+         bsr insteps
          tst.w d6
-         beq .c142
+         beq.s .c142
 
          move.w d6,x0(a3)
          move.w d6,temp2(a3)
          bsr inmode
-         beq .c500
-         bhi .c400
+         beq.s .c500
+         bhi.s .c400
 
          bsr start_timer
 .c146:   tst.w tilecnt(a3)
-         bne .c147
+         bne.s .c147
 
          bsr incgen
-         bra .c148
+         bra.s .c148
 
 .c147:   bsr generate
          bsr cleanup
 .c148:   subq.w #1,temp2(a3)
-         bne .c146
+         bne.s .c146
 
 .c401:   bsr benchcalc
 .c142:   bsr tograph
@@ -229,29 +235,30 @@ dispatcher:
          bne .c5147
 
          bsr incgen
-         bra .c5148
+         bra.s .c5148
 
 .c5147:  bsr zerocc
          bsr generate
          bsr showscn
          bsr cleanup
 .c5148:  subq.w #1,temp2(a3)
-         bne .c5146
-         bra .c401
+         bne.s .c5146
+         bra.s .c401
 
 .c500:   bsr tograph
          bsr start_timer
 .c4147:  bsr showscn
          subq.w #1,temp2(a3)
-         bne .c4147
-         bra .c401
+         bne.s .c4147
+         bra.s .c401
 
 .c15:    cmpi.b #'R',d0
          bne.s .c16
 
+         bsr crsrclr
          bsr inborn
          cmpi.b #27,d0         ;esc
-         beq .c200
+         beq.s .c200
 
          lea.l born(a3),a2
          bsr setrconst
@@ -324,6 +331,7 @@ dispatcher:
 .c172:   cmpi.b #'l',d0
          bne.s .c173
 
+         bsr crsrclr
          move.b zoom(a3),d0
          move.w d0,-(sp)
          clr.b zoom(a3)
@@ -347,7 +355,7 @@ dispatcher:
 .c317:   move.b zoom(a3),d0
          move.w d0,-(sp)
          clr.b zoom(a3)
-         bra .c303
+         bra.s .c303
 
 .c174:   cmpi.b #'+',d0
          bne.s .c175
@@ -380,6 +388,7 @@ dispatcher:
          cmpi.b #'Z',d0
          bne.s .c179
 
+         bsr crsrclr
          bsr totext
          bsr chgcolors
 .c220:   bra tograph
@@ -397,6 +406,7 @@ dispatcher:
          bsr boxsz
          beq .rts
 
+         bsr crsrclr
          bsr getsvfn
          beq.s .c220
 
@@ -435,8 +445,7 @@ dispatcher:
          move.b d0,crsrbit(a3)
          bra .c270
 
-.c71:    ;bsr crsrclr
-         movea.l crsrtile(a3),a0
+.c71:    movea.l crsrtile(a3),a0
          movea.l (right,a0),a1
          cmpa.l #plainbox,a1
          beq .c270

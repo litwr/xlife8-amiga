@@ -612,6 +612,7 @@ tbformat   dc.b "TIME: %d.%02ds",0
 sbformat   dc.b "SPEED: %d.%02d",0
 nformat    dc.b "%3d ",0
 sformat    dc.b "%d",0
+xformat    dc.b "%03x",0
 lformat    dc.b "%ld",0
 ulformat   dc.b "N%09ld",0
 dosname  dc.b "dos.library",0
