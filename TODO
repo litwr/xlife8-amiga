@@ -1,26 +1,3 @@
-AX - D0/A0
-BX - D1/A1
-CX - D2/A2
-DX - D3/A3
-SI - D4/A4
-DI - D5/A5
-BP - D6/A6
-
-AL - D0
-AH - D7
-BL - D1
-BH - D2
-CL - D5
-CH - D6
-DL - D3
-DH - D4
-
-2 - green
-3 - black
-1 - red
-0 - bg
-
-+ expand X/Z-commands
 + CLR in fast code
 + memory leaks when it starts from WB
 * manpage

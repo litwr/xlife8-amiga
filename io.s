@@ -66,9 +66,9 @@ setcolors:
          move.l d0,filehl(a3)     ;fh-save
          move.l d0,d1
          move.l #lightgreen,d2
-         moveq #10,d3
+         moveq #18,d3
          jsr Read(a6)
-         cmpi.l #10,d0
+         cmpi.l #18,d0
          bne.s savecf\.e
 
          movea.l VIEW_PORT(a3),a0
@@ -92,9 +92,9 @@ savecf:  lea.l curpathsv(a3),a1
          move.l d0,filehl(a3)     ;fh-save
          move.l d0,d1
          move.l #lightgreen,d2
-         moveq #10,d3
+         moveq #18,d3
          jsr Write(a6)
-         cmpi.l #10,d0
+         cmpi.l #18,d0
          beq loadpat\.exit2
 
 .e:      bsr savepat\.error

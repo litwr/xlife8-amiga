@@ -2224,7 +2224,37 @@ chgcolors:
          bne.s .l7
 
          move.w d0,(a5)
-.l7:     movepenq 0,62
+.l7:     color 1
+         movepenq 0,62
+         print 'COLOR #4 ['
+         lea.l COLORS+8(a3),a5
+         moveq #62,d5
+         moveq #13*8,d7
+         bsr outinnum
+         bne.s .l5
+
+         move.w d0,(a5)
+.l5:     color 1
+         movepenq 0,70
+         print 'COLOR #5 ['
+         lea.l COLORS+10(a3),a5
+         moveq #70,d5
+         moveq #13*8,d7
+         bsr outinnum
+         bne.s .l6
+
+         move.w d0,(a5)
+.l6:     color 1
+         movepenq 0,78
+         print 'COLOR #6 ['
+         lea.l COLORS+12(a3),a5
+         moveq #78,d5
+         moveq #13*8,d7
+         bsr outinnum
+         bne.s .l9
+
+         move.w d0,(a5)
+.l9:     movepenq 0,86
          color 1
          print 'TO SAVE THIS CONFIG?'
 .l8:     bsr getkey
