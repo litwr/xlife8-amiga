@@ -1,5 +1,5 @@
-+ CLR in fast code
 + memory leaks when it starts from WB
++ CLR in fast code
 * manpage
 * optimize work with sides: get 4 rows (??), mix left and right cases (check if it is applyable for other architectures)
 * work with word as 2 bytes maybe slow, check a use of 2 bytes instead
@@ -8,5 +8,3 @@
 * cleanup: add, #8
 * delel rep stosw
 * cellsum: check earlier
-+ check the port before a call to GetMsg
-

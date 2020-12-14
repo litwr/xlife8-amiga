@@ -1,15 +1,28 @@
 getkey:
-	MOVE.W	KEYB_OUTBUFFER(A3),D0
-	CMP.W	KEYB_INBUFFER(A3),D0	; Is buffer empty
-	BNE	KEYB_STILLKEYSINBUFFER	; No ??
-	BSR	KEYB_GETKEYS		; Empty, Wait on a key from
-	BRA.S	getkey
+	move.w KEYB_OUTBUFFER(A3),D0
+	cmp.w KEYB_INBUFFER(A3),D0	; Is buffer empty
+	bne KEYB_STILLKEYSINBUFFER	; No ??
+	bsr KEYB_GETKEYS		; Empty, Wait on a key from
+	bra.s getkey
 
 getkey2:  ;******* KEY POLLING *******
-	 MOVE.W	KEYB_OUTBUFFER(A3),D0
-	 CMP.W	KEYB_INBUFFER(A3),D0	; Is buffer empty
-	 BNE	KEYB_STILLKEYSINBUFFER	; No ??
-     bra KEYB_GETKEYS
+     bsr KEYB_GETKEYS
+	 move.w KEYB_OUTBUFFER(A3),D0
+	 cmp.w KEYB_INBUFFER(A3),D0	; Is buffer empty
+	 bne KEYB_STILLKEYSINBUFFER	; No ??
+     moveq #0,d0
+     rts
+
+getkey3:
+     bsr getkey
+.loop
+     moveq #100,d0
+.delay
+     mulu #100,d1
+     dbra d0,.delay
+     bsr getkey2
+     bne.s .loop
+     rts
 
 start_timer:
          move.l $6c,interruptv(a3)
@@ -202,7 +215,7 @@ dispatcher:
 .c14:    cmpi.b #'B',d0
          bne .c15
 
-.c159:   bsr crsrclr
+         bsr crsrclr
          bsr insteps
          tst.w d6
          beq.s .c142
@@ -225,7 +238,8 @@ dispatcher:
 .c148:   subq.w #1,temp2(a3)
          bne.s .c146
 
-.c401:   bsr benchcalc
+.c401:   bsr crsrclr
+         bsr benchcalc
 .c142:   bsr tograph
          bra calccells
 
@@ -635,4 +649,4 @@ benchcalc: bsr stop_timer
          move.l charCount(a3),d0
          lea stringbuf(a3),a0
          jsr Text(a6)
-         bra getkey
+         bra getkey3

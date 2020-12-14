@@ -459,7 +459,7 @@ help:    bsr totext
          invvideo
          print ' to speed up the movement'
          normvideo
-         bsr getkey
+         bsr getkey3
          jmp tograph
 
 xyout:   tst.b zoom(a3)
@@ -2046,8 +2046,7 @@ infov:   bsr crsrclr
 .c12:    movepenq 0,30
          print "Rules: "
          bsr showrules2
-         ;call curoff
-         bsr getkey
+         bsr getkey3
          bra tograph
 
 outinnum:color 2

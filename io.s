@@ -664,8 +664,7 @@ showcomm:tst.b fn(a3)
 .fin:    move.l filehl(a3),d1
          move.l doslib(a3),a6
          jsr Close(a6)
-.exit:   ;call curoff
-         bsr getkey
+.exit:   bsr getkey3
          bra tograph
 
 .error:  bsr totext

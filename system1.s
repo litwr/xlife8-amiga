@@ -51,10 +51,10 @@ CLOSEDOWN:
 	 bra INTULIB_CLOSE
 
 TASK_FIND:
-	SUB.L	A1,A1		; a1 = 0 Our task
-	MOVE.L	4.W,A6
-	JSR	FindTask(A6)
-	MOVE.L	D0,TASK_PTR(A3)	; Store the pointer for our task
+	sub.l a1,a1		; a1 = 0 Our task
+	move.l 4.w,a6
+	jsr FindTask(a6)
+	move.l d0,TASK_PTR(A3)	; Store the pointer for our task
     move.l d0,a4
     tst.l $ac(a4)     ;pr_CLI: CLI or Workbench?
     bne .fromCLI
@@ -189,6 +189,9 @@ KEYB_STILLKEYSINBUFFER:
 
 KEYB_GETKEYS:
 	MOVE.L	KEY_PORT(A3),A0
+    ;move.b $f(a0),d1
+    ;beq.s .checkmouse
+
 	MOVE.L	4.W,A6
 	JSR	GetMsg(A6)
 	MOVE.L D0,KEY_MSG(A3)
@@ -218,7 +221,7 @@ KEYB_GETKEYS:
     moveq #0,d1
 .l1:MOVE.W D1,KEYB_INBUFFER(A3)
 .rts:
-    moveq #0,d0
+    ;moveq #0,d0
     rts
 
 .c: cmpi.b #mouseright_char,mouseright(a3)
