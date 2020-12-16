@@ -4,6 +4,7 @@ insteps: bsr totext
 .c38:    movepenq 0,6
          color 2
          print "NUMBER OF GENERATIONS: "   ;24 chars = 192 pixels
+         color 3
          bsr TXT_PLACE_CURSOR
 .c3:     lea stringbuf(a3),a4
          moveq #0,d3

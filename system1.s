@@ -41,32 +41,43 @@ STARTUP:
 STARTUP_ERROR:
 	 MOVE.L	ERROR_STACK(A3),A7	; Restore old stackpointer
 	 MOVEQ	#0,D0		; Set error value
-	 RTS			; Return to main to main routine
+.e:  rts
 
 CLOSEDOWN:
 	 BSR KEYB_EXIT
 	 BSR WINDOW_CLOSE
 	 BSR SCREEN_CLOSE
 	 BSR GRAPHLIB_CLOSE
-	 bra INTULIB_CLOSE
+	 bsr INTULIB_CLOSE
+     movea.l 4.w,a6
+     jsr Forbid(a6)
+     movea.l wbmsg(a3),a1
+     beq.s STARTUP_ERROR\.e
+
+     jmp ReplyMsg(a6)
 
 TASK_FIND:
 	sub.l a1,a1		; a1 = 0 Our task
 	move.l 4.w,a6
 	jsr FindTask(a6)
-	move.l d0,TASK_PTR(A3)	; Store the pointer for our task
+	move.l d0,TASK_PTR(A3)
     move.l d0,a4
+        move.l d0,a1
+        moveq #20,d0		 ;max=127, but even 30 hangs this program :(
+        jsr SetTaskPri(a6)
     tst.l $ac(a4)     ;pr_CLI: CLI or Workbench?
     bne .fromCLI
 
     move.l 58(a4),stacklimit(a3)
     lea.l $5c(a4),a0    ;WBench message
     jsr WaitPort(a6)  ;wait
+    lea.l $5c(a4),a0
     jsr GetMsg(a6)    ;get message
-    move.l d0,a0
-    move.l $24(a0),a0     ;ptr to arguments
-    beq .noargs
-.noargs:
+    move.l d0,wbmsg(a3)
+    ;move.l d0,a0
+    ;move.l $24(a0),a0     ;ptr to arguments
+    ;beq .noargs
+;.noargs:
     rts
 
 .fromCLI:
@@ -84,11 +95,11 @@ KEYB_INIT:
 	MOVEQ	#-1,D1			; Unit, this is the empty console, we need it to key translate only
 	JSR	OpenDevice(A6)		
 	TST.L	D0			; An error
-	BNE.S	STARTUP_ERROR
+	bne STARTUP_ERROR
 
-	MOVE.L	IO_REQUEST+20,CONSOLE_DEVICE(A3)	; Get console device
-	MOVE.L	WINDOW_HANDLE(A3),A0
-	MOVE.L	$56(A0),KEY_PORT(A3)	; Get this windows keyport
+	MOVE.L IO_REQUEST+20(a3),CONSOLE_DEVICE(a3)	; Get console device
+	MOVE.L WINDOW_HANDLE(a3),a0
+	MOVE.L $56(a0),KEY_PORT(a3)	; Get this windows keyport
 	RTS
 
 COLORS_SET:
@@ -192,7 +203,7 @@ KEYB_GETKEYS:
     ;move.b $f(a0),d1
     ;beq.s .checkmouse
 
-	MOVE.L	4.W,A6
+	MOVE.L 4.W,A6
 	JSR	GetMsg(A6)
 	MOVE.L D0,KEY_MSG(A3)
 	bne.s KEYB_GETKEYS0

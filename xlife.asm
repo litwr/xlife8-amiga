@@ -513,10 +513,6 @@ filehl    dc.l 0
 saveWPTR  dc.l 0
 
 crsrtick      dc.w 0
-;olddmareq:	dc.w 0
-;oldintreq:	dc.w 0
-;oldintena:	dc.w 0
-;oldadkcon:	dc.w 0
 
 bittab:   dc.b 1,2,4,8,16,32,64,128
 
@@ -695,8 +691,7 @@ COLORS:
 texts:	dc.b 'G%XY'
 
 FONT_NAME:		DC.B	'topaz.font',0
-CONSOLE_NAME:		DC.B	'console.device',0,0
-;SCREEN_NAME:		DC.B	'Xlife-8 for the Commodore Amiga',0
+CONSOLE_NAME:		DC.B	'console.device',0
 INTUITION_NAME:		DC.B	'intuition.library',0
 GRAPHICS_NAME:		DC.B	'graphics.library',0
 
@@ -722,7 +717,7 @@ KEY_PORT:		DC.L	0
 KEY_MSG:		DC.L	0
 RASTER_PORT:		dc.l	0
 VIEW_PORT:		dc.l 0
-
+wbmsg: dc.l 0
 MY_EVENT:	DC.L	0	; Insert after each event
 EVENT_IECLASS:	DC.B	IECLASS_RAWKEY
 		DC.B	0	; SUBCLASS - A Joke

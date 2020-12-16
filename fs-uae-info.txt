@@ -6,7 +6,26 @@ FS-UAE (https://fs-uae.net/keyboard-shortcuts)
    F12-D   debugger
    F12-F   fullscreen on/off
    F12-Q   quit
+   F12-B   show border
+   F12-K   full keyboard emu on/off
+   F12-R   soft reset
+   F12-T   hard reset
+   F12-P   pause
+   F12-C   activate cartridge
+   F12-M   mute on/off
+   F12-S/PrintScr   screenshot
+   F12-Z/F11 cycle video modes
    F12     menu
+
+   Amiga Help = End
+   Amiga Delete = Delete
+   Amiga Numpad Left Paren = Home
+   Amiga Numpad Right Paren = Page Up
+   Amiga Left A = Page Down or Right Menu / Right Windows key
+   Amiga Right A = Left Menu / Left Windows key
+   Amiga Ctrl = Left Ctrl
+   Amiga key to the left of Backspace = Insert
+
 debugger (https://reaktor.com/blog/crash-course-to-amiga-assembly-programming/)
    ?                     help
    f <address>           Add/remove breakpoint.
