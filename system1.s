@@ -19,7 +19,7 @@ J	 BSR.S STARTUP
      ;jmp Exit(a6)
 
 .ERROR:	
-     moveq #1,d0
+     moveq #10,d0
      RTS
 
 STARTUP:
@@ -49,11 +49,12 @@ CLOSEDOWN:
 	 BSR SCREEN_CLOSE
 	 BSR GRAPHLIB_CLOSE
 	 bsr INTULIB_CLOSE
+     tst.l wbmsg(a3)
+     beq.s STARTUP_ERROR\.e
+
      movea.l 4.w,a6
      jsr Forbid(a6)
      movea.l wbmsg(a3),a1
-     beq.s STARTUP_ERROR\.e
-
      jmp ReplyMsg(a6)
 
 TASK_FIND:

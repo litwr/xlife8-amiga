@@ -178,8 +178,13 @@ dispatcher:
 .c7:     cmpi.b #'?',d0
          bne.s .c7a
 
-         bsr crsrclr
+.help:   bsr crsrclr
          bra help
+
+.help0:  bsr getkey2
+         cmpi.b #$7e,d0
+         beq.s .help
+         rts
 
 .c7a:    cmpi.b #'C',d0
          bne.s .c10
@@ -431,6 +436,9 @@ dispatcher:
          bne.w .rts
 
 .e1:     bsr getkey2
+         cmpi.b #$3f,d0   ;help key
+         beq .help0
+
          cmpi.b #$43,d0   ;cursor right
          beq.s .c20cr
 
