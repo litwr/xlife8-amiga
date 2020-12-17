@@ -1,0 +1,42 @@
+;run this script from the CLI
+
+lab start
+echo "*ec"
+echo "1. Xlife-8"
+echo "2. Manpage"
+;echo "3. Notepad +4"
+echo "4. Default colors"
+echo "5. Exit"
+getdigit
+
+checkdigit 5
+if warn
+skip endp
+endif
+
+checkdigit 4
+if warn
+delete colors.cfg
+skip start BACK
+endif
+
+checkdigit 3
+if warn
+np4
+skip start BACK
+endif
+
+checkdigit 2
+if warn
+manpage
+skip start BACK
+endif
+
+checkdigit 1
+if warn
+xlife
+endif
+skip start BACK
+
+lab endp
+delete t:gotline
