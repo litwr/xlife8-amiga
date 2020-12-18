@@ -1,7 +1,7 @@
 ;run this script from the CLI
 
 lab start
-echo "*ec"
+echo "*ecSelect a number"
 echo "1. Xlife-8"
 echo "2. Manpage"
 ;echo "3. Notepad +4"
@@ -9,34 +9,35 @@ echo "4. Default colors"
 echo "5. Exit"
 getdigit
 
-checkdigit 5
-if warn
+search t:gotline 5 quiet
+if not warn
 skip endp
 endif
 
-checkdigit 4
-if warn
+search t:gotline 4 quiet
+if not warn
 delete colors.cfg
 skip start BACK
 endif
 
-checkdigit 3
-if warn
-np4
+search t:gotline 3 quiet
+if not warn
+;np4
 skip start BACK
 endif
 
-checkdigit 2
-if warn
-manpage
+search t:gotline 2 quiet
+if not warn
+newcli con:0/0/639/199/Xlife8-man from manpage.script
 skip start BACK
 endif
 
-checkdigit 1
-if warn
+search t:gotline 1 quiet
+if not warn
 xlife
 endif
 skip start BACK
 
 lab endp
 delete t:gotline
+endcli
