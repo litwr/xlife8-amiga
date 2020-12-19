@@ -1916,28 +1916,28 @@ crsrclr: tst.b zoom(a3)
          movea.l crsrtile(a3),a4
          moveq #0,d4
          move.b crsrbyte(a3),d4
-         move.b (a4,d4.w),d0
+         ;move.b (a4,d4.w),d0
          movea.l BITPLANE3_PTR(a3),a0
-         move.w d4,d6
+         ;move.w d4,d6
          mulu #nextline,d4
          add.l (video,a4),d4
          move.b crsrbit(a3),d1
          not.b d1
          and.b d1,(a0,d4)
-         movea.l BITPLANE1_PTR(a3),a0
-         movea.l BITPLANE2_PTR(a3),a1
-         tst.b pseudoc(a3)
-         bne.s .c2
+         ;movea.l BITPLANE1_PTR(a3),a0
+         ;movea.l BITPLANE2_PTR(a3),a1
+         ;tst.b pseudoc(a3)
+         ;bne.s .c2
 
-         move.b #0,(a1,d4)
-         move.b d0,(a0,d4)
-         rts
+         ;move.b #0,(a1,d4)
+         ;move.b d0,(a0,d4)
+         ;rts
 
-.c2:     lsl.w #2,d6
-         move.l (count0,a4,d6.w),d1
-         vidmacp
-         move.b d1,(a0,d4)
-         move.b d0,(a1,d4)
+.c2:     ;lsl.w #2,d6
+         ;move.l (count0,a4,d6.w),d1
+         ;vidmacp
+         ;move.b d1,(a0,d4)
+         ;move.b d0,(a1,d4)
          rts
 
 .c3:     movea.l crsrtile(a3),a0

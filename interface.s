@@ -316,6 +316,7 @@ dispatcher:
          bsr inctsum
 
          bsr infoout
+         bsr showscn
          bra.s .c270
 
 .c79:    bsr calccells
