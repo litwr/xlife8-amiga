@@ -8,4 +8,5 @@
 * cleanup: add, #8
 * delel rep stosw
 * cellsum: check earlier
+* faster zoom in mode
 - use console instead raster port - http://amigadev.elowar.com/read/ADCD_2.1/AmigaMail_Vol2_guide/node016C.html

@@ -1,4 +1,5 @@
 ;t9 equ '    '
+FNMAXLEN = 26
 mouseleft_char = 1
 mouseright_char = 2
 vermax   = 24     ;192
