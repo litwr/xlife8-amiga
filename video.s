@@ -714,13 +714,16 @@ showscnz:movea.l BITPLANE1_PTR(a3),a5    ;must be after crsrcalc
          bcs.s .cont2
 
          ;output an empty space
-         move.b d4,nextline(a5)
-         move.b d4,2*nextline(a5)
-         move.b d4,3*nextline(a5)
-         move.b d4,4*nextline(a5)
-         move.b d4,5*nextline(a5)
-         move.b d4,(a5)+
-         setcursor .cont7
+         cmp.b (a5)+,d4
+         beq.s .zero
+
+         move.b d4,nextline-1(a5)
+         move.b d4,2*nextline-1(a5)
+         move.b d4,3*nextline-1(a5)
+         move.b d4,4*nextline-1(a5)
+         move.b d4,5*nextline-1(a5)
+         move.b d4,-1(a5)
+.zero:   setcursor .cont7
 .cont7:  dbra d3,.loop1
          bra.s .c1
 
@@ -815,13 +818,16 @@ showscnzp:
          bra.s .c1
 
 .space:  lsl.b d6
-         move.b d4,nextline(a5)
-         move.b d4,2*nextline(a5)
-         move.b d4,3*nextline(a5)
-         move.b d4,4*nextline(a5)
-         move.b d4,5*nextline(a5)
-         move.b d4,(a5)+
-         setcursor .cont6
+         cmp.b (a5)+,d4
+         beq.s .zero
+
+         move.b d4,nextline-1(a5)
+         move.b d4,2*nextline-1(a5)
+         move.b d4,3*nextline-1(a5)
+         move.b d4,4*nextline-1(a5)
+         move.b d4,5*nextline-1(a5)
+         move.b d4,-1(a5)
+.zero:   setcursor .cont6
 .cont6:  dbra d3,.loop1
 
 .c1:     lea.l 8*nextline-8(a5),a5
