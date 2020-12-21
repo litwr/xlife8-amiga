@@ -236,7 +236,7 @@ windowdef:
 
 dosname  dc.b "dos.library",0
 intname dc.b 'intuition.library',0
-windname dc.b "Xlife-8 Manpage",0
+windname dc.b "More for Xlife-8 manpage",0
 devicename dc.b 'console.device',0
 manpage dc.b 'manpage.txt',0
 nl dc.b $d,$a
