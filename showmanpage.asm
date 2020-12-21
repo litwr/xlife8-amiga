@@ -84,12 +84,12 @@ go:
     dbra d7,.loop
     bsr conoutline
 .loop2:
-    ;movea.l 4.w,a6
-    ;movea.l windowhd(pc),a0
-    ;movea.l 86(a0),a0
-    ;jsr GetMsg(a6)
-    ;tst.l d0
-    ;bne wevent
+    movea.l 4.w,a6
+    movea.l windowhd(pc),a0
+    movea.l 86(a0),a0
+    jsr GetMsg(a6)
+    tst.l d0
+    bne wevent
 
     lea.l readreply(pc),a0
     jsr GetMsg(a6)
@@ -120,12 +120,9 @@ no2:
     
 wevent:
     movea.l d0,a0
-    move.l $16(a0),d6  ;msg in D6
-    cmp.l #$2000000,d6  ;window close
-    beq.s ende
-
-    movea.l windowhd(pc),a0
-    move.l 12(a0),d5   ;mouse pos
+    MOVE.L 20(a0),d3	;Get message type
+    and.l #$200,d3      ;CLOSEWINDOW
+    beq.s go
 
 ende:
     lea.l readreply(pc),a1
@@ -226,7 +223,7 @@ windowdef:
     dc.w 0,0 ;position
     dc.w 640,200 /size
     dc.b 0,1 /colors
-    dc.l $208 ;IDCMP flags: MOUSEBUTTONS+CLOSEWINDOW
+    dc.l $200 ;IDCMP flags: CLOSEWINDOW
     dc.l $100e ;window flags: ACTIVATE+WINDOWDRAG+WINDOWDEPTH+WINDOWCLOSE
     dc.l 0 ;nogadgets
     dc.l 0 ;no menu check
