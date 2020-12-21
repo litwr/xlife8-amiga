@@ -428,7 +428,7 @@ random:  bsr randomize
 
 calccells: bsr zerocc
          tst.w tilecnt(a3)
-         bne .c12
+         bne.s .c12
          rts
 .c12:
          ;;mov si,[startp]
@@ -438,19 +438,19 @@ calccells: bsr zerocc
          moveq #7,d2
          ;;xor ax,ax
          moveq #0,d0
-         lea tab3(a3),a2
+         lea.l tab3(a3),a2
 .c4:
          ;;lodsb
          move.b (a0)+,d0
          ;;or al,al
          ;;jz .c5
-         beq .c5
+         beq.s .c5
 
          ;;mov bx,tab3
          ;;xlatb
          move.b (a2,d0),d0
          ;;call inctsum
-         bsr inctsum
+         bsr.s inctsum
          ;;mov ah,cl
 .c5:
          ;;loop .c4
@@ -463,7 +463,7 @@ calccells: bsr zerocc
          ;;cmp si,1
          cmpa.l #1,a0
          ;;jnz .c2
-         bne .c2
+         bne.s .c2
          ;;jmp infoout
          bra infoout
 
@@ -578,7 +578,7 @@ putpixel:     ;IN: x0,y0; DON'T USE: D1
          ;;mov bx,7
          ;;sub bl,al
          neg.b d0
-         addi.b #7,d0
+         addq.b #7,d0
          ext.w d0
          lea.l bittab(a3),a1
          ;;mov dl,[bittab+bx]

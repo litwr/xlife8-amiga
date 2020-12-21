@@ -87,7 +87,7 @@ fillrt2:
          bne .c12
 .c13:    rts
 
-fillrt:  
+fillrt:
            ;;xor bx,bx
            clr.l d2
            lea.l gentab(a3),a2

@@ -433,7 +433,7 @@ incgen:  lea (gencnt+4,a3),a1		;;mov bx,gencnt+7
 .irts:	 move.b d1,(a1)
 iexit:	 rts				;;retn
 
-cleanup: addi.b #8,clncnt(a3)		;;inc [clncnt]
+cleanup: addq.b #8,clncnt(a3)		;;inc [clncnt]
 	 				;;test [clncnt],15
 	 bpl iexit			;;jnz iexit
 
@@ -445,7 +445,7 @@ cleanup0:
 	 beq .delel			;;jz .delel			;;beq delel
 
 		      ;save pointer to previous
-	 move.l a1,a4			;;mov si,bx			;;mov r0,r2
+	 movea.l a1,a4			;;mov si,bx			;;mov r0,r2
 	 movea.l (next,a1),a1		;;mov bx,[bx+next]		;;mov next(r0),r0
 	 cmpa.w #1,a1			;;cmp bx,1			;;cmp #1,r0
 	 bne .c1			;;jnz .c1

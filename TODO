@@ -1,11 +1,4 @@
 + memory leaks when it starts from WB
-+ CLR in fast code
 * optimize work with sides: get 4 rows (??), mix left and right cases (check if it is applyable for other architectures)
-* work with word as 2 bytes maybe slow, check a use of 2 bytes instead
-* chkaddtr -> macro (?)
-* cmp.l -> cmp.w
-* cleanup: add, #8
-* delel rep stosw
-* cellsum: check earlier
 * faster zoom in mode
 - use console instead raster port - http://amigadev.elowar.com/read/ADCD_2.1/AmigaMail_Vol2_guide/node016C.html
