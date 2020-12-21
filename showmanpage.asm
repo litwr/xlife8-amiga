@@ -74,6 +74,7 @@ run:
 
     move.l readio+$14,writeio+$14  ;DEVICE
     move.l readio+$18,writeio+$18  ;UNIT
+    bsr coninit
 go:
     bsr iniconread
     moveq #21,d7
@@ -100,16 +101,23 @@ go:
 
     bsr conoutnl
     bsr conoutline
-    
     bsr iniconread
     bra.s .loop2
 no1:
     cmp.b #' ',rbuffer
-    bne.s go
+    bne.s no2
 
     bsr conoutnl
     bra.s go
 
+no2:
+    cmp.b #'q',rbuffer
+    beq.s ende
+
+    cmp.b #'Q',rbuffer
+    beq.s ende
+    bra.s go
+    
 wevent:
     movea.l d0,a0
     move.l $16(a0),d6  ;msg in D6
@@ -166,24 +174,26 @@ conoutline:     ;a5=buffer
     sub.l a0,d6
     movea.l feof(pc),a0
 .cont2:
-    movea.l 4.w,a6
     lea.l writeio(pc),a1
-    move.w #3,28(a1)   ;command: WRITE
     move.l a5,40(a1)
-    move.l d6,36(a1)   ;length
-
     movea.l a0,a5
-    move.l #writerep,14(a1)  ;set reply port
-    jmp DoIo(a6)
+    move.l d6,36(a1)   ;length
+    bra.s conoutnl\.e
 
 conoutnl:
-    movea.l 4.w,a6
     lea.l writeio(pc),a1
-    move.w #3,28(a1)   ;command: WRITE
     move.l #nl,40(a1)
     move.l #2,36(a1)   ;length
+.e: move.w #3,28(a1)   ;command: WRITE
+    movea.l 4.w,a6
     move.l #writerep,14(a1)  ;set reply port
     jmp DoIo(a6)
+
+coninit:
+    lea.l writeio(pc),a1
+    move.l #conini,40(a1)
+    move.l #8,36(a1)   ;length
+    bra.s conoutnl\.e
 
 iniconread:
     movea.l 4.w,a6 ;start console input
@@ -233,6 +243,7 @@ windname dc.b "Xlife-8 Manpage",0
 devicename dc.b 'console.device',0
 manpage dc.b 'manpage.txt',0
 nl dc.b $d,$a
+conini dc.b $9b,$30,$20,$70,$9B,$3F,$37,$6C
 rbuffer blk.b 80,0
 buffer blk.b BUFSZ
 

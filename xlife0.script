@@ -1,13 +1,11 @@
-;run this script from the CLI
-
 lab start
-echo "*ecSelect a number"
+echo "*ec*e[1mSelect a number:*e[0m"
 echo "1. Xlife-8"
 echo "2. Manpage"
 ;echo "3. Notepad +4"
 echo "4. Default colors"
 echo "5. Exit"
-getdigit
+getdigit >t:gotline
 
 search t:gotline 5 quiet
 if not warn
@@ -28,7 +26,7 @@ endif
 
 search t:gotline 2 quiet
 if not warn
-newcli con:0/0/639/199/Xlife8-man from manpage.script
+showmanpage
 skip start BACK
 endif
 
@@ -39,5 +37,5 @@ endif
 skip start BACK
 
 lab endp
-delete t:gotline
+delete t:gotline quiet
 endcli
