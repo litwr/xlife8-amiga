@@ -38,7 +38,7 @@ run:
     move.l #MODE_OLD,d2
     jsr Open(a6)
     tst.l d0
-    beq .closedos
+    beq .doserror
 
     lea.l buffer(pc),a5
     move.l d0,filehl
@@ -51,6 +51,7 @@ run:
     
     move.l filehl(pc),d1
     jsr Close(a6)
+.doserror:
     bsr error\.w
 .closedos:
     movea.l 4.w,a6
@@ -109,7 +110,7 @@ go:
     movea.l 86(a0),a0
     jsr GetMsg(a6)
     tst.l d0
-    bne wevent
+    bne.s wevent
 
     lea.l readreply(pc),a0
     jsr GetMsg(a6)
@@ -142,7 +143,7 @@ wevent:
     movea.l d0,a0
     MOVE.L 20(a0),d3	;Get message type
     and.l #$200,d3      ;CLOSEWINDOW
-    beq.s go
+    beq go
 
 ende:
     lea.l readreply(pc),a1
