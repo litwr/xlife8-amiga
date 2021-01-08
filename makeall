@@ -1,5 +1,5 @@
 awk -f xlife.man.awk xlife.man.txt >manpage.txt && \
-compile showmanpage.asm && \
+compile manpage.asm && \
 compile getdigit.asm && \
 gcc -DAMIGA geninitiles.c && ./a.out >initiles.s #&& \
 gcc -DAMIGA gengentab.c && ./a.out >gentab.s && \

@@ -5,6 +5,7 @@ AddPort = -354 ;create port
 RemPort = -360 ;remove port
 DoIo = -456 ;perform I/O
 SendIo  = -462 ;start I/O
+CurrentDir = -126
 
 BUFSZ = 10000   ;must be greater or equal to filesize!
 
@@ -13,8 +14,26 @@ run:
     lea dosname(pc),a1
     jsr OldOpenLibrary(a6)
     move.l d0,doslib
+    sub.l a1,a1		; a1 = 0 Our task
+	move.l 4.w,a6
+	jsr FindTask(a6)
+    move.l d0,a4
+    tst.l $ac(a4)     ;pr_CLI: CLI or Workbench?
+    bne .fromCLI
 
-    movea.l d0,a6
+    lea.l $5c(a4),a0    ;WBench message
+    jsr WaitPort(a6)
+    lea.l $5c(a4),a0
+    jsr GetMsg(a6)
+    move.l d0,wbmsg
+    movea.l d0,a0
+    movea.l 36(a0),a0   ;Arglist
+    move.l (a0),d1     ;Arglist[0]->Lock
+    movea.l doslib(pc),a6
+    jsr CurrentDir(a6)
+
+.fromCLI:
+    movea.l doslib(pc),a6
     move.l #manpage,d1
     move.l #MODE_OLD,d2
     jsr Open(a6)
@@ -32,6 +51,7 @@ run:
     
     move.l filehl(pc),d1
     jsr Close(a6)
+    bsr error\.w
 .closedos:
     movea.l 4.w,a6
     move.l doslib(pc),a1
@@ -41,7 +61,7 @@ run:
     add.l a5,d0
     move.l d0,feof
     bsr .closedos
-    
+
     movea.l 4.w,a6
     lea.l intname(pc),a1
     jsr OldOpenLibrary(a6)
@@ -137,7 +157,15 @@ error:
     jsr CloseWindow(a6)
     movea.l a6,a1
     movea.l 4.w,a6
-    jmp CloseLibrary(a6)
+    jsr CloseLibrary(a6)
+.w: tst.l wbmsg
+    beq.s .e
+
+    movea.l 4.w,a6
+    jsr Forbid(a6)
+    movea.l wbmsg(pc),a1
+    jmp ReplyMsg(a6)
+.e: rts
 
 conoutline:     ;a5=buffer
     cmpa.l feof(pc),a5
@@ -233,6 +261,7 @@ windowdef:
     dc.w 640,200 ;min. size
     dc.w 640,200 ;max. size
     dc.w 1 ;screen type 1 = WBENCHSCREEN
+wbmsg: dc.l 0
 
 dosname  dc.b "dos.library",0
 intname dc.b 'intuition.library',0

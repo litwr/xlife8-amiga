@@ -5,10 +5,10 @@ getkey:
 	bsr KEYB_GETKEYS		; Empty, Wait on a key from
 	bra.s getkey
 
-getkey2:  ;******* KEY POLLING *******
+getkey2:  ;******* KEY POLLING *******  ;it changes D0-D4, A0-A2, A4, A6
      bsr KEYB_GETKEYS
 	 move.w KEYB_OUTBUFFER(A3),D0
-	 cmp.w KEYB_INBUFFER(A3),D0	; Is buffer empty
+	 cmp.w KEYB_INBUFFER(A3),D0	; Is buffer empty?
 	 bne KEYB_STILLKEYSINBUFFER	; No ??
      moveq #0,d0
      rts

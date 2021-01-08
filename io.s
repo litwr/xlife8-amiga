@@ -604,8 +604,8 @@ showcomm:tst.b fn(a3)
          moveq.l #1,d3
          move.l doslib(a3),a6
          jsr Read(a6)
-         tst.l d0
-         bmi .fin
+         ;tst.l d0
+         ;bmi .fin
 
          cmpi.l #1,d0
          bne .fin
@@ -638,6 +638,13 @@ showcomm:tst.b fn(a3)
          move.l #20,d1      ;20/50 sec (PAL), 20/60 sec (NTSC)
          move.l doslib(a3),a6     ;DOS base address
          jsr Delay(a6)
+         ;movem.l d6/d7,-(sp)
+         bsr getkey2
+         ;movem.l (sp)+,d6/d7
+         tst.b d0
+         beq.s .pr
+
+         bsr getkey3
 .pr:     clr.l d6
          addq.w #8,d7
          move.w d7,d1

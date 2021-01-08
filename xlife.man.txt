@@ -32,10 +32,9 @@ Amiga, Workbench OS.
     pattern is (default) initially considered  tentative, and maybe manipulated
     in various ways before incorporating it into  main  pattern.  (To  indicate
     this, it's  surrounded by a bounding box.)  Clear the universe if you  want
-    to start from scratch.  It is possible either to select  a pattern  in  the
-    directory list directly or to enter a pattern  name.  A file  may  be  only
-    taken from the \pXlife8/PATTERNS\n\g subdirectory of the root  directory  on  any
-    disk.
+    to start from scratch.  It is possible either to select a pattern in a dir-
+    ectory list directly or to enter a pattern  name.  A file may be only taken
+    from \pXlife8/PATTERNS\n\g subdirectory of root directory on any disk.
  \xL  Immediately reload, at the cursor, a copy of the last  pattern  loaded.  It
     doesn't work for ramdisk patterns.
  \xo  Forward one generation.
@@ -54,7 +53,7 @@ Amiga, Workbench OS.
  \xZ  Set and optionally save a palette.
 
  Use (\ushift\n\g +) \ucursor\n\g, \uHome\n\g,  and  \u.\n\g keys to  move  the  cursor.  Use \g\uspace bar\n\g
- to change the cell under cursor.  You can also use mouse  to draw  and  remove
+ to change a cell under the cursor.  You can also use mouse to draw and  remove
  cells.
 
 \bSTATUS BAR
@@ -65,10 +64,10 @@ Amiga, Workbench OS.
 
 \bLIMITS
 
- \gIt is possible to see only up to 999 files from the disk directory. Use a mask
+ \gIt is possible to see only up to 999 files from a disk directory.  Use a  mask
  to show only matched files.
 
- The tentative pattern may show only up to 8192 cells.  The other cells are not
+ The tentative pattern may show only up to 8192  cells.  Other  cells  are  not
  shown but loaded later. This quantity is enough to show every cell from a pat-
  tern file with the size that is equal approximately to 16 KB.
 
@@ -168,7 +167,7 @@ Amiga, Workbench OS.
 
 \bFILES
 
-  \g\pcolors.cfg\n\g   this file contains the palette. It's binary file.  May be  omit-
+  \g\pcolors.cfg\n\g   this file contains a palette.  It's a binary file.  May be omit-
               ted.
 
   \pcr.txt\n\g       the text file with copyright and historical information.  Should

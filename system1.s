@@ -71,9 +71,9 @@ TASK_FIND:
 
     move.l 58(a4),stacklimit(a3)
     lea.l $5c(a4),a0    ;WBench message
-    jsr WaitPort(a6)  ;wait
+    jsr WaitPort(a6)
     lea.l $5c(a4),a0
-    jsr GetMsg(a6)    ;get message
+    jsr GetMsg(a6)
     move.l d0,wbmsg(a3)
     ;move.l d0,a0
     ;move.l $24(a0),a0     ;ptr to arguments
@@ -267,11 +267,9 @@ KEYB_GETKEYS0:
 	BTST	#7,D4		; Bit 7 - Key release
 	bne.s KEYB_ANSWER	; We dont need them
 
-	MOVE.W	26(A4),D5	; QUALIFIER
-	MOVE.L	28(A4),D6	; IADDRESS
-	MOVE.W	D4,IECODE(A3)	; TRANSFER CODE
-	MOVE.W	D5,IEQUAL(A3)	; QUALIFIERS
-	MOVE.L	D6,IEADDR(A3)	; AND POINTER TO OLD KEYS
+	MOVE.W D4,IECODE(A3)	; TRANSFER CODE
+	MOVE.W 26(A4),IEQUAL(A3)	; QUALIFIERS
+	MOVE.L 28(A4),IEADDR(A3)	; AND POINTER TO OLD KEYS
 
 ;---  Convert to ascii  ---
 	LEA.l	MY_EVENT(A3),A0	; Pointer to event structure

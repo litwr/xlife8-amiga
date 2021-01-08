@@ -55,7 +55,7 @@ ramdisk: bsr totext
          print '9'
          color 3
          print ' SWITCH ENGINE PUFFER'
-.c1:     jsr getkey2
+.c1:     bsr getkey2
          cmpi.b #27,d0    ;esc
          beq pexit
 
