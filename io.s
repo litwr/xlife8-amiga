@@ -274,7 +274,7 @@ showdir: bsr totext
          lea.l svfn(a3),a4   ;check against a pattern in svfn
          lea.l iobseg+8,a5
          move.w d0,-(sp)
-         bsr parse
+         bsr parse500
          move.l d0,d1
          move.w (sp)+,d0
          tst.b d1
@@ -413,7 +413,7 @@ findfn:  ;fn# in D0
 
          lea.l svfn(a3),a4   ;check against a pattern in svfn
          lea.l iobseg+8,a5
-         bsr parse
+         bsr parse500
          tst.b d0
          beq .loop
 
