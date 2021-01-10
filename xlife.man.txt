@@ -77,6 +77,9 @@ Amiga, Workbench OS.
 
  Files on ramdisk are without comments.
 
+ Only the Amiga 500 filename patterns are allowed. Nested patterns are not sup-
+ ported.
+
 \bFORMATS
 
  \gThe first two bytes of a pattern file are its width and height.  The next  two
