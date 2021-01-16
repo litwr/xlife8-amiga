@@ -314,13 +314,12 @@ dispatcher:
 
          moveq #1,d0
          bsr inctsum
-
-         bsr infoout
+.c270a:  bsr infoout
          bsr showscn
          bra.s .c270
 
 .c79:    bsr calccells
-         bra.s .c270
+         bra.s .c270a
 
 .c170:   cmpi.b #'.',d0
          bne.s .c171
