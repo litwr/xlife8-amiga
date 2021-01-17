@@ -1,8 +1,8 @@
-;this program doesn"t contain code of the original Xlife
-;**it is the conversion from 6502 port for Commodore +4 v4
-;**from z80 port for Amstrad CPC6128 v2, from K1801VM1 port for BK0011 v1
-;**from 8088 port for IBM PC v1
-;written by litwr, 2018, 2019, 2020
+;this program doesn't contain code of original Xlife
+;**it is the conversion from the 6502 port for the Commodore +4
+;**from the z80 port for the Amstrad CPC6128, from the K1801VM1 port for the BK0011
+;**from the 8088 port for the IBM PC
+;written by litwr, 2018-2021
 ;thanks to Tuomas Järvensivu's blog post Crash course to Amiga assembly programming
 ;a lot of thanks to guys at http://eab.abime.net
 ;some materials were used from AsmOne examples coded by Rune Gram-Madsen
