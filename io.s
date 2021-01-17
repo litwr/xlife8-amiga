@@ -435,6 +435,7 @@ findfn:  ;fn# in D0
          beq .close         ;no: done
 
 .setout: bsr fnextcheck
+         move.b #".",-5(a0)
          tst.b d1
          bne .loop
 
