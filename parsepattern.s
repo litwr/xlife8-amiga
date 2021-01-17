@@ -163,7 +163,7 @@ parse500:  ;patpos = a4, datapos = a5, result = d0 (0 - fail, 1 - success)
 
      bsr nextpat2
      move.l a2,d0
-     move.l a2,a4
+     movea.l a2,a4
      bne.s .loop
      rts
 

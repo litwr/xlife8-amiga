@@ -232,6 +232,39 @@ printd0_e:
          move.l GRAPHICS_BASE(a3),a6
          jmp Text(a6)
 
+fnextcheck:
+         moveq #1,d1
+         tst.l iobseg+4
+         bpl.s .exit          ;directory?
+
+         movea.l #iobseg+8,a0
+.l1:     tst.b (a0)+
+         bne.s .l1
+
+         move.l a0,d0
+         sub.l #iobseg+8+1+4,d0   ;filename length
+         bls.s .exit
+
+         cmpi.b #".",-5(a0)
+         bne.s .exit
+
+         cmpi.b #"8",-4(a0)
+         bne.s .exit
+
+         move.b -3(a0),d1
+         ori.b #32,d1
+         cmpi.b #"x",d1
+         bne.s .exit
+
+         move.b -2(a0),d1
+         ori.b #32,d1
+         cmpi.b #"l",d1
+         bne.s .exit
+
+         clr.l d1
+         move.b d1,-5(a0)
+.exit:   rts
+
 showdir: bsr totext
          clr.l d5   ;relative counter
          clr.l d6   ;absolute counter
@@ -260,16 +293,9 @@ showdir: bsr totext
          tst.l d0              ;found?
          beq showfree          ;no: done
 
-.outpuff:tst.l iobseg+4
-         bpl .loop          ;directory?
-
-         movea.l #iobseg+8,a0
-.l1:     tst.b (a0)+
-         bne .l1
-
-         move.l a0,d0
-         sub.l #iobseg+8+1+4,d0
-         bls .loop
+.outpuff:bsr fnextcheck
+         tst.b d1
+         bne.s .loop
 
          lea.l svfn(a3),a4   ;check against a pattern in svfn
          lea.l iobseg+8,a5
@@ -278,17 +304,17 @@ showdir: bsr totext
          move.l d0,d1
          move.w (sp)+,d0
          tst.b d1
-         beq .loop
+         beq.s .loop
 
          cmpi.b #11+1,d0    ;we can show only 11 first chars of fn
-         bcs .l2
+         bcs.s .l2
 
          moveq #11,d0
 .l2:     move.l GRAPHICS_BASE(a3),a6
          move.w d0,-(sp)
          clr.w d0
          btst #0,d5
-         beq .l3
+         beq.s .l3
 
          move.w #20*8,d0
 .l3:     move.w d5,d1
@@ -316,7 +342,7 @@ showdir: bsr totext
          normvideo
          addq.l #1,d6
          cmp.w #1000,d6
-         beq showfree
+         beq.s showfree
 
          addq.l #1,d5
          cmp.w #2*(25-2),d5
@@ -408,8 +434,9 @@ findfn:  ;fn# in D0
          tst.l d0              ;found?
          beq .close         ;no: done
 
-.setout: tst.l iobseg+4
-         bpl .loop          ;directory?
+.setout: bsr fnextcheck
+         tst.b d1
+         bne .loop
 
          lea.l svfn(a3),a4   ;check against a pattern in svfn
          lea.l iobseg+8,a5

@@ -1157,7 +1157,6 @@ menu2:   bsr setdirmsk
          bcc.s .c1
 
 .l3:     bsr findfn
-         ;;;call curoff
          or.l d6,d6     ;sets SF
          rts
 
@@ -1797,11 +1796,7 @@ setdirmsk:
 
          move.b #"#",(a4)+
          move.b #"?",(a4)+
-.c5:     move.b #".",(a4)+
-         move.b #"8",(a4)+
-         move.b #"x",(a4)+
-         move.b #"l",(a4)+
-         clr.b (a4)
+.c5:     clr.b (a4)
 .rts:    rts
 
 .c12:    subq.l #1,a4
