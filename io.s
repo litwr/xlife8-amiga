@@ -435,16 +435,18 @@ findfn:  ;fn# in D0
          beq .close         ;no: done
 
 .setout: bsr fnextcheck
-         move.b #".",-5(a0)
          tst.b d1
          bne .loop
 
+         move.l a0,-(sp)
          lea.l svfn(a3),a4   ;check against a pattern in svfn
          lea.l iobseg+8,a5
          bsr parse500
+         move.l (sp)+,a0
          tst.b d0
          beq .loop
 
+         move.b #".",-5(a0)
          addq.l #1,d6
          cmp.l d6,d5
          bne .loop
