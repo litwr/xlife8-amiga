@@ -33,8 +33,9 @@ Amiga, Workbench OS.
     in various ways before incorporating it into  main  pattern.  (To  indicate
     this, it's  surrounded by a bounding box.)  Clear the universe if you  want
     to start from scratch.  It is possible either to select a pattern in a dir-
-    ectory list directly or to enter a pattern  name.  A file may be only taken
-    from \pXlife8/PATTERNS\n\g subdirectory of root directory on any disk.
+    ectory list directly or to enter a pattern  name.  A file may only be taken
+    from the \pXlife-8/PATTERNS\n\g subdirectory of the root directory on any disk or
+    on the XLF: device.
  \xL  Immediately reload, at the cursor, a copy of the last  pattern  loaded.  It
     doesn't work for ramdisk patterns.
  \xo  Forward one generation.
@@ -80,7 +81,8 @@ Amiga, Workbench OS.
  Only the Amiga 500 filename patterns are allowed. Nested patterns are not sup-
  ported.
 
- The program can use only DF0 - DF3, DH0 - DH3, RAM, and RAD drives.
+ The program can use only devices DF0 - DF3, DH0 - DH3, RAM, RAD, and XLF.  Use
+ \pASSIGN\n\g to turn any directory into the XLF-device.
 
 \bFORMATS
 

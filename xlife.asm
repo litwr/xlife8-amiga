@@ -612,7 +612,7 @@ xformat    dc.b "%03x",0
 lformat    dc.b "%ld",0
 ulformat   dc.b "N%09ld",0
 dosname  dc.b "dos.library",0
-curdir1  dc.b "xlife8/",0
+curdir1  dc.b "xlife-8/",0
 curdir2  dc.b "patterns",0
 curpath  blk.b 34
 curpathsv blk.b 34
@@ -621,12 +621,13 @@ mouseleft dc.b 0
 mouseright dc.b 0
 
         CNOP 0,4
-curdisk dc.b "DH0:",0
+curdisk dc.b "xxx:",0
 drvidx  dc.b 0
 
         CNOP 0,4
-nudrives = 10
-drives  dc.b 'DF0:'
+nudrives = 12
+drives  dc.b 'BAD:'
+        dc.b 'DF0:'
         dc.b 'DF1:'
         dc.b 'DF2:'
         dc.b 'DF3:'
@@ -636,6 +637,7 @@ drives  dc.b 'DF0:'
         dc.b 'DH3:'
         dc.b 'RAM:'
         dc.b 'RAD:'
+        dc.b 'XLF:'
 
 SCREEN_DEFS:
 	DC.W	0,0		; X-Y position
