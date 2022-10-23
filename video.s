@@ -1736,7 +1736,7 @@ setdirmsk:
          color 1
          print 'ENTER'
          color 2
-         print ' = ?#)'
+         print ' = #?)'
          color 3
          movepenq 0,14
          bsr TXT_PLACE_CURSOR

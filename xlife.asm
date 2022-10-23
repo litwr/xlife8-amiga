@@ -54,6 +54,8 @@ mainloop:bsr crsrflash
          bsr incgen
          bsr tograph
          bra.s mainloop
+         ;pea mainloop(pc)
+         ;bra tograph
 
 .c4:     cmp.b #2,d0
          bne.s .c5
@@ -78,12 +80,16 @@ mainloop:bsr crsrflash
          include "rules.s"
          include "tile.s"
 
-rasteri:     btst #6,$dff01e   ;blitter?
-             bne.s rasterie
+rasteri      addq.l #1,(a1)
+;If you set your interrupt to priority 10 or higher then a0 must point at $dff000 on exit
+      moveq #0,d0  ; must set Z flag on exit!
+      rts
 
-             addq.l #1,timercnt
-rasterie:    move.l interruptv,-(sp)
-             rts
+VBlankServer:
+      dc.l  0,0                   ;ln_Succ,ln_Pred
+      dc.b  NT_INTERRUPT,0        ;ln_Type,ln_Pri
+      dc.l  0                     ;ln_Name
+      dc.l  timercnt,rasteri          ;is_Data,is_Code
 
 generate:
          movea.l startp(a3),a4 ;currp   ;;mov si,[startp]
@@ -502,7 +508,6 @@ crsrflash:
 SOD:
 startp:       dc.l 1  ;it is the fastest variable, no need an offset
 doslib        dc.l 0
-interruptv    dc.l 0
 ;oldcopper     dc.l 0
 tmplock       dc.l 0
 charCount     dc.l 0

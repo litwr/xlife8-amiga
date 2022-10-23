@@ -24,16 +24,6 @@ getkey3:
      bne.s .loop
      rts
 
-start_timer:
-         move.l $6c,interruptv(a3)
-         clr.l timercnt(a3)
-         move.l #rasteri,$6c
-         rts
-
-stop_timer:
-         move.l interruptv(a3),$6c
-.rts:    rts
-
 dispatcher:
          bsr getkey2
          ;tst.b d0
@@ -83,7 +73,7 @@ dispatcher:
          bcc.s .exit
 
          subi.w #32,d2
-         bcs.s stop_timer\.rts
+         bcs.s dispatcher\.exit   ;rts
 
 .l12:    move.w d2,mousesaveX(a3)
          move.w d0,mousesaveY(a3)
@@ -231,7 +221,7 @@ dispatcher:
          beq.s .c500
          bhi.s .c400
 
-         bsr start_timer
+         clr.l timercnt(a3)
 .c146:   tst.w tilecnt(a3)
          bne.s .c147
 
@@ -249,7 +239,7 @@ dispatcher:
          bra calccells
 
 .c400:   bsr tograph
-         bsr start_timer
+         clr.l timercnt(a3)
 .c5146:  tst.w tilecnt(a3)
          bne .c5147
 
@@ -265,7 +255,7 @@ dispatcher:
          bra.s .c401
 
 .c500:   bsr tograph
-         bsr start_timer
+         clr.l timercnt(a3)
 .c4147:  bsr showscn
          subq.w #1,temp2(a3)
          bne.s .c4147
@@ -567,7 +557,7 @@ dispatcher:
 .csct:   move.l a1,crsrtile(a3)
          bra .c270
 
-benchcalc: bsr stop_timer
+benchcalc:
          move.l timercnt(a3),d5
          move.l d5,d3
          add.l d5,d5

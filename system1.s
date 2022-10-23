@@ -15,8 +15,6 @@ J	 BSR.S STARTUP
      BSR.S CLOSEDOWN
      clr.l d0
      rts
-     ;clr.l d1
-     ;jmp Exit(a6)
 
 .ERROR:	
      moveq #10,d0
@@ -25,6 +23,9 @@ J	 BSR.S STARTUP
 STARTUP:
 	 MOVE.L	A7,ERROR_STACK(A3)	; Save stack pointer if an error
 	 BSR TASK_FIND
+         moveq.l #INTB_VERTB,d0
+         lea.l VBlankServer(pc),a1
+         jsr AddIntServer(a6)
 	 BSR INTULIB_OPEN
 	 BSR GRAPHLIB_OPEN
 	 BSR SCREEN_OPEN
@@ -53,6 +54,9 @@ CLOSEDOWN:
      beq.s STARTUP_ERROR\.e
 
      movea.l 4.w,a6
+     moveq.l #INTB_VERTB,d0
+     lea.l VBlankServer(pc),a1
+     jsr RemIntServer(a6)
      jsr Forbid(a6)
      movea.l wbmsg(a3),a1
      jmp ReplyMsg(a6)
@@ -64,7 +68,7 @@ TASK_FIND:
 	move.l d0,TASK_PTR(A3)
     move.l d0,a4
         move.l d0,a1
-        moveq #20,d0		 ;max=127, but even 30 hangs this program :(
+        moveq #16,d0		 ;max=127, but even 30 hangs this program :(
         jsr SetTaskPri(a6)
     tst.l $ac(a4)     ;pr_CLI: CLI or Workbench?
     bne .fromCLI

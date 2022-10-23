@@ -1,6 +1,6 @@
-Xlife-8 for the Commodore Amiga v1 ported to 16/32-bit universe by litwr
+Xlife-8 for the Commodore Amiga v2 ported to 16/32-bit universe by litwr
 
-(c) 2014-21 GNU GPL
+(c) 2014-22 GNU GPL
 
 The 1st version of the original xlife for Unix was developed at CMU in 1989 by Jon Bennett & Chuck Silvers
 
