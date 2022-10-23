@@ -1,0 +1,257 @@
+;t9 equ '    '
+FNMAXLEN = 26
+mouseleft_char = 1
+mouseright_char = 2
+vermax   = 24     ;192
+hormax   = 31     ;248
+total    = hormax*vermax+1
+tilesize = 82
+plainbox = hormax*vermax*tilesize+tiles
+nextline = 40
+
+left     = 8      ;all directions
+ul       = 12     ;not zero!
+up       = 16
+ur       = 20
+right    = 24
+dr       = 28
+down     = 32
+dl       = 36
+next     = 40
+count0   = 44
+count1   = 48
+count2   = 52
+count3   = 56
+count4   = 60
+count5   = 64
+count6   = 68
+count7   = 72
+video    = 76
+sum      = 80
+
+tile     macro
+l0       dc.b 0
+l1       dc.b 0
+l2       dc.b 0
+l3       dc.b 0
+l4       dc.b 0
+l5       dc.b 0
+l6       dc.b 0
+l7       dc.b 0
+left     dc.l 0	;+8
+ul       dc.l 0
+up       dc.l 0        ;+16
+ur       dc.l 0
+right    dc.l 0        ;+24
+dr       dc.l 0
+down     dc.l 0        ;+32
+dl       dc.l 0
+next     dc.l 0        ;+40
+         blk.b 32       ;+26, count0
+video    dc.l 0        ;+76
+sum      dc.b 0        ;+80
+         dc.b 0        ;free
+endm
+
+boxsz_xmin = i1
+boxsz_ymin = i1+1
+boxsz_curx = x0          ;boxsz_sizex
+boxsz_cury = y0          ;boxsz_sizey
+xcut       = temp2
+ycut       = temp2+1
+x8poscp    = temp
+y8poscp    = temp+1
+y8byte     = saved
+
+vidmacp macro
+         andi.w #$1803,d1
+         move.w d1,d2
+         andi.w #$fe00,d1
+         rol.w #7,d1
+         ;lsr.w #1,d1
+         ;lsr.w #8,d1
+         or.b d1,d2
+
+         swap d1
+	 andi.w #$C018,d1
+         move.w d1,d3
+         add.b d1,d1
+         lsr.w #8,d3
+         or.b d1,d3
+         or.b d2,d3
+         move.b d3,d1
+         and.b d0,d1   ;for plane #1
+         not.b d3
+         and.b d3,d0   ;for plane #2
+endm
+
+genmac macro
+	 moveq #0,d1			;;xor bx,bx
+	 move.b (count\1+3,a4),d1	;;mov bl,[si+count#one+3]
+	 move.b (a2,d1),d0		;;mov al,[bx+gentab]
+         andi.w #3,d0			;;and ax,3
+
+         move.b (count\1+2,a4),d1	;;mov bl,[si+count#one+2]
+	 move.b (a2,d1),d1		;;mov bl,[bx+gentab]
+	 andi.b #$c,d1			;;and bl,0ch
+
+	 or.b d1,d0			;;or al,bl
+         move.b (count\1+1,a4),d1	;;mov bl,[si+count#one+1]
+	 move.b (a2,d1),d1		;;mov bl,[bx+gentab]
+	 andi.b #$30,d1			;;and bl,30h
+	 or.b d1,d0			;;or al,bl
+
+         move.b (count\1,a4),d1		;;mov bl,[si+count#one]
+         move.b (a2,d1),d1		;;mov bl,[bx+gentab]		;;movb gentab(r5),r5
+         andi.b #$c0,d1			;;and bl,0c0h			;;bic #^B1111111100111111,r5
+	 or.b d1,d0			;;or al,bl			;;bis r5,r1
+
+         move.b d0,(\1,a4)		;;mov [si+one],al		;;movb r1,one(r0)
+         				;;mov bx,tab3
+         				;;xlatb				;;movb tab3(r1),r2
+         beq .\@			;;or al,al
+					;;jz @f
+
+	 move.b (a0,d0),d0
+         move.b d0,(sum,a4)		;;mov [si+sum],al		;;movb r2,sum(r0)
+         cmpi.b #2,mode(a3)		;;cmp [mode],2			;;cmpb #2,@#mode
+         beq .\@			;;jz @f
+
+         cellsum			;;cellsum @f
+.\@:					;;@@:
+endm
+
+cellsum macro  ;in: d0		;;macro cellsum l1 {  ;in: al
+	 lea cellcnt+3(a3),a1		;;mov bx,cellcnt+4
+	 move.b -(a1),d1
+         move #0,CCR
+	 abcd d0,d1			;;add al,[bx]
+	            			;;aaa
+	 bcc .\@			;;jnc l1
+
+	 move.b d1,(a1)	
+	 moveq #0,d0
+         incbcd .\@			;;incbcd l1
+	 move.b -(a1),d1
+	 abcd d0,d1
+.\@:	 move.b d1,(a1)		
+endm
+
+incbcd macro				;;macro incbcd l1 {
+	 				;;dec bx
+	 move.b -(a1),d1		;;mov al,[bx]
+	 abcd d0,d1			;;adc al,0
+					;;aaa
+	 	        		;;mov [bx],al
+	 bcc \1				;;jnc l1
+	 move.b d1,(a1)
+endm
+
+inibcd macro
+	 lea \1(a3),a1
+         moveq #\2-1,d0
+.\@:	 move.b #0,(a1)+
+         dbra d0,.\@
+endm
+
+setcount macro
+         move.l (\1,a4),d1
+	 move.l d1,d5
+	 and.l d2,d1
+         move.b d1,(count\1+12,a4)
+         swap d1
+         move.b d1,(count\1+4,a4)
+         lsr.l #8,d1
+	 move.b d1,(count\1,a4)
+         swap d1
+         move.b d1,(count\1+8,a4)
+
+	 move.l d5,d1
+	 and.l d3,d1
+         lsr.l #1,d1
+	 move.b d1,(count\1+13,a4)
+         swap d1
+         move.b d1,(count\1+5,a4)
+         lsr.l #8,d1
+         move.b d1,(count\1+1,a4)
+         swap d1
+         move.b d1,(count\1+9,a4)
+
+	 move.l d5,d1
+	 and.l d6,d1
+         add.l d1,d1
+	 move.b d1,(count\1+14,a4)
+	 swap d1
+         move.b d1,(count\1+6,a4)
+         lsr.l #8,d1
+         move.b d1,(count\1+2,a4)
+	 swap d1
+         move.b d1,(count\1+10,a4)
+
+	 move.l d5,d1
+	 and.l d0,d1
+	 move.b d1,(count\1+15,a4)
+	 swap d1
+         move.b d1,(count\1+7,a4)
+         lsr.l #8,d1
+         move.b d1,(count\1+3,a4)
+	 swap d1
+         move.b d1,(count\1+11,a4)
+endm
+
+movepen macro
+         ;move.l GRAPHICS_BASE(a3),a6
+	 movea.l RASTER_PORT(a3),a1
+         move.w #\1,d0
+         move.w #\2,d1
+         jsr Move(a6)
+endm
+
+movepenq macro
+         ;move.l GRAPHICS_BASE(a3),a6
+	 movea.l RASTER_PORT(a3),a1
+         moveq #\1,d0
+         moveq #\2,d1
+         jsr Move(a6)
+endm
+
+color macro
+         ;move.l GRAPHICS_BASE(a3),a6
+         movea.l RASTER_PORT(a3),a1
+         moveq #\1,d0
+         jsr SetAPen(a6)
+endm
+
+invvideo macro
+         ;move.l GRAPHICS_BASE(a3),a6
+         movea.l RASTER_PORT(a3),a1
+         moveq #4,d0
+         jsr SetDrMd(a6)
+endm
+
+normvideo macro
+         ;move.l GRAPHICS_BASE(a3),a6
+         movea.l RASTER_PORT(a3),a1
+         moveq #0,d0
+         jsr SetDrMd(a6)
+endm
+
+print macro
+         bsr printstr
+         dc.b \1,0
+         even
+endm
+
+setcursor macro
+         tst.b i1(a3)
+         beq.s \1
+
+         cmp.b i1+1(a3),d5
+         bne.s \1
+
+         cmp.b temp(a3),d3
+         bne.s \1
+
+         bsr crsrpg
+endm
+

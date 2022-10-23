@@ -1,0 +1,3 @@
+- optimize work with sides: get 4 rows (??), mix left and right cases (check if it is applyable for other architectures)
+- use console instead raster port - http://amigadev.elowar.com/read/ADCD_2.1/AmigaMail_Vol2_guide/node016C.html
+- nested patterns

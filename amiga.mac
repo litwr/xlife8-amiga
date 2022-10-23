@@ -1,0 +1,116 @@
+;exec
+OldOpenLibrary	= -408
+CloseLibrary	= -414
+AllocMem = -198
+FreeMem = -210
+Disable =	-120
+Enable =	-126
+Forbid = -132
+Permit = -138
+WaitPort =	-384
+;Wait =	-318 
+ReplyMsg =	-378
+GetMsg =	-372
+FindTask =	-294
+OpenDevice =	-444
+CloseDevice =	-450
+RawDoFmt =	-522
+SetTaskPri =	-300
+AddIntServer = -168
+RemIntServer = -174
+INTB_VERTB = 5
+NT_INTERRUPT = 2
+
+;graphics
+WaitTOF		= -270
+SetRGB4 =	-288
+Text =	-60
+Move =	-240
+LoadRGB4 = 	-192
+SetDrMd =	-354
+SetAPen	=	-342 
+SetBPen	=	-348 
+
+;DOS
+WaitForChar = -204
+Output = -60
+Input = -54
+Write = -48
+Read = -42
+MODE_OLD = 1005
+MODE_NEWFILE = 1006
+Lock = -84
+UnLock = -90
+Examine = -102
+ExNext = -108
+Info = -114
+IoErr = -132
+Delay = -198
+Open = -30
+Close = -36
+Exit = -144
+
+;intuition
+OpenScreen =	-198
+CloseScreen =	-66
+OpenWindow =	-204
+CloseWindow =	-72
+ShowTitle =	-282
+WbenchToFront = -342
+;ModifyIDCMP =	-150
+
+;console.device
+RawKeyConvert =	-$30
+
+VBlankFrequency = 530
+
+IECLASS_RAWKEY = $01
+
+RAWKEY  	=	$00000400      ;console device
+MOUSEBUTTONS	=	$00000008
+;MOUSEMOVE	=	$00000010
+
+BACKDROP	=	$00000100
+;REPORTMOUSE	=	$0200
+BORDERLESS	=	$00000800
+ACTIVATE	=	$00001000
+RMBTRAP		=	$00010000
+
+CUSTOMSCREEN	=	$000F
+SCREENQUIET	= 	$0100
+
+;V_HIRES		=	$8000
+
+;CUSTOM equ $DFF000
+;CIAAPRA EQU $bfe001
+
+;DMACONR equ 2
+;VPOSR           EQU             4
+;ADKCONR		EQU		$10
+;INTENAR		EQU		$1c
+;INTREQR		EQU		$1e
+;COP1LCH equ $80
+;COPJMP1 equ $88
+;DIWSTRT equ $8e
+;DIWSTOP equ $90
+;DDFSTRT equ $92
+;DDFSTOP equ $94
+;DMACON equ $96
+;ADKCON		EQU		$9e
+;INTENA		EQU		$9a
+;INTREQ		EQU		$9c
+;BPL1PTH equ $E0
+;BPL1PTL equ $E2
+;BPL2PTH equ $E4
+;BPL2PTL equ $E6
+;BPLCON0 equ $100
+;BPLCON1 equ $102
+;BPLCON2 equ $104
+;BPL1MOD equ $108
+;BPL2MOD equ $10a
+;COLOR00 equ $180
+;COLOR01 equ $182
+;COLOR02 equ $184
+;COLOR03 equ $186
+;COLOR04 equ $188
+

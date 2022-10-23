@@ -1,0 +1,41 @@
+lab start
+echo "*ec*e[1mSelect a number:*e[0m"
+echo "1. Xlife-8"
+echo "2. Manpage"
+;echo "3. Notepad +4"
+echo "4. Default colors"
+echo "5. Exit"
+getdigit >t:gotline
+
+search t:gotline 5 quiet
+if not warn
+skip endp
+endif
+
+search t:gotline 4 quiet
+if not warn
+delete colors.cfg
+skip start BACK
+endif
+
+search t:gotline 3 quiet
+if not warn
+;np4
+skip start BACK
+endif
+
+search t:gotline 2 quiet
+if not warn
+manpage
+skip start BACK
+endif
+
+search t:gotline 1 quiet
+if not warn
+xlife
+endif
+skip start BACK
+
+lab endp
+delete t:gotline quiet
+endcli

@@ -1,0 +1,198 @@
+\rXlife(6)                                                               Xlife(6)\n
+
+\bNAME
+
+ \gXlife - Conway's Game of Life and other cellular automata  for  the  Commodore
+Amiga, Workbench OS.
+
+\bDESCRIPTION
+
+ \gThe program helps the user play with John Horton Conway's "Life" game.
+
+\bCOMMANDS
+
+ \x!  Place random cells on the area of the universe on the screen.
+ \x%  Set a percentage density for a randomly filled area.  Default is 42%.
+ \x+  Zoom the view in.  This mode is faster for big patterns and slower for  the
+    small ones.
+ \x-  Zoom the view out.
+ \x.  Place the cursor to the center of the universe.
+ \x?  Help for xlife.
+ \xB  Benchmark.  Enter a number of generations and get time.  This also provides
+    a way for the fastest evolution.
+ \xC  Clear the universe.
+ \xE  Toggle pseudocolor display mode.  In this mode, new cells are shown in  the
+    \gextra color.  It is slightly slower.
+ \xg  Toggle running the game. Evolve/Stop.  Then step through generations  until
+    something exceptional happens, like no live cells or a key pressed.
+ \xh  (Hide) stop displaying after each generation. This mode is up to 10% faster
+    \gthan established by g-command in the zoomed out mode.
+ \xl  Load (actually add) pattern to  the universe from  a file.  This  lets  you
+    overlay multiple saved states to make for some interesting effects.  Loaded
+    pattern is (default) initially considered  tentative, and maybe manipulated
+    in various ways before incorporating it into  main  pattern.  (To  indicate
+    this, it's  surrounded by a bounding box.)  Clear the universe if you  want
+    to start from scratch.  It is possible either to select a pattern in a dir-
+    ectory list directly or to enter a pattern  name.  A file may only be taken
+    from the \pXlife-8/PATTERNS\n\g subdirectory of the root directory on any disk or
+    on the XLF: device.
+ \xL  Immediately reload, at the cursor, a copy of the last  pattern  loaded.  It
+    doesn't work for ramdisk patterns.
+ \xo  Forward one generation.
+ \xQ  Quit.
+ \xR  Change the (2-state) rules  in "stays alive on" / "born on".  The  standard
+    rules are 23/3 (alive on two or three neighbors, birth  on three  neighbors
+    for an empty cell).
+ \xS  Save the universe to a file.  It is correct to save to an existed file  but
+    no warning message is provided.
+ \xT  Set up the topology.  It is possible to use the rectangular area  with  the
+    connected edges (anchor ring, tore) or the rectangular plain.
+ \xv  View current pattern information.
+ \xV  View comments to a file.
+ \xX  Reload palette from the file "colors.cfg". This file is loaded automatical-
+    ly when the program starts.
+ \xZ  Set and optionally save a palette.
+
+ Use (\ushift\n\g +) \ucursor\n\g, \uHome\n\g,  and  \u.\n\g keys to  move  the  cursor.  Use \g\uspace bar\n\g
+ to change a cell under the cursor.  You can also use mouse to draw and  remove
+ cells.
+
+\bSTATUS BAR
+
+ \gIt shows the number of generations, the total sum of live cells,  the slowness
+ indicator (100% means the maximum slowness),  the rules,  and the cursor coor-
+ dinates.
+
+\bLIMITS
+
+ \gIt is possible to see only up to 999 files from a disk directory.  Use a  mask
+ to show only matched files.
+
+ The tentative pattern may show only up to 8192  cells.  Other  cells  are  not
+ shown but loaded later. This quantity is enough to show every cell from a pat-
+ tern file with the size that is equal approximately to 16 KB.
+
+ The universe size is 248x192.
+
+ The rules with "born on" condition 0 are not supported.
+
+ Files on ramdisk are without comments.
+
+ Only the Amiga 500 filename patterns are allowed. Nested patterns are not sup-
+ ported.
+
+ The program can use only devices DF0 - DF3, DH0 - DH3, RAM, RAD, and XLF.  Use
+ \pASSIGN\n\g to turn any directory into the XLF-device.
+
+\bFORMATS
+
+ \gThe first two bytes of a pattern file are its width and height.  The next  two
+ bytes describes "stay alive on" condition,  and the next two - "born on".  The
+ next contents are the sequence of X and Y coordinate pairs of live cells. Pat-
+ terns must have \p8XL\n\g filename extension.  This format is identical to  the for-
+ mat for Xlife-8 for the IBM PC.
+
+ A file with comments must have the same name as the corresponding  pattern fi-
+ lename.  A comment file is a common plain text file.  It may be edited by  any
+ text editor.
+
+\bUsing the "lifeconv" utility
+
+ \gThis utility from Xlife main sources may convert CELLS, LIF, L, RLE,  and  MCL
+ formats. It may be used from any relative to Unix OS or from Microsoft Windows
+ dows.  The \plifeconv\n\g utility takes a pattern name as an argument.  It writes  a
+ file to standard output that contains an equivalent version of  the pattern in
+ a different format.  Usage is:
+
+   \plifeconv pattern -4 >destination\n
+
+ \gwhere destination is any valid file name.  The "-4" option sets the format for
+ 8-bit Xlife for the destination file is written.  In  Microsoft  Windows envi-
+ ronment (Mingw Xlife port) the sign ">" must be omitted.
+
+ A file produced may be directly used with this Xlife.  The appropriate comment
+ file should have the same name as \p8xl\n\g-file, the \ptxt\n\g-extension, and its content
+ may be any textual data.
+
+
+\bRAMDISK
+
+ \gIt contains 10 patterns:
+
+\pglider gun\n\g  The Gosper glider gun is the first known gun,  and indeed the first
+        known finite pattern with unbounded growth,  found  by  Bill Gosper  in
+        November 1970.
+
+\psmall fish\n\g the lightweight spaceship (or LWSS)  is  the  smallest  orthogonally
+        moving spaceship, and the second  most common spaceship.  Random  soups
+        will emit one LWSS for approximately every 615 gliders. It moves at c/2
+        and has period 4.
+
+\pHWSS\n\g    the heavyweight spaceship is the fourth most common ship.
+
+\pr-pentomino\n\g a methuselah that was found by John Conway in 1970.  It is  by  far
+        the most active polyomino with fewer than six cells;  all of the others
+        stabilize in at most 10 generations, but the R-pentomino does not do so
+        until generation 1103, by which time it has a population of 116. A gli-
+        der it releases in generation 69, was the first glider ever observed.
+
+\pbunnies\n\g, \plidka\n\g, \pacorn\n\g methuselahs with 17332, 29055,  5206 generations lifespan
+        respectively.
+
+\pbig glider\n\g The big glider was found by Dean Hickerson in December 1989  and was
+        the first known diagonal spaceship other than the glider.
+
+\pbi-gun\n\g  a double-barreled glider gun, a glider generator.  It produces two gli-
+        ders for 46 generations.
+
+\pblock-laying switch engine\n\g  a puffer train which travels diagonally at c/12 to-
+        wards the upper left with a period of 96.  This is  the smallest  known
+        object which grows without bound.  It produces  eight new blocks  every
+        288 generations.
+
+\bEXPLORATION
+
+ \gHere are some 2-state rules to experiment with:
+
+  \p23/3\n\g        the default, of course; Conway's "Life" rules
+
+  \p1234/3\n\g      patterns "crystallize"
+
+  \p12345/45\n\g    patterns become contained
+
+  \p12345/4\n\g     same as above, but settles VERY quickly
+
+  \p5/12\n\g        floor  tile patterns...  Variations of this tend to be  interest-
+              ing as well
+
+  \p1357/1357\n\g   replicators world...
+
+  \p/2\n\g          seeds - most patterns expand indefinitely, some interesting ones.
+              Fast gliders
+
+  \p012345678/3\n\g life without  death.  Ladders
+
+\bFILES
+
+  \g\pcolors.cfg\n\g   this file contains a palette.  It's a binary file.  May be omit-
+              ted.
+
+  \pcr.txt\n\g       the text file with copyright and historical information.  Should
+              not be omitted!
+
+\bAUTHORS
+
+  \gJon Bennett,
+  Chuck Silvers,
+  Paul Callahan,
+  Eric S. Raymond,
+  Achim Flammenkamp,
+  Vladimir Lidovski,
+  Yaroslav Zotov
+
+\bSEE ALSO
+
+  \yhttp://www.conwaylife.com
+  http://freecode.com/projects/xlife
+  http://aminet.net/package/game/misc/axlife12
+

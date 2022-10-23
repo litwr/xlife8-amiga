@@ -1,0 +1,52 @@
+fs-uae CONFIG-FILE
+
+FS-UAE (https://fs-uae.net/keyboard-shortcuts)
+   F12-W   warp on/off
+   F12-G   mouse capture/release
+   F12-D   debugger
+   F12-F   fullscreen on/off
+   F12-Q   quit
+   F12-B   show border
+   F12-K   full keyboard emu on/off
+   F12-R   soft reset
+   F12-T   hard reset
+   F12-P   pause
+   F12-C   activate cartridge
+   F12-M   mute on/off
+   F12-S/PrintScr   screenshot
+   F12-Z/F11 cycle video modes
+   F12     menu
+
+   Amiga Help = End
+   Amiga Delete = Delete
+   Amiga Numpad Left Paren = Home
+   Amiga Numpad Right Paren = Page Up
+   Amiga Left A = Page Down or Right Menu / Right Windows key
+   Amiga Right A = Left Menu / Left Windows key
+   Amiga Ctrl = Left Ctrl
+   Amiga key to the left of Backspace = Insert
+
+debugger (https://reaktor.com/blog/crash-course-to-amiga-assembly-programming/)
+   ?                     help
+   f <address>           Add/remove breakpoint.
+   g [<address>]         Start execution at the current address or <address>.
+   r                     Dump state of the CPU.
+   r <reg> <value>       Modify CPU registers (Dx,Ax,USP,ISP,VBR,...).
+   m <address> [<lines>] Memory dump starting at <address>.
+   d <address> [<lines>] Disassembly starting at <address>.
+   t [instructions]      Step one or more instructions.
+   z                     Step through one instruction - useful for JSR, DBRA etc.
+   fi                    Step forward until PC points to RTS, RTD or RTE.
+   f <addr1> <addr2>     Step forward until <addr1> <= PC <= <addr2>.
+   fp "progname"         sets breakpoint at the given program start
+   fl                    List breakpoints.
+   q                     quit
+options (http://fs-uae.net/options)
+
+CLI commands
+   cd DF1:
+   cd dh0:
+   dir
+   endcli
+   avail
+   info

@@ -1,0 +1,14 @@
+[config]
+#warp_mode = 1
+console-debugger = 1
+chip_memory = 512
+#floppy_drive_0 = $BASE/Kickstarts/amiga-os-134-workbench.adf
+#floppy_drive_1 = $BASE/Kickstarts/amiga-os-134-extras.adf
+hard_drive_0 = $BASE/Hard Drives/hdd
+#hard_drive_0 = $BASE/Hard Drives/hdd-games
+floppy_drive_speed = 0
+joystick_port_1_mode = nothing
+slow_memory = 512
+full_keyboard = 1
+#joystick_port_1 = none
+keyboard_key_menu = action_key_amiga_left

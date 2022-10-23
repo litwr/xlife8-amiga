@@ -1,0 +1,8 @@
+awk -f xlife.man.awk xlife.man.txt >manpage.txt && \
+compile manpage.asm && \
+compile getdigit.asm && \
+gcc -DAMIGA geninitiles.c && ./a.out >initiles.s #&& \
+gcc -DAMIGA gengentab.c && ./a.out >gentab.s && \
+gcc -DAMIGA gentab12.c && ./a.out >tab12.s && \
+compile xlife.asm
+rm -f initiles.s gentab.s tab12.s a.out  # manpage.txt

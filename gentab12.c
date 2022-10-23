@@ -1,0 +1,1 @@
+../plus4/gentab12.c
